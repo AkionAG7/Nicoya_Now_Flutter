@@ -34,6 +34,10 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  supabase_flutter: ^2.9.0    # SDK oficial (usa PostgREST)
+  flutter_dotenv: ^5.1.0          # lee variables .env
+  get_it: ^7.6.4                  # inyección de dependencias
+  flutter_riverpod: ^2.5.0        # state-management (opcional)
 
 dev_dependencies:
   flutter_test:
@@ -68,10 +72,14 @@ flutter:
   # For details regarding adding assets from package dependencies, see
   # https://flutter.dev/to/asset-from-package
 
+  assets:
+    - .env
+    
   fonts:
     - family: NicoyaNowIcons
       fonts:
        - asset: Assets/Icons/NicoyaNowIcons.ttf
+       
   # To add custom fonts to your application, add a fonts section here,
   # in this "flutter" section. Each entry in this list should have a
   # "family" key with the font family name, and a "fonts" key with a
