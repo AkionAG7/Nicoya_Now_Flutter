@@ -1,7 +1,7 @@
 #!/bin/sh
 # This is a generated file; do not edit or check into version control.
-export "FLUTTER_ROOT=C:\Users\achen\Documents\flutter"
-export "FLUTTER_APPLICATION_PATH=C:\Users\achen\Desktop\nicoya_now"
+export "FLUTTER_ROOT=C:\Users\Brandon\Downloads\flutter_windows_3.29.0-stable\flutter"
+export "FLUTTER_APPLICATION_PATH=D:\Archivos Backup\UNA\Movil\Proyecto\Nicoya_Now_Flutter"
 export "COCOAPODS_PARALLEL_CODE_SIGN=true"
 export "FLUTTER_BUILD_DIR=build"
 export "FLUTTER_BUILD_NAME=1.0.0"
