@@ -1,5 +1,5 @@
 import 'package:get_it/get_it.dart';
-import 'package:nicoya_now/app/data/datasources/todo_remote_ds.dart';
+import 'package:nicoya_now/app/features/data/datasources/todo_remote_ds.dart';
 import 'package:nicoya_now/app/features/data/repositories/todo_repo_impl.dart';
 import 'package:nicoya_now/app/features/domain/Usecases/get_todos.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';

@@ -7,7 +7,12 @@ class TodoRemoteDs {
   TodoRemoteDs(this._client);
 
   Future<List<TodoModel>> getTodos() async {
-    final res = await _client.from('todos').select();
+    final res = await _client
+        .from('todos')
+        .select()
+        .order('created_at', ascending: false);
+
+    // PostgREST ya devuelve List<dynamic>
     return (res as List)
         .map((e) => TodoModel.fromJson(e as Map<String, dynamic>))
         .toList();
