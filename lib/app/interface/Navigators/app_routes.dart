@@ -4,6 +4,7 @@ import 'package:nicoya_now/app/interface/SplashWidgets/SplashFT2.dart';
 import 'package:nicoya_now/app/interface/SplashWidgets/SplashFT3.dart';
 import 'package:nicoya_now/app/interface/Widgets/Home.dart';
 import 'package:nicoya_now/app/interface/Widgets/LoginPage.dart';
+import 'package:nicoya_now/app/interface/Widgets/OrderSucces.dart';
 import 'package:nicoya_now/app/interface/Widgets/RegisterUser.dart';
 
 import 'routes.dart';
@@ -22,5 +23,6 @@ Map<String, Widget Function(BuildContext)> get appRoutes {
     Routes.splashFT1: (context) => const SplashFT1(),
     Routes.splashFT2: (context) => const SplashFT2(),
     Routes.splashFT3: (context) => const SplashFT3(),
+    Routes.order_Success: (context) => const OrderSucces(),
   };
 }

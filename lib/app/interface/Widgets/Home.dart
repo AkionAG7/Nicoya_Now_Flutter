@@ -38,7 +38,8 @@ class Home extends StatelessWidget {
                 ),
 
                 ElevatedButton(
-                  onPressed: () => Navigator.pushNamed(context, Routes.splashFT1),
+                  onPressed:
+                      () => Navigator.pushNamed(context, Routes.order_Success),
                   style: ElevatedButton.styleFrom(
                     padding: EdgeInsets.symmetric(horizontal: 50, vertical: 30),
                     backgroundColor: Color(0xffd72a23),

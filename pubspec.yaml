@@ -78,6 +78,7 @@ flutter:
     - lib/app/interface/public/SplashFT1.png
     - lib/app/interface/public/SplashFT2.png
     - lib/app/interface/public/SplashFT3.png
+    - lib/app/interface/public/WallpaperOrderSucces.png
 
   fonts:
     - family: NicoyaNowIcons

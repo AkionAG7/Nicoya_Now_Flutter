@@ -40,7 +40,7 @@ class SplashFT3 extends StatelessWidget {
                     width: double.infinity,
                     height: 270,
                     child: Image.asset(
-                      'lib/app/interface/public/SplashFT1.png',
+                      'lib/app/interface/public/SplashFT3.png',
                       fit: BoxFit.cover,
                     ),
                   ),
