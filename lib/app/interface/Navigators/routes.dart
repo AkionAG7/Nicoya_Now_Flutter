@@ -10,5 +10,10 @@ class Routes {
   Routes._();
 
 static const first = '/';
+static const login_page = '/login';
+static const register_user_page = '/registerUser';
+static const splashFT1 = '/splashFT1';
+static const splashFT2 = '/splashFT2';
+static const splashFT3 = '/splashFT3';
 
 }

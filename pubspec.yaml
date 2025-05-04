@@ -2,7 +2,7 @@ name: nicoya_now
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -34,10 +34,10 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
-  supabase_flutter: ^2.9.0    # SDK oficial (usa PostgREST)
-  flutter_dotenv: ^5.1.0          # lee variables .env
-  get_it: ^7.6.4                  # inyección de dependencias
-  flutter_riverpod: ^2.5.0        # state-management (opcional)
+  supabase_flutter: ^2.9.0 # SDK oficial (usa PostgREST)
+  flutter_dotenv: ^5.1.0 # lee variables .env
+  get_it: ^7.6.4 # inyección de dependencias
+  flutter_riverpod: ^2.5.0 # state-management (opcional)
 
 dev_dependencies:
   flutter_test:
@@ -54,8 +54,8 @@ dev_dependencies:
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter packages.
+#Imagenes de la app
 flutter:
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
@@ -74,18 +74,21 @@ flutter:
 
   assets:
     - .env
-    
+    - lib/app/interface/public/LoginImage.png
+    - lib/app/interface/public/SplashFT1.png
+    - lib/app/interface/public/SplashFT2.png
+    - lib/app/interface/public/SplashFT3.png
+
   fonts:
     - family: NicoyaNowIcons
       fonts:
-       - asset: Assets/Icons/NicoyaNowIcons.ttf
-       
+        - asset: Assets/Icons/NicoyaNowIcons.ttf
+
   # To add custom fonts to your application, add a fonts section here,
   # in this "flutter" section. Each entry in this list should have a
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
-
 
   # fonts:
   #   - family: Schyler
