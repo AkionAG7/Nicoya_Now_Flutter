@@ -38,6 +38,8 @@ dependencies:
   flutter_dotenv: ^5.1.0 # lee variables .env
   get_it: ^7.6.4 # inyección de dependencias
   flutter_riverpod: ^2.5.0 # state-management (opcional)
+  image_picker: ^1.1.2
+  file_picker: ^10.1.7
 
 dev_dependencies:
   flutter_test:
@@ -79,6 +81,8 @@ flutter:
     - lib/app/interface/public/SplashFT2.png
     - lib/app/interface/public/SplashFT3.png
     - lib/app/interface/public/WallpaperOrderSucces.png
+    - lib/app/interface/public/Comercio.png
+    - lib/app/interface/public/Repartidor.png
 
   fonts:
     - family: NicoyaNowIcons

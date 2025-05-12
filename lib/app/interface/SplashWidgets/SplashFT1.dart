@@ -19,7 +19,7 @@ class _SplashFT1State extends State<SplashFT1> {
     _tapSkip =
         TapGestureRecognizer()
           ..onTap = () {
-            Navigator.pushNamed(context, Routes.first);
+            Navigator.pushNamed(context, Routes.selecctTypeAccount);
           };
   }
 

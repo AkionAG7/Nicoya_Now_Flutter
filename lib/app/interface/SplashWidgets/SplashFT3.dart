@@ -86,7 +86,7 @@ class SplashFT3 extends StatelessWidget {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.pushNamed(context, Routes.first);
+                      Navigator.pushNamed(context, Routes.selecctTypeAccount);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Color(0xffd72a23),

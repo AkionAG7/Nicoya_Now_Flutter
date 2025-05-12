@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:nicoya_now/Icons/nicoya_now_icons_icons.dart';
 
 class OrderSucces extends StatefulWidget {
   const OrderSucces({Key? key}) : super(key: key);
@@ -60,7 +59,10 @@ class _OrderSuccesState extends State<OrderSucces> {
               height: 80,
               width: 300,
               child: ElevatedButton(
-                onPressed: () => print('implentar navigate'),
+                onPressed:
+                    () => print(
+                      'implentar navigate hacia la pantalla de inicio de comidas',
+                    ),
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
