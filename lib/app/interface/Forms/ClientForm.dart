@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
-import 'package:nicoya_now/Icons/nicoya_now_icons_icons.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:nicoya_now/app/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:provider/provider.dart';
 
 class ClientForm extends StatefulWidget {
   const ClientForm({Key? key}) : super(key: key);
@@ -23,8 +22,6 @@ class _ClientFormState extends State<ClientForm> {
   final _password  = TextEditingController();
   final _passConf  = TextEditingController();
 
-  final _supabase  = GetIt.I<SupabaseClient>();
-
   bool   _loading  = false;
   bool   _hidePw   = true;
   bool   _hidePw2  = true;
@@ -44,38 +41,27 @@ class _ClientFormState extends State<ClientForm> {
     });
 
     try {
-      // 1. Crea usuario
-      final res = await _supabase.auth.signUp(
-        email   : _email.text.trim(),
+      final authController = Provider.of<AuthController>(context, listen: false);
+      
+      final success = await authController.signUp(
+        email: _email.text.trim(),
         password: _password.text,
+        firstName: _firstName.text.trim(),
+        lastName1: _lastName1.text.trim(),
+        lastName2: _lastName2.text.trim(),
+        phone: _phone.text.trim(),
+        address: _address.text.trim(),
       );
-      if (res.user == null) throw const AuthException('No se pudo crear la cuenta');
-
-      final uid = res.user!.id;
-
-      // 2. Actualiza perfil (trigger ya creó fila)
-      await _supabase.from('profile').update({
-        'first_name' : _firstName.text.trim(),
-        'last_name1' : _lastName1.text.trim(),
-        'last_name2' : _lastName2.text.trim(),
-        'phone'      : _phone.text.trim(),
-      }).eq('user_id', uid);
-
-      // 3. Inserta dirección básica
-      await _supabase.from('address').insert({
-        'user_id' : uid,
-        'street'  : _address.text.trim(),
-        'district': '',
-        'lat'     : null,
-        'lng'     : null,
-        'note'    : '',
-      });
 
       if (!mounted) return;
-      Navigator.pop(context); // o navega a Home
-    } on AuthException catch (e) {
-      setState(() => _error = e.message);
+      
+      if (success) {
+        Navigator.pop(context); // o navega a Home
+      } else {
+        setState(() => _error = authController.errorMessage);
+      }
     } catch (e) {
+      if (!mounted) return;
       setState(() => _error = 'Error: ${e.toString()}');
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -209,19 +195,24 @@ class _ClientFormState extends State<ClientForm> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                // botón Google (placeholder)
-                SizedBox(
-                  width: double.infinity,
-                  height: 55,
-                  child: OutlinedButton.icon(
-                    onPressed: () => print('login con Google'),
-                    icon: const Icon(NicoyaNowIcons.google, size: 24),
-                    label: const Text('Google', style: TextStyle(fontSize: 18)),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xffd72a23),
-                      side: const BorderSide(color: Color(0xffd72a23)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                // Google sign-up button
+                Consumer<AuthController>(
+                  builder: (context, authController, _) => SizedBox(
+                    width: double.infinity,
+                    height: 55,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        // Aquí implementarías la lógica para sign-in con Google
+                        // usando el controlador de autenticación
+                      },
+                      icon: const Icon(Icons.login, size: 24),
+                      label: const Text('Google', style: TextStyle(fontSize: 18)),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xffd72a23),
+                        side: const BorderSide(color: Color(0xffd72a23)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
                     ),
                   ),

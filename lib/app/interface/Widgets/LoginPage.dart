@@ -1,13 +1,14 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
 import 'package:nicoya_now/Icons/nicoya_now_icons_icons.dart';
+import 'package:nicoya_now/app/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 import 'package:nicoya_now/app/interface/Widgets/SelectTypeAccount.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:provider/provider.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({Key? key, AccountType? accountType}) : super(key: key);
+  final AccountType? accountType;
+  const LoginPage({Key? key, this.accountType}) : super(key: key);
 
   @override
   _LoginPageState createState() => _LoginPageState();
@@ -19,20 +20,22 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   late TapGestureRecognizer _tapRegister;
+  bool _isLoading = false;
+
   @override
   void initState() {
     super.initState();
-    _tapRegister =
-        TapGestureRecognizer()
-          ..onTap = () async {
-            final email = await Navigator.pushNamed(context, Routes.register_user_page);
-            if (email != null && email is String) {
-              setState(() {
-                _emailController.text = email;
-              });
-            }
-          };
+    _tapRegister = TapGestureRecognizer()
+      ..onTap = () async {
+        final email = await Navigator.pushNamed(context, Routes.register_user_page);
+        if (email != null && email is String) {
+          setState(() {
+            _emailController.text = email;
+          });
+        }
+      };
   }
+
   @override
   void dispose() {
     _tapRegister.dispose();
@@ -65,7 +68,6 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 20),
                   Align(
                     alignment: Alignment.centerLeft,
@@ -78,9 +80,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 10),
-
                   TextFormField(
                     key: const Key('emailField'),
                     controller: _emailController,
@@ -92,9 +92,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                   ),
-
                   SizedBox(height: 20),
-
                   TextFormField(
                     key: const Key('passwordField'),
                     controller: _passwordController,
@@ -112,14 +110,11 @@ class _LoginPageState extends State<LoginPage> {
                           });
                         },
                         icon: Icon(
-                          _obscureText
-                              ? Icons.visibility_off
-                              : Icons.visibility,
+                          _obscureText ? Icons.visibility_off : Icons.visibility,
                         ),
                       ),
                     ),
                   ),
-
                   Row(
                     children: [
                       Expanded(
@@ -138,54 +133,36 @@ class _LoginPageState extends State<LoginPage> {
                           },
                         ),
                       ),
-
                       Text(
                         '¿Haz olvidado tu contraseña?',
                         style: TextStyle(fontSize: 12),
                       ),
                     ],
-                  ),                  SizedBox(
+                  ),
+                  SizedBox(
                     height: 60,
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () async {                        try {
-                          final supabase = GetIt.instance<SupabaseClient>();
-                          final email = _emailController.text;
-                          final pass = _passwordController.text;
-
-                          final res = await supabase.auth.signInWithPassword(
-                            email: email,
-                            password: pass,
-                          );                          if (res.session != null) {
-                            if (!mounted) return;
-                            Navigator.pushReplacementNamed(context, Routes.preLogin); // Esta ruta lleva al Home
-                          }
-                        } catch (e) {
-                          if (!mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(e.toString())),
-                          );
-                        }
-                      },
+                      onPressed: _isLoading ? null : _login,
                       style: ElevatedButton.styleFrom(
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
                         backgroundColor: Color(0xffd72a23),
                       ),
-                      child: Text(
-                        'Iniciar sesión',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      child: _isLoading
+                          ? CircularProgressIndicator(color: Colors.white)
+                          : Text(
+                              'Iniciar sesión',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                     ),
                   ),
-
                   SizedBox(height: 20),
-
                   RichText(
                     text: TextSpan(
                       text: '¿No tienes una cuenta?',
@@ -203,28 +180,22 @@ class _LoginPageState extends State<LoginPage> {
                       ],
                     ),
                   ),
-
                   SizedBox(height: 20),
-
                   Text(
                     'O inicia sesión con',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-
                   SizedBox(height: 20),
-
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       IconButton(
-                        onPressed:
-                            () => print('hello'), // implementar logica de login
+                        onPressed: () => print('hello'), // implementar logica de login
                         icon: Icon(NicoyaNowIcons.facebook, size: 40),
                       ),
                       const SizedBox(width: 40),
                       IconButton(
-                        onPressed:
-                            () => print('hello'), // implementar logica de login
+                        onPressed: () => print('hello'), // implementar logica de login
                         icon: Icon(NicoyaNowIcons.google, size: 40),
                       ),
                     ],
@@ -236,5 +207,47 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
+  }
+
+  Future<void> _login() async {
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Por favor, ingresa email y contraseña')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final authController = Provider.of<AuthController>(context, listen: false);
+      final success = await authController.signIn(
+        _emailController.text.trim(),
+        _passwordController.text,
+      );
+
+      if (!mounted) return;
+
+      if (success) {
+        Navigator.pushReplacementNamed(context, Routes.preLogin); // Esta ruta lleva al Home
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(authController.errorMessage ?? 'Error desconocido')),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 }

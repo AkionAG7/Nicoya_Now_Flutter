@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:get_it/get_it.dart';
+import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:nicoya_now/app/core/di/service_locator.dart';
+import 'package:nicoya_now/app/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:nicoya_now/app/interface/Navigators/app_routes.dart';
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 import 'package:nicoya_now/app/interface/app_theme.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -18,8 +21,7 @@ Future<void> main() async {
     ),
   );
 
-  final supabase = Supabase.instance.client;
-  GetIt.instance.registerSingleton<SupabaseClient>(supabase);
+  setupServiceLocator();
 
   runApp(const MyApp());
 }
@@ -29,15 +31,22 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        FocusScope.of(context).unfocus();
-      },
-      child: MaterialApp(
-        title: 'Flutter Demo',
-        theme: AppTheme.lightTheme,
-        initialRoute: Routes.selecctTypeAccount,
-        routes: appRoutes,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => locator<AuthController>(),
+        ),
+      ],
+      child: GestureDetector(
+        onTap: () {
+          FocusScope.of(context).unfocus();
+        },
+        child: MaterialApp(
+          title: 'Nicoya Now',
+          theme: AppTheme.lightTheme,
+          initialRoute: Routes.selecctTypeAccount,
+          routes: appRoutes,
+        ),
       ),
     );
   }
