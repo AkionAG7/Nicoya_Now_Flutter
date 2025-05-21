@@ -1,218 +1,223 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:nicoya_now/Icons/nicoya_now_icons_icons.dart';
+import 'package:nicoya_now/app/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:provider/provider.dart';
 
 class ClientForm extends StatefulWidget {
   const ClientForm({Key? key}) : super(key: key);
 
   @override
-  _ClientForm1State createState() => _ClientForm1State();
+  State<ClientForm> createState() => _ClientFormState();
 }
 
-// correo, numero de telefono, domiciolio, nombre, apellido, contraseña, confirmar contraseña
-class _ClientForm1State extends State<ClientForm> {
-  bool _obscureText = true;
-  bool _obscureTextConfirm = true;
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmpasswordController =
-      TextEditingController();
+class _ClientFormState extends State<ClientForm> {
+  final _formKey = GlobalKey<FormState>();
+
+  // ───── Controllers ──────────────────────────────────────────────
+  final _firstName = TextEditingController();
+  final _lastName1 = TextEditingController();
+  final _lastName2 = TextEditingController();
+  final _phone     = TextEditingController();
+  final _address   = TextEditingController();
+  final _email     = TextEditingController();
+  final _password  = TextEditingController();
+  final _passConf  = TextEditingController();
+
+  bool   _loading  = false;
+  bool   _hidePw   = true;
+  bool   _hidePw2  = true;
+  String? _error;
+
+  // ───── Registro ────────────────────────────────────────────────
+  Future<void> _register() async {
+    if (!_formKey.currentState!.validate()) return;
+    if (_password.text != _passConf.text) {
+      setState(() => _error = 'Las contraseñas no coinciden');
+      return;
+    }
+
+    setState(() {
+      _loading = true;
+      _error   = null;
+    });
+
+    try {
+      final authController = Provider.of<AuthController>(context, listen: false);
+      
+      final success = await authController.signUp(
+        email: _email.text.trim(),
+        password: _password.text,
+        firstName: _firstName.text.trim(),
+        lastName1: _lastName1.text.trim(),
+        lastName2: _lastName2.text.trim(),
+        phone: _phone.text.trim(),
+        address: _address.text.trim(),
+      );
+
+      if (!mounted) return;
+      
+      if (success) {
+        Navigator.pop(context); // o navega a Home
+      } else {
+        setState(() => _error = authController.errorMessage);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _error = 'Error: ${e.toString()}');
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    for (final c in [
+      _firstName,
+      _lastName1,
+      _lastName2,
+      _phone,
+      _address,
+      _email,
+      _password,
+      _passConf,
+    ]) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
+  // ───── UI helpers ───────────────────────────────────────────────
+  Widget _text(String label, TextEditingController c,
+      {TextInputType? type, int? maxLen}) {
+    return TextFormField(
+      controller: c,
+      keyboardType: type,
+      maxLength: maxLen,
+      buildCounter: (_, {required currentLength, maxLength, required isFocused}) => null,
+      decoration: InputDecoration(labelText: label),
+      validator: (v) => v == null || v.trim().isEmpty ? 'Requerido' : null,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Form(
+      key: _formKey,
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
           backgroundColor: Colors.white,
           scrolledUnderElevation: 0,
-          title: Padding(
-            padding: const EdgeInsets.only(left: 5, right: 5),
-            child: const Text(
-              'Crea tu cuenta',
-              style: TextStyle(
-                fontSize: 30,
-                fontWeight: FontWeight.bold,
-                color: Color(0xff000000),
-              ),
-            ),
-          ),
           automaticallyImplyLeading: false,
+          title: const Text(
+            'Crea tu cuenta',
+            style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+          ),
         ),
-        body: Padding(
-          padding: const EdgeInsets.only(left: 20, right: 20, top: 20),
-          child: SafeArea(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  TextFormField(
-                    key: Key('nombre'),
-                    keyboardType: TextInputType.name,
-                    decoration: const InputDecoration(
-                      labelText: 'Nombre',
-                      hintText: 'Martin',
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+            child: Column(
+              children: [
+                _text('Nombre', _firstName, type: TextInputType.name),
+                const SizedBox(height: 20),
+                _text('Primer apellido', _lastName1, type: TextInputType.name),
+                const SizedBox(height: 20),
+                _text('Segundo apellido', _lastName2, type: TextInputType.name),
+                const SizedBox(height: 20),
+                _text('Teléfono', _phone,
+                    type: TextInputType.phone, maxLen: 8),
+                const SizedBox(height: 20),
+                _text('Domicilio', _address,
+                    type: TextInputType.streetAddress),
+                const SizedBox(height: 20),
+                TextFormField(
+                  controller: _email,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: const InputDecoration(labelText: 'Email'),
+                  validator: (v) =>
+                      v != null && v.contains('@') ? null : 'Correo inválido',
+                ),
+                const SizedBox(height: 20),
+                TextFormField(
+                  controller: _password,
+                  obscureText: _hidePw,
+                  decoration: InputDecoration(
+                    labelText: 'Contraseña',
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                          _hidePw ? Icons.visibility_off : Icons.visibility),
+                      onPressed: () => setState(() => _hidePw = !_hidePw),
                     ),
                   ),
-
-                  const SizedBox(height: 30),
-
-                  TextFormField(
-                    key: Key('apellidos'),
-                    keyboardType: TextInputType.name,
-                    decoration: const InputDecoration(
-                      labelText: 'Apellidos',
-                      hintText: 'Gomez Lopez',
+                  validator: (v) =>
+                      v != null && v.length >= 6 ? null : 'Mínimo 6 caracteres',
+                ),
+                const SizedBox(height: 20),
+                TextFormField(
+                  controller: _passConf,
+                  obscureText: _hidePw2,
+                  decoration: InputDecoration(
+                    labelText: 'Confirmar contraseña',
+                    suffixIcon: IconButton(
+                      icon: Icon(_hidePw2
+                          ? Icons.visibility_off
+                          : Icons.visibility),
+                      onPressed: () => setState(() => _hidePw2 = !_hidePw2),
                     ),
                   ),
-
-                  const SizedBox(height: 30),
-
-                  TextFormField(
-                    key: Key('telefono'),
-                    keyboardType: TextInputType.phone,
-                    maxLength: 8,
-                    buildCounter:
-                        (
-                          _, {
-                          required currentLength,
-                          required isFocused,
-                          maxLength,
-                        }) => null,
-                    decoration: const InputDecoration(
-                      labelText: 'Telefono',
-                      hintText: '00993322',
+                  validator: (v) =>
+                      v == _password.text ? null : 'No coincide',
+                ),
+                const SizedBox(height: 30),
+                if (_error != null)
+                  Text(_error!,
+                      style: const TextStyle(color: Colors.red, fontSize: 14)),
+                const SizedBox(height: 10),
+                SizedBox(
+                  width: double.infinity,
+                  height: 55,
+                  child: ElevatedButton(
+                    onPressed: _loading ? null : _register,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xffd72a23),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
                     ),
+                    child: _loading
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child:
+                                CircularProgressIndicator(color: Colors.white))
+                        : const Text('Registrar',
+                            style:
+                                TextStyle(fontSize: 18, color: Colors.white)),
                   ),
-
-                  const SizedBox(height: 30),
-
-                  TextFormField(
-                    key: Key('domicilio'),
-                    keyboardType: TextInputType.streetAddress,
-                    decoration: const InputDecoration(
-                      labelText: 'Domicilio',
-                      hintText: '75 metros al norte de la plaza',
-                    ),
-                  ),
-
-                  const SizedBox(height: 30),
-
-                  TextFormField(
-                    key: Key('email'),
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      hintText: 'gomesmartin@gmail.com',
-                    ),
-                  ),
-
-                  const SizedBox(height: 30),
-
-                  TextFormField(
-                    key: const Key('contraseña'),
-                    keyboardType: TextInputType.visiblePassword,
-                    controller: _passwordController,
-                    obscureText: _obscureText,
-                    decoration: InputDecoration(
-                      labelText: 'Contraseña',
-                      hintText: 'contraseña',
-                      suffixIcon: IconButton(
-                        onPressed: () {
-                          setState(() {
-                            _obscureText = !_obscureText;
-                          });
-                        },
-                        icon: Icon(
-                          _obscureText
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 30),
-
-                  TextFormField(
-                    key: const Key('confirmar_contraseña'),
-                    keyboardType: TextInputType.visiblePassword,
-                    controller: _confirmpasswordController,
-                    obscureText: _obscureTextConfirm,
-                    decoration: InputDecoration(
-                      labelText: 'Confirmar contraseña',
-                      hintText: 'contraseña',
-                      suffixIcon: IconButton(
-                        onPressed: () {
-                          setState(() {
-                            _obscureTextConfirm = !_obscureTextConfirm;
-                          });
-                        },
-                        icon: Icon(
-                          _obscureTextConfirm
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 40),
-
-                  SizedBox(
+                ),
+                const SizedBox(height: 20),
+                // Google sign-up button
+                Consumer<AuthController>(
+                  builder: (context, authController, _) => SizedBox(
                     width: double.infinity,
-                    height: 60,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ElevatedButton(
-                          onPressed: () => print('Funcion de OnSubmit'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xffd72a23),
-
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(10),
-                                bottomLeft: Radius.circular(10),
-                              ),
-                            ),
-                          ),
-                          child: Text(
-                            'Registar',
-                            style: TextStyle(fontSize: 20, color: Colors.white),
-                          ),
-                          
+                    height: 55,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        // Aquí implementarías la lógica para sign-in con Google
+                        // usando el controlador de autenticación
+                      },
+                      icon: const Icon(Icons.login, size: 24),
+                      label: const Text('Google', style: TextStyle(fontSize: 18)),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xffd72a23),
+                        side: const BorderSide(color: Color(0xffd72a23)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
                         ),
-
-                        ElevatedButton(
-                          onPressed: () => print('Funcion de login con google'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xffffffff),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.only(
-                                topRight: Radius.circular(10),
-                                bottomRight: Radius.circular(10),
-                              ),
-                              side: BorderSide(color: Color(0xffd72a23)),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(NicoyaNowIcons.google, size: 25,),
-                              SizedBox(width: 5),
-                              Text(
-                                'Google',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  color: Color(0xffd72a23),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
