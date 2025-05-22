@@ -15,7 +15,6 @@ class SupabaseAuthDataSource implements AuthDataSource {
   final SupabaseClient _supabaseClient;
 
   SupabaseAuthDataSource(this._supabaseClient);
-
   @override
   Future<Map<String, dynamic>> signIn(String email, String password) async {
     final response = await _supabaseClient.auth.signInWithPassword(
@@ -33,11 +32,36 @@ class SupabaseAuthDataSource implements AuthDataSource {
         .select()
         .eq('user_id', response.user!.id)
         .single();
+        
+    // Verifica si es conductor y si está verificado
+    final String role = profileResponse['role'] ?? 'client';
+    if (role == 'driver') {
+      try {
+        final driverVerification = await _supabaseClient.from('driver')
+            .select('is_verified')
+            .eq('driver_id', response.user!.id)
+            .single();
+            
+        if (driverVerification['is_verified'] != true) {
+          await _supabaseClient.auth.signOut();
+          throw AuthException(
+            'Aún no hemos validado tus documentos. Intenta más tarde.');
+        }
+      } catch (e) {
+        await _supabaseClient.auth.signOut();
+        if (e is PostgrestException) {
+          throw AuthException(
+            'Tu cuenta de conductor no está configurada correctamente. Contacta a soporte.');
+        }
+        rethrow;
+      }
+    }
 
     // Combina datos de autenticación y perfil
     return {
       'id': response.user!.id,
       'email': response.user!.email,
+      'role': role,
       ...profileResponse,
     };
   }

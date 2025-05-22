@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nicoya_now/app/features/auth/presentation/pages/driver_register_done.dart';
 import 'package:nicoya_now/app/interface/Forms/ClientForm.dart';
 import 'package:nicoya_now/app/interface/Forms/ComerseForm.dart';
 import 'package:nicoya_now/app/interface/Forms/DeliverForm1.dart';
@@ -43,5 +44,6 @@ Map<String, Widget Function(BuildContext)> get appRoutes {
     Routes.deliver_Form1: (context) => const DeliverForm1(),
     Routes.deliver_Form2: (context) => const DeliverForm2(),
     Routes.comerse_Form: (context) => const ComerseForm(),
+    Routes.driverPending: (context) => const DriverPendingPage(),
   };
 }

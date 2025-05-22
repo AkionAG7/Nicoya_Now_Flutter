@@ -6,6 +6,7 @@ class User {
   final String? lastName1;
   final String? lastName2;
   final String? phone;
+  final String role; 
 
   User({
     required this.id,
@@ -14,5 +15,6 @@ class User {
     this.lastName1,
     this.lastName2,
     this.phone,
+    this.role = 'client', 
   });
 }

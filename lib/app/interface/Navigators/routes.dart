@@ -19,5 +19,6 @@ class Routes {
   static const deliver_Form1 = '/deliverForm1';
   static const deliver_Form2 = '/deliverForm2';
   static const comerse_Form = '/comerseForm';
+  static const driverPending = '/driverPending';
 }
 
