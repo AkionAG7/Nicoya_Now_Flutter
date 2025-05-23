@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:nicoya_now/Icons/nicoya_now_icons_icons.dart';
+import 'package:nicoya_now/app/features/auth/data/datasources/Products_data_source.dart';
+import 'package:nicoya_now/app/features/auth/data/repositories/products_repository_impl.dart';
+import 'package:nicoya_now/app/features/auth/domain/entities/products.dart';
+import 'package:nicoya_now/app/features/auth/domain/usecases/get_products_usecase.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HomeFood extends StatefulWidget {
   const HomeFood({Key? key}) : super(key: key);
@@ -9,22 +15,86 @@ class HomeFood extends StatefulWidget {
 }
 
 class _HomeFoodState extends State<HomeFood> {
+  late Future<List<Product>> _productsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    final supabase = Supabase.instance.client;
+    final dataSource = ProductsDataSourceImpl(supabaseClient: supabase);
+    final repository = ProductsRepositoryImpl(dataSource: dataSource);
+    final useCase = GetAllProducts(repository);
+    _productsFuture = useCase();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Home Food')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('Welcome to Home Food!'),
-            ElevatedButton(
-              onPressed: () {
-                // Add your button action here
-              },
-              child: const Text('Order Now'),
-            ),
-          ],
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFFFFFFF),
+        title: const Text(
+          'Encuentra tu plato favorito',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(NicoyaNowIcons.campana),
+            onPressed: () {
+              // Add your notification action here
+            },
+          ),
+        ],
+      ),
+
+      body: SafeArea(
+        child: SizedBox(
+          width: 400,
+          height: 400,
+          child: FutureBuilder<List<Product>>(
+            future: _productsFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const SizedBox.shrink();
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Center(
+                  child: Text('No hay productos disponibles.'),
+                );
+              }
+
+              final products = snapshot.data!;
+              return GridView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.all(8),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
+                  childAspectRatio: 1.2,
+                ),
+                itemCount: products.length,
+                itemBuilder: (context, index) {
+                  final product = products[index];
+
+                  return Card(
+                    margin: const EdgeInsets.all(8),
+                    child: SizedBox(
+                      width: 50,
+                      height: 100,
+                      child:
+                          product.image_url != null
+                              ? Image.network(
+                                product.image_url!,
+                                fit: BoxFit.cover,
+                              )
+                              : const Text('No imagen suported'),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
         ),
       ),
     );
