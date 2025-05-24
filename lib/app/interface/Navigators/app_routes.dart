@@ -48,7 +48,7 @@ Map<String, Widget Function(BuildContext)> get appRoutes {
     Routes.deliver_Form2: (context) => const DeliverForm2(),
     Routes.driverPending: (context) => const DriverPendingPage(),
     Routes.home_food: (context) => const HomeFood(),
-       Routes.merchantStepBusiness : (context) => const MerchantStepBusiness(),
+    Routes.merchantStepBusiness : (context) => const MerchantStepBusiness(),
     Routes.merchantStepOwner    : (context) => const MerchantStepOwner(),
     Routes.merchantStepPassword : (context) => const MerchantStepPassword(),
   };
