@@ -17,8 +17,8 @@ class _DeliverForm2State extends State<DeliverForm2> {
   bool _initDone = false;
 
   // estado
-  String? _selectedOption;                // car | motorbike | bike
-  List<PlatformFile> _files = [];         // múltiples archivos
+  String? _selectedOption;               
+  List<PlatformFile> _files = [];       
   bool _loading = false;
   String? _error;
   String _safeName(String original) {
@@ -30,7 +30,7 @@ class _DeliverForm2State extends State<DeliverForm2> {
 
   final supa = GetIt.I<SupabaseClient>();
 
-  // ───────── pick múltiples archivos ─────────
+
   Future<void> _pickFiles() async {
     final res = await FilePicker.platform.pickFiles(
       allowMultiple: true,
@@ -40,14 +40,13 @@ class _DeliverForm2State extends State<DeliverForm2> {
     if (res != null) setState(() => _files = res.files);
   }
 
-  // ───────── subir y guardar ─────────
   Future<void> _uploadAndSave() async {
     if (_selectedOption == null || _files.isEmpty) {
       setState(() => _error = 'Selecciona vehículo y al menos un archivo'); return;
     }
     setState(() { _loading = true; _error = null; });
 
-    final folder = 'driver/$_driverId/';          // carpeta base
+    final folder = 'driver/$_driverId/';      
 
     try {
      for (final f in _files) {
@@ -66,7 +65,7 @@ class _DeliverForm2State extends State<DeliverForm2> {
   }
 }
 
-      // 2· Insertar fila driver  (docs_url = carpeta base)
+
       await supa.from('driver').upsert({
         'driver_id'      : _driverId,
         'vehicle_type'   : _selectedOption,
@@ -85,7 +84,7 @@ class _DeliverForm2State extends State<DeliverForm2> {
     }
   }
 
-  // ───────── ciclo de vida ─────────
+
   @override void didChangeDependencies() {
     super.didChangeDependencies();
     if (_initDone) return;
@@ -95,7 +94,7 @@ class _DeliverForm2State extends State<DeliverForm2> {
     _initDone = true;
   }
 
-  // ───────── UI ─────────
+ 
   @override
   Widget build(BuildContext context) => Scaffold(
     backgroundColor: Colors.white,
