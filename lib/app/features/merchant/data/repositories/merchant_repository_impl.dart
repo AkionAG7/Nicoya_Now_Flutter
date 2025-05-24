@@ -4,42 +4,38 @@ import 'package:nicoya_now/app/features/merchant/domain/entities/merchant.dart';
 import 'package:nicoya_now/app/features/merchant/domain/repositories/merchant_repository.dart';
 
 class MerchantRepositoryImpl implements MerchantRepository {
-  final MerchantDataSource dataSource;
+  final MerchantDataSource _ds;
 
-  MerchantRepositoryImpl(this.dataSource);
+  MerchantRepositoryImpl(this._ds);
 
   @override
   Future<Merchant> registerMerchant({
-    required String email,
-    required String password,
-    required String legalId,
-    required String businessName,
-    required String phone,
     required String address,
-    required XFile logo,
+    required String businessName,
+    required String corporateName,
+    required String email,
+    required String firstName,
+    required String lastName1,
+    required String lastName2,
+    required String legalId,
+    required String logoPath,
+    required String password,
+    required String phone,
   }) async {
-    try {
-      final merchantData = await dataSource.registerMerchant(
-        email: email,
-        password: password,
-        legalId: legalId,
-        businessName: businessName,
-        phone: phone,
-        address: address,
-        logo: logo,
-      );
-      
-      return Merchant(
-        merchantId: merchantData['merchant_id'],
-        ownerId: merchantData['owner_id'],
-        legalId: merchantData['legal_id'],
-        businessName: merchantData['business_name'],
-        logoUrl: merchantData['logo_url'],
-        mainAddressId: merchantData['main_address_id'],
-        isActive: merchantData['is_active'],
-      );
-    } catch (e) {
-      rethrow;
-    }
+    final m = await _ds.registerMerchant(
+      address        : address,
+      businessName   : businessName,
+      corporateName  : corporateName,
+      email          : email,
+      firstName      : firstName,
+      lastName1      : lastName1,
+      lastName2      : lastName2,
+      legalId        : legalId,
+      logoPath       : logoPath,
+      password       : password,
+      phone          : phone,
+    );
+
+    return Merchant.fromMap(m);   
   }
 }

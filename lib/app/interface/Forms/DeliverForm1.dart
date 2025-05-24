@@ -179,7 +179,7 @@ class _DeliverForm1State extends State<DeliverForm1> {
                     child: _loading
                         ? const CircularProgressIndicator(color: Colors.white)
                         : const Text('Continuar',
-                            style: TextStyle(fontSize: 20)),
+                            style: TextStyle(fontSize: 20, color: Colors.white)),
                   ),
                 ),
               ]),

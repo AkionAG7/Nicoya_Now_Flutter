@@ -79,7 +79,7 @@ class Home extends StatelessWidget {
                         Navigator.pushNamed(context, Routes.deliver_Form1);
                         break;
                       case AccountType.comercio:
-                        Navigator.pushNamed(context, Routes.comerse_Form);
+                        Navigator.pushNamed(context, Routes.merchantStepBusiness);
                         break;
                       default:
                         Navigator.pushNamed(context, Routes.register_user_page);

@@ -1,22 +1,17 @@
-
 import 'package:image_picker/image_picker.dart';
 
-class MerchantFormData {
+class MerchantBusinessFormData {
   final String legalId;
-  final String name;
-  final String phone;
-  final String address;
-  final String email;
-  final String password;
-  final XFile? logo;
+  final String businessName;
+  final String? corporateName;
+  final String address;        
+  final XFile logo;              
 
-  MerchantFormData({
+  MerchantBusinessFormData({
     required this.legalId,
-    required this.name,
-    required this.phone,
+    required this.businessName,
+    this.corporateName,
     required this.address,
-    required this.email,
-    required this.password,
-    this.logo,
+    required this.logo,
   });
 }
