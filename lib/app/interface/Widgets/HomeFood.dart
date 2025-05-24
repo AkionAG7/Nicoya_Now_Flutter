@@ -12,6 +12,14 @@ import 'package:nicoya_now/app/features/auth/domain/usecases/get_products_usecas
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+
+enum valorVerMas{
+  postres,
+  platosFuertes,
+  comidaRapida,
+  bebidas,
+  todos
+}
 class HomeFood extends StatefulWidget {
   const HomeFood({super.key});
 
