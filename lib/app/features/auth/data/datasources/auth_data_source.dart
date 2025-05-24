@@ -1,6 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-// Interfaz para la fuente de datos de autenticación
+
 abstract class AuthDataSource {
   Future<Map<String, dynamic>> signIn(String email, String password);
   Future<Map<String, dynamic>> signUp(String email, String password);
@@ -10,7 +10,6 @@ abstract class AuthDataSource {
   Future<void> createAddress(String userId, Map<String, dynamic> data);
 }
 
-// Implementación concreta usando Supabase
 class SupabaseAuthDataSource implements AuthDataSource {
   final SupabaseClient _supabaseClient;
 
@@ -26,14 +25,12 @@ class SupabaseAuthDataSource implements AuthDataSource {
       throw AuthException('No se pudo iniciar sesión');
     }
 
-    // Obtiene datos adicionales del perfil
     final profileResponse = await _supabaseClient
         .from('profile')
         .select()
         .eq('user_id', response.user!.id)
         .single();
         
-    // Verifica si es conductor y si está verificado
     final String role = profileResponse['role'] ?? 'client';
     if (role == 'driver') {
       try {
@@ -57,7 +54,7 @@ class SupabaseAuthDataSource implements AuthDataSource {
       }
     }
 
-    // Combina datos de autenticación y perfil
+
     return {
       'id': response.user!.id,
       'email': response.user!.email,
@@ -109,7 +106,6 @@ class SupabaseAuthDataSource implements AuthDataSource {
         ...profileResponse,
       };
     } catch (e) {
-      // Si el perfil no existe, devuelve solo los datos básicos
       return {
         'id': currentUser.id,
         'email': currentUser.email,

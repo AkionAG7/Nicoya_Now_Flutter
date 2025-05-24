@@ -1,4 +1,4 @@
-// lib/app/features/merchant/presentation/pages/merchant_step_business.dart
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/controllers/merchant_registration_controller.dart';

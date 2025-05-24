@@ -53,7 +53,7 @@ class AuthRepositoryImpl implements AuthRepository {
         lastName1: lastName1,
         lastName2: lastName2,
         phone: phone,
-        role: 'client', // Por defecto, al registrarse es cliente
+        role: 'client', 
       );
     } catch (e) {
       rethrow;
@@ -90,7 +90,7 @@ class AuthRepositoryImpl implements AuthRepository {
       lastName1: userData['last_name1'],
       lastName2: userData['last_name2'],
       phone: userData['phone'],
-      role: userData['role'] ?? 'client', // Extraemos el rol del usuario
+      role: userData['role'] ?? 'client', 
     );
   }
 }
