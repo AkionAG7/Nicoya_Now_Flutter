@@ -37,14 +37,11 @@ class Home extends StatelessWidget {
                   NicoyaNowIcons.nicoyanow,
                   size: 400,
                   color: Color(0xffd72a23),
-                ),
-
-                ElevatedButton(
+                ),                ElevatedButton(
                   onPressed:
                       () => Navigator.pushNamed(
                         context,
                         Routes.login_page,
-                        arguments: accountType,
                       ),
                   style: ElevatedButton.styleFrom(
                     padding: EdgeInsets.symmetric(horizontal: 50, vertical: 30),
@@ -67,23 +64,10 @@ class Home extends StatelessWidget {
                   ),
                 ),
 
-                SizedBox(height: 50),
-
-                ElevatedButton(
+                SizedBox(height: 50),                ElevatedButton(
                   onPressed: () {
-                    switch (accountType) {
-                      case AccountType.cliente:
-                        Navigator.pushNamed(context, Routes.client_Form);
-                        break;
-                      case AccountType.repartidor:
-                        Navigator.pushNamed(context, Routes.deliver_Form1);
-                        break;
-                      case AccountType.comercio:
-                        Navigator.pushNamed(context, Routes.merchantStepBusiness);
-                        break;
-                      default:
-                        Navigator.pushNamed(context, Routes.register_user_page);
-                    }
+                    // Dirigir al usuario a la selección del tipo de cuenta
+                    Navigator.pushNamed(context, Routes.selecctTypeAccount);
                   },
                   style: ElevatedButton.styleFrom(
                     padding: EdgeInsets.symmetric(horizontal: 50, vertical: 30),
