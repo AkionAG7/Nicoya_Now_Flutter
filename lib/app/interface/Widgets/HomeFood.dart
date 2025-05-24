@@ -13,7 +13,7 @@ import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HomeFood extends StatefulWidget {
-  const HomeFood({Key? key}) : super(key: key);
+  const HomeFood({super.key});
 
   @override
   _HomeFoodState createState() => _HomeFoodState();

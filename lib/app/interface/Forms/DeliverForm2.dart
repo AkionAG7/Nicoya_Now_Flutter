@@ -1,226 +1,201 @@
+import 'dart:io';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-
+import 'package:get_it/get_it.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 class DeliverForm2 extends StatefulWidget {
   const DeliverForm2({Key? key}) : super(key: key);
-
-  @override
-  _DeliverForm2State createState() => _DeliverForm2State();
+  @override State<DeliverForm2> createState() => _DeliverForm2State();
 }
 
 class _DeliverForm2State extends State<DeliverForm2> {
-  String? _selectedOption;
+  // args de la pantalla 1
+  late String _driverId;
+  late String _licenseNumber;
+  bool _initDone = false;
 
-  List<PlatformFile> _archivosSeleccionados = [];
+  // estado
+  String? _selectedOption;               
+  List<PlatformFile> _files = [];       
+  bool _loading = false;
+  String? _error;
+  String _safeName(String original) {
+  final cleaned = original.toLowerCase()
+      .replaceAll(RegExp(r'[^a-z0-9._-]'), '_');
+  return cleaned.isEmpty ? 'file' : cleaned;
+}
 
-  Future<void> seleccionarArchivos() async {
+
+  final supa = GetIt.I<SupabaseClient>();
+
+
+  Future<void> _pickFiles() async {
+    final res = await FilePicker.platform.pickFiles(
+      allowMultiple: true,
+      type: FileType.custom,
+      allowedExtensions: ['pdf', 'jpg', 'png'],
+    );
+    if (res != null) setState(() => _files = res.files);
+  }
+
+  Future<void> _uploadAndSave() async {
+    if (_selectedOption == null || _files.isEmpty) {
+      setState(() => _error = 'Selecciona vehículo y al menos un archivo'); return;
+    }
+    setState(() { _loading = true; _error = null; });
+
+    final folder = 'driver/$_driverId/';      
+
     try {
-      final archivos = await FilePicker.platform.pickFiles(
-        allowMultiple: true,
-        type: FileType.custom,
-        allowedExtensions: ['jpg', 'png', 'pdf', 'docx'],
-      );
+     for (final f in _files) {
+  final safe = _safeName(f.name);          
+  final path = '$folder$safe';
+  if (kIsWeb) {
+    await supa.storage
+        .from('driver-docs')
+        .uploadBinary(path, f.bytes!,
+            fileOptions: const FileOptions(upsert: true));
+  } else {
+    await supa.storage
+        .from('driver-docs')
+        .upload(path, File(f.path!),
+            fileOptions: const FileOptions(upsert: true));
+  }
+}
 
-      if (archivos != null) {
-        setState(() {
-          _archivosSeleccionados = archivos.files;
-        });
-      }
+
+      await supa.from('driver').upsert({
+        'driver_id'      : _driverId,
+        'vehicle_type'   : _selectedOption,
+        'license_number' : _licenseNumber,
+        'docs_url'       : folder,
+        'is_verified'    : false,
+      });
+
+      if (!mounted) return;
+      Navigator.pushNamedAndRemoveUntil(
+        context, Routes.driverPending, (_) => false);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al seleccionar archivos: $e')),
-      );
+      setState(() => _error = 'Error: $e');
+    } finally {
+      if (mounted) setState(() => _loading = false);
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _selectedOption = null;
+
+  @override void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_initDone) return;
+    final args = ModalRoute.of(context)!.settings.arguments as Map;
+    _driverId      = args['uid'] as String;
+    _licenseNumber = args['licenseNumber'] as String;
+    _initDone = true;
   }
 
+ 
   @override
-  void dispose() {
-    _archivosSeleccionados.clear();
-    super.dispose();
-  }
+  Widget build(BuildContext context) => Scaffold(
+    backgroundColor: Colors.white,
+    appBar: AppBar(
+      backgroundColor: Colors.white, scrolledUnderElevation: 0,
+      automaticallyImplyLeading: false,
+      title: const Text('Crea tu cuenta de repartidor',
+          style: TextStyle(fontSize:25,fontWeight:FontWeight.bold)),
+    ),
+    body: SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20,20,20,0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children:[
+            // Dropdown vehículo
+            DropdownButtonFormField<String>(
+              value: _selectedOption,
+              items: const [
+                DropdownMenuItem(value:'car',       child:Text('Automóvil')),
+                DropdownMenuItem(value:'motorbike', child:Text('Motocicleta')),
+                DropdownMenuItem(value:'bike',      child:Text('Bicicleta')),
+              ],
+              onChanged:(v)=>setState(()=>_selectedOption=v),
+              decoration: const InputDecoration(
+                labelText:'Selecciona el tipo de vehículo',
+                border:OutlineInputBorder()),
+            ),
+            const SizedBox(height:20),
 
-  @override
-  Widget build(BuildContext context) {
-    return Form(
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          scrolledUnderElevation: 0,
-          title: Padding(
-            padding: const EdgeInsets.only(left: 5, right: 5),
-            child: const Text(
-              'Crea tu cuenta de repartidor',
-              style: TextStyle(
-                fontSize: 25,
-                fontWeight: FontWeight.bold,
-                color: Color(0xff000000),
+            if(_selectedOption!=null)...[
+              const Text('Documentos requeridos para registrar el vehículo',
+                  style:TextStyle(fontWeight:FontWeight.bold,fontSize:14)),
+              const SizedBox(height:12),
+              // (lista fija; la tuya original)
+              if(_selectedOption=='car')...[
+                const Text('- Certificado de antecedentes penales'),
+                const Text('- Licencia de conducir'),
+                const Text('- Marchamo vigente'),
+                const Text('- Información bancaria'),
+                const Text('- Revisión técnica vehicular'),
+                const Text('- Póliza de seguro'),
+              ] else if(_selectedOption=='motorbike')...[
+                const Text('- Hoja de delincuencia'),
+                const Text('- Licencia de conducir'),
+                const Text('- Marchamo vigente'),
+                const Text('- Información bancaria'),
+                const Text('- Revisión técnica vehicular'),
+                const Text('- Póliza de seguro'),
+              ] else ...[
+                const Text('- Hoja de delincuencia'),
+                const Text('- Póliza de seguro'),
+                const Text('- Información bancaria'),
+              ],
+              const SizedBox(height:20),
+              _btnSelectFiles(),
+              if(_files.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top:8),
+                  child: Text('${_files.length} archivo(s) seleccionado(s) ✔'),
+                ),
+            ],
+
+            if(_selectedOption==null)
+              const Padding(
+                padding:EdgeInsets.only(top:12),
+                child:Text('Por favor selecciona un tipo de vehículo',
+                    style:TextStyle(color:Colors.red,fontSize:16,fontWeight:FontWeight.bold)),
+              ),
+
+            const SizedBox(height:40),
+            if(_error!=null) Text(_error!,style:const TextStyle(color:Colors.red)),
+            const SizedBox(height:16),
+
+            SizedBox(
+              height:70,width:double.infinity,
+              child:ElevatedButton(
+                onPressed:_loading?null:_uploadAndSave,
+                style:ElevatedButton.styleFrom(
+                  backgroundColor:const Color(0xffd72a23),
+                  shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(10))),
+                child:_loading
+                  ? const CircularProgressIndicator(color:Colors.white)
+                  : const Text('Registrar',style:TextStyle(fontSize:20,color:Colors.white)),
               ),
             ),
-          ),
-          automaticallyImplyLeading: false,
-        ),
-        body: Padding(
-          padding: const EdgeInsets.only(left: 20, right: 20, top: 20),
-          child: SafeArea(
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  DropdownButtonFormField<String>(
-                    value: _selectedOption,
-                    items: const [
-                      DropdownMenuItem(value: 'Auto', child: Text('Automóvil')),
-                      DropdownMenuItem(
-                        value: 'Motocicleta',
-                        child: Text('Motocicleta'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'Bicicleta',
-                        child: Text('Bicicleta'),
-                      ),
-                    ],
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedOption = value;
-                      });
-                    },
-                    decoration: InputDecoration(
-                      labelText: 'Selecciona el tipo de vehiculo',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-
-                  SizedBox(height: 20),
-
-                  if (_selectedOption == 'Auto') ...[
-                    SizedBox(height: 20),
-                    Text(
-                      'Documentos requeridos para registrar el vehículo',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                    SizedBox(height: 20),
-                    Text('- Certificado de antecedentes penales'),
-                    Text('- Licencia de conducir'),
-                    Text('- Marchamo vigente'),
-                    Text('- Información bancaria'),
-                    Text('- Revisión técnica vehicular'),
-                    Text('- Póliza de seguro'),
-                    SizedBox(height: 60),
-                    botonSeleccionarArchivos(),
-                  ],
-
-                  if (_selectedOption == 'Motocicleta') ...[
-                    SizedBox(height: 20),
-                    Text(
-                      'Documentos requeridos para registrar el vehículo',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                    SizedBox(height: 20),
-                    Text('- Hoja de delincuencia'),
-                    Text('- Licencia de conducir'),
-                    Text('- Marchamo vigente'),
-                    Text('- Información bancaria'),
-                    Text('- Revisión técnica vehicular'),
-                    Text('- Póliza de seguro'),
-                  ],
-
-                  if (_selectedOption == 'Bicicleta') ...[
-                    SizedBox(height: 20),
-                    Text(
-                      'Documentos requeridos para registrar el vehículo',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                    SizedBox(height: 20),
-                    Text('- Hoja de delincuencia'),
-                    Text('- Póliza de seguro'),
-                    Text('- Información bancaria'),
-                  ],
-
-                  if (_selectedOption == null)
-                    Center(
-                      child: const Text(
-                        'Por favor selecciona un tipo de vehiculo',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.red,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-
-
-                  SizedBox(height: 150),
-                  botonSubmit(),
-                ],
-              ),
-            ),
-          ),
+          ],
         ),
       ),
-    );
-  }
+    ),
+  );
 
-  // Widgets reutilizables, el codigo en pantalla es el de arriba
-  Widget botonSeleccionarArchivos() {
-    return Center(
-      child: SizedBox(
-        height: 100,
-        width: 250,
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xffd72a23),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-          onPressed: seleccionarArchivos,
-          child: Text(
-            'Seleccionar archivos',
-            style: TextStyle(color: Colors.white, fontSize: 20),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget botonSubmit() {
-    return Center(
-      child: SizedBox(
-        height: 70,
-        width: double.infinity,
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xffd72a23),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-          onPressed: () {
-            // Aquí puedes agregar la lógica para enviar el formulario
-          },
-          child: Text(
-            'Registrar',
-            style: TextStyle(color: Colors.white, fontSize: 20),
-          ),
-        ),
-      ),
-    );
-  }
+  Widget _btnSelectFiles() => SizedBox(
+    height:55,width:double.infinity,
+    child:ElevatedButton(
+      onPressed:_pickFiles,
+      style:ElevatedButton.styleFrom(
+        backgroundColor:const Color(0xffd72a23),
+        shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(10))),
+      child: const Text('Seleccionar archivos',
+          style:TextStyle(color:Colors.white)),
+    ),
+  );
 }
