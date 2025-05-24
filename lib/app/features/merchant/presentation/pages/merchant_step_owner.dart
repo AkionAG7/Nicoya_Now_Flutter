@@ -13,7 +13,6 @@ class MerchantStepOwner extends StatefulWidget {
 }
 
 class _MerchantStepOwnerState extends State<MerchantStepOwner> {
-  /* -------- form & controllers -------- */
   final _fKey   = GlobalKey<FormState>();
   final _name   = TextEditingController();
   final _last1  = TextEditingController();
@@ -34,7 +33,6 @@ class _MerchantStepOwnerState extends State<MerchantStepOwner> {
             key: _fKey,
             child: Column(
               children: [
-                /* -------- campos paso 2 -------- */
                 MerchantFields(
                   group      : MerchantFieldGroup.owner,
                   firstName  : _name,
@@ -45,8 +43,6 @@ class _MerchantStepOwnerState extends State<MerchantStepOwner> {
                 ),
 
                 const Spacer(),
-
-                /* -------- botón continuar -------- */
                 SizedBox(
                   width: double.infinity,
                   height: 55,

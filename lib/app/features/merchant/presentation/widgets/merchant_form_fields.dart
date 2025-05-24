@@ -2,28 +2,23 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-/// Paso (business | owner | password) que se debe renderizar
 enum MerchantFieldGroup { business, owner, password }
 
 class MerchantFields extends StatelessWidget {
-  /* ──────────── BUSINESS ──────────── */
   final TextEditingController? legalId;
   final TextEditingController? businessName;
   final TextEditingController? corpName;
   final TextEditingController? address;
   final XFile?                logo;
   final VoidCallback?         onPickLogo;
-  final bool                  isCedulaJuridica; // Nuevo campo
-  final ValueChanged<bool>?   onCedulaTypeChanged; // Nuevo callback
-
-  /* ──────────── OWNER ──────────── */
+  final bool                  isCedulaJuridica; 
+  final ValueChanged<bool>?   onCedulaTypeChanged; 
   final TextEditingController? firstName;
   final TextEditingController? lastName1;
   final TextEditingController? lastName2;
   final TextEditingController? email;
   final TextEditingController? phone;
 
-  /* ─────────── PASSWORD ─────────── */
   final TextEditingController? pw;
   final TextEditingController? pwConfirm;
   final bool                   hidePw;
@@ -31,7 +26,6 @@ class MerchantFields extends StatelessWidget {
   final VoidCallback?          togglePw;
   final VoidCallback?          togglePw2;
 
-  /* ─────────── CONFIG ─────────── */
   final MerchantFieldGroup     group;
   final String?                error;
 
@@ -60,7 +54,6 @@ class MerchantFields extends StatelessWidget {
     this.hidePw2 = true,
     this.togglePw,
     this.togglePw2,
-    /* misc */
     this.error,
   });
 
@@ -150,7 +143,6 @@ if (group == MerchantFieldGroup.password) {
     return Column(children: widgets);
   }
 
-  /* ───────────────────────── helpers ───────────────────────── */
 
   static const _sp = SizedBox(height: 20);
 
@@ -183,7 +175,7 @@ Widget _password(
   bool hide,
   VoidCallback? onToggle,
   String lbl, {
-  TextEditingController? compareTo,     // <-- NUEVO
+  TextEditingController? compareTo,     
 }) {
   assert(c != null, 'Controller para $lbl no provisto');
 

@@ -14,7 +14,6 @@ class MerchantStepBusiness extends StatefulWidget {
 }
 
 class _MerchantStepBusinessState extends State<MerchantStepBusiness> {
-  /* ---------- form + controllers ---------- */
   final _fKey      = GlobalKey<FormState>();
   final _legalId   = TextEditingController();
   final _name      = TextEditingController();
@@ -22,7 +21,7 @@ class _MerchantStepBusinessState extends State<MerchantStepBusiness> {
   final _address   = TextEditingController();
 
   XFile? _logo;
-  bool  _isCedulaJuridica = true;               // radio-buttons
+  bool  _isCedulaJuridica = true;              
 
   Future<void> _pickLogo() async {
     final img = await ImagePicker()
@@ -68,7 +67,6 @@ class _MerchantStepBusinessState extends State<MerchantStepBusiness> {
               ),
             ),
 
-            /* ------- CTA siempre visible ------- */
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
               child: SizedBox(

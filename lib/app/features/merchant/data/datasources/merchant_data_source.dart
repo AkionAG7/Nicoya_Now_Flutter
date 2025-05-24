@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Mantén esta interfaz tal como está:            ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 abstract class MerchantDataSource {
   Future<Map<String, dynamic>> registerMerchant({
     required String address,
@@ -44,7 +43,7 @@ class SupabaseMerchantDataSource implements MerchantDataSource {
     if (auth.user == null) throw const AuthException('No se pudo crear cuenta');
     final uid = auth.user!.id;
 
-    try {      // Actualizar perfil con datos del propietario
+    try {     
       final Map<String, dynamic> profileData = {
         'first_name' : firstName,
         'last_name1' : lastName1,
@@ -53,7 +52,6 @@ class SupabaseMerchantDataSource implements MerchantDataSource {
         'role'       : 'merchant',
       };
       
-      // Si hay cédula física, la guardamos en el perfil
       if (cedula != null && cedula.isNotEmpty) {
         profileData['id_number'] = cedula;
       }

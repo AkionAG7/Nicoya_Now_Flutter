@@ -3,25 +3,23 @@ class Merchant {
   final String ownerId;
   final String legalId;
   final String businessName;
-  final String? corporateName;      // 👈  NUEVO  (puede ser null)
+  final String? corporateName;    
   final String logoUrl;
   final String mainAddressId;
   final bool   isActive;
-  final DateTime createdAt;         // 👈  NUEVO  (timestamp)
+  final DateTime createdAt;         
 
   Merchant({
     required this.merchantId,
     required this.ownerId,
     required this.legalId,
     required this.businessName,
-    this.corporateName,             // opcional
+    this.corporateName,             
     required this.logoUrl,
     required this.mainAddressId,
     required this.isActive,
     required this.createdAt,
   });
-
-  /* Helpers para serializar --------------------------------------------- */
   factory Merchant.fromMap(Map<String, dynamic> map) => Merchant(
         merchantId     : map['merchant_id']    as String,
         ownerId        : map['owner_id']       as String,
