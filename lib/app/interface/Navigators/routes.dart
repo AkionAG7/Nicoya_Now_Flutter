@@ -20,5 +20,6 @@ class Routes {
   static const deliver_Form2 = '/deliverForm2';
   static const comerse_Form = '/comerseForm';
   static const driverPending = '/driverPending';
+  static const home_food = '/homeFood';
 }
 

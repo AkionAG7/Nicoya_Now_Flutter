@@ -25,15 +25,19 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-    _tapRegister = TapGestureRecognizer()
-      ..onTap = () async {
-        final email = await Navigator.pushNamed(context, Routes.register_user_page);
-        if (email != null && email is String) {
-          setState(() {
-            _emailController.text = email;
-          });
-        }
-      };
+    _tapRegister =
+        TapGestureRecognizer()
+          ..onTap = () async {
+            final email = await Navigator.pushNamed(
+              context,
+              Routes.register_user_page,
+            );
+            if (email != null && email is String) {
+              setState(() {
+                _emailController.text = email;
+              });
+            }
+          };
   }
 
   @override
@@ -110,7 +114,9 @@ class _LoginPageState extends State<LoginPage> {
                           });
                         },
                         icon: Icon(
-                          _obscureText ? Icons.visibility_off : Icons.visibility,
+                          _obscureText
+                              ? Icons.visibility_off
+                              : Icons.visibility,
                         ),
                       ),
                     ),
@@ -150,16 +156,17 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         backgroundColor: Color(0xffd72a23),
                       ),
-                      child: _isLoading
-                          ? CircularProgressIndicator(color: Colors.white)
-                          : Text(
-                              'Iniciar sesión',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
+                      child:
+                          _isLoading
+                              ? CircularProgressIndicator(color: Colors.white)
+                              : Text(
+                                'Iniciar sesión',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
                     ),
                   ),
                   SizedBox(height: 20),
@@ -190,12 +197,14 @@ class _LoginPageState extends State<LoginPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       IconButton(
-                        onPressed: () => print('hello'), // implementar logica de login
+                        onPressed:
+                            () => print('hello'), // implementar logica de login
                         icon: Icon(NicoyaNowIcons.facebook, size: 40),
                       ),
                       const SizedBox(width: 40),
                       IconButton(
-                        onPressed: () => print('hello'), // implementar logica de login
+                        onPressed:
+                            () => print('hello'), // implementar logica de login
                         icon: Icon(NicoyaNowIcons.google, size: 40),
                       ),
                     ],
@@ -222,7 +231,10 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      final authController = Provider.of<AuthController>(context, listen: false);
+      final authController = Provider.of<AuthController>(
+        context,
+        listen: false,
+      );
       final success = await authController.signIn(
         _emailController.text.trim(),
         _passwordController.text,
@@ -231,17 +243,33 @@ class _LoginPageState extends State<LoginPage> {
       if (!mounted) return;
 
       if (success) {
-        Navigator.pushReplacementNamed(context, Routes.preLogin); // Esta ruta lleva al Home
+        if (widget.accountType != null) {
+          switch (widget.accountType) {
+            case AccountType.cliente:
+              Navigator.pushNamed(context, Routes.home_food);
+              break;
+            case AccountType.repartidor:
+              Navigator.pushNamed(context, Routes.preLogin);
+              break;
+            case AccountType.comercio:
+              Navigator.pushNamed(context, Routes.preLogin);
+              break;
+            default:
+              Navigator.pushNamed(context, Routes.preLogin);
+          }
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(authController.errorMessage ?? 'Error desconocido')),
+          SnackBar(
+            content: Text(authController.errorMessage ?? 'Error desconocido'),
+          ),
         );
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
     } finally {
       if (mounted) {
         setState(() {

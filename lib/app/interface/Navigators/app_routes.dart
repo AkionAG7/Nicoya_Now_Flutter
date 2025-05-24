@@ -8,6 +8,7 @@ import 'package:nicoya_now/app/interface/SplashWidgets/SplashFT1.dart';
 import 'package:nicoya_now/app/interface/SplashWidgets/SplashFT2.dart';
 import 'package:nicoya_now/app/interface/SplashWidgets/SplashFT3.dart';
 import 'package:nicoya_now/app/interface/Widgets/Home.dart';
+import 'package:nicoya_now/app/interface/Widgets/HomeFood.dart';
 import 'package:nicoya_now/app/interface/Widgets/LoginPage.dart';
 import 'package:nicoya_now/app/interface/Widgets/OrderSucces.dart';
 import 'package:nicoya_now/app/interface/Widgets/RegisterUser.dart';
@@ -44,6 +45,6 @@ Map<String, Widget Function(BuildContext)> get appRoutes {
     Routes.deliver_Form1: (context) => const DeliverForm1(),
     Routes.deliver_Form2: (context) => const DeliverForm2(),
     Routes.comerse_Form: (context) => const ComerseForm(),
-    Routes.driverPending: (context) => const DriverPendingPage(),
+    Routes.home_food: (context) => const HomeFood(),
   };
 }
