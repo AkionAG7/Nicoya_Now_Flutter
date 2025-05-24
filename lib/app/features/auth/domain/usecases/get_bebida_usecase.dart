@@ -1,9 +1,9 @@
 import 'package:nicoya_now/app/features/auth/domain/entities/products.dart';
 import 'package:nicoya_now/app/features/auth/domain/repositories/products_repository.dart';
 
-class GetBibidas{
+class GetBebidas{
   final ProductsRepository repo;
-  GetBibidas(this.repo);
+  GetBebidas(this.repo);
 
   Future<List<Product>> call() async {
     return await repo.getBebida();

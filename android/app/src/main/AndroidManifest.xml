@@ -7,7 +7,7 @@
 
 
     <application
-        android:label="nicoya_now"
+        android:label="Nicoya Now"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
