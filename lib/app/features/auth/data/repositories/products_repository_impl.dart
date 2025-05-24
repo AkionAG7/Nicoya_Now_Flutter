@@ -8,4 +8,16 @@ class ProductsRepositoryImpl implements ProductsRepository {
 
   @override
   Future<List<Product>> getAllProducts() => dataSource.fetchAllProducts();
+
+  @override
+  Future<List<Product>> getPostre() => dataSource.fetchPostreProducts();
+
+    @override
+  Future<List<Product>> getPlatoFuerte() => dataSource.fetchPlatoFuerteProduct();
+
+    @override
+  Future<List<Product>> getBebida() => dataSource.fetchBebidaProduct();
+
+    @override
+  Future<List<Product>> getComidaRapida() => dataSource.fetchComidaRapidaProduct();
 }
