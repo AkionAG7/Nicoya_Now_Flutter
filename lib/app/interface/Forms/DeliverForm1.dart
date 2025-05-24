@@ -9,9 +9,8 @@ class DeliverForm1 extends StatefulWidget {
 }
 
 class _DeliverForm1State extends State<DeliverForm1> {
-  // ───── controladores ─────
-  final _cedula     = TextEditingController();   // cédula (ID nacional)
-  final _license    = TextEditingController();   // Nº de licencia de conducir
+  final _cedula     = TextEditingController();   
+  final _license    = TextEditingController();   
   final _nombre     = TextEditingController();
   final _apellido1  = TextEditingController();
   final _apellido2  = TextEditingController();
@@ -26,7 +25,7 @@ class _DeliverForm1State extends State<DeliverForm1> {
   bool   _hidePw = true, _hidePw2 = true, _loading = false;
   String? _error;
 
-  // ───── lógica Supabase + navegación ─────
+
   Future<void> _next() async {
     if (!_formKey.currentState!.validate()) return;
     if (_pass.text != _passConf.text) {
@@ -36,7 +35,7 @@ class _DeliverForm1State extends State<DeliverForm1> {
     setState(() { _loading = true; _error = null; });
 
     try {
-      // 1· crear usuario
+
       final res = await supa.auth.signUp(
         email   : _email.text.trim(),
         password: _pass.text,
@@ -44,7 +43,7 @@ class _DeliverForm1State extends State<DeliverForm1> {
       if (res.user == null) throw const AuthException('No se pudo crear la cuenta');
       final uid = res.user!.id;
 
-      // 2· actualizar profile (incluye cédula)
+    
       await supa.from('profile').update({
         'first_name' : _nombre.text.trim(),
         'last_name1' : _apellido1.text.trim(),
@@ -54,7 +53,7 @@ class _DeliverForm1State extends State<DeliverForm1> {
         'id_number'  : _cedula.text.trim(),     
       }).eq('user_id', uid);
 
-      // 3· ir a la pantalla de documentos con la licencia
+   
       if (!mounted) return;
       Navigator.pushReplacementNamed(
         context,
