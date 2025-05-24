@@ -1,80 +1,83 @@
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
+import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 class DeliverForm2 extends StatefulWidget {
   const DeliverForm2({Key? key}) : super(key: key);
-
-  @override
-  State<DeliverForm2> createState() => _DeliverForm2State();
+  @override State<DeliverForm2> createState() => _DeliverForm2State();
 }
 
 class _DeliverForm2State extends State<DeliverForm2> {
-  // ───────── data que llega desde la pantalla 1 ─────────
-late String _driverId;
-late String _licenseNumber;
-bool _initDone = false; 
+  // args de la pantalla 1
+  late String _driverId;
+  late String _licenseNumber;
+  bool _initDone = false;
 
-  // ───────── estado local ─────────
-  String? _selectedOption;      // car | motorbike | bike
-  File? _licencia;
-  File? _antecedentes;
+  // estado
+  String? _selectedOption;                // car | motorbike | bike
+  List<PlatformFile> _files = [];         // múltiples archivos
   bool _loading = false;
   String? _error;
+  String _safeName(String original) {
+  final cleaned = original.toLowerCase()
+      .replaceAll(RegExp(r'[^a-z0-9._-]'), '_');
+  return cleaned.isEmpty ? 'file' : cleaned;
+}
+
 
   final supa = GetIt.I<SupabaseClient>();
 
-  // ───────── helpers ─────────
-  Future<File?> _pickFile() async {
+  // ───────── pick múltiples archivos ─────────
+  Future<void> _pickFiles() async {
     final res = await FilePicker.platform.pickFiles(
+      allowMultiple: true,
       type: FileType.custom,
       allowedExtensions: ['pdf', 'jpg', 'png'],
     );
-    return res != null ? File(res.files.single.path!) : null;
+    if (res != null) setState(() => _files = res.files);
   }
 
+  // ───────── subir y guardar ─────────
   Future<void> _uploadAndSave() async {
-    if (_selectedOption == null || _licencia == null || _antecedentes == null) {
-      setState(() => _error = 'Completa vehículo y ambos documentos');
-      return;
+    if (_selectedOption == null || _files.isEmpty) {
+      setState(() => _error = 'Selecciona vehículo y al menos un archivo'); return;
     }
     setState(() { _loading = true; _error = null; });
 
-    final extLic = _licencia!.path.split('.').last;
-    final extRec = _antecedentes!.path.split('.').last;
-    final pathLic = 'driver/$_driverId/license.$extLic';
-    final pathRec = 'driver/$_driverId/record.$extRec';
+    final folder = 'driver/$_driverId/';          // carpeta base
 
     try {
-      // 1· Subir archivos al bucket privado
-      await supa.storage.from('driver-docs').upload(
-        pathLic, _licencia!,
-        fileOptions: const FileOptions(upsert: true),
-      );
-      await supa.storage.from('driver-docs').upload(
-        pathRec, _antecedentes!,
-        fileOptions: const FileOptions(upsert: true),
-      );
+     for (final f in _files) {
+  final safe = _safeName(f.name);          
+  final path = '$folder$safe';
+  if (kIsWeb) {
+    await supa.storage
+        .from('driver-docs')
+        .uploadBinary(path, f.bytes!,
+            fileOptions: const FileOptions(upsert: true));
+  } else {
+    await supa.storage
+        .from('driver-docs')
+        .upload(path, File(f.path!),
+            fileOptions: const FileOptions(upsert: true));
+  }
+}
 
-      // 2· Insertar fila driver
-      await supa.from('driver').insert({
-        'driver_id'          : _driverId,
-        'vehicle_type'       : _selectedOption,      // car/motorbike/bike
-        'license_number'     : _licenseNumber,
-        'insurance_doc_url'  : pathLic,
-        'criminal_record_url': pathRec,
-        // is_verified -> false por default
+      // 2· Insertar fila driver  (docs_url = carpeta base)
+      await supa.from('driver').upsert({
+        'driver_id'      : _driverId,
+        'vehicle_type'   : _selectedOption,
+        'license_number' : _licenseNumber,
+        'docs_url'       : folder,
+        'is_verified'    : false,
       });
 
       if (!mounted) return;
       Navigator.pushNamedAndRemoveUntil(
-        context,
-        Routes.driverPending,
-        (_) => false,
-      );
+        context, Routes.driverPending, (_) => false);
     } catch (e) {
       setState(() => _error = 'Error: $e');
     } finally {
@@ -83,155 +86,117 @@ bool _initDone = false;
   }
 
   // ───────── ciclo de vida ─────────
-@override
-void didChangeDependencies() {
-  super.didChangeDependencies();
-  if (_initDone) return;                 // ya lo hicimos una vez
-  final args = ModalRoute.of(context)!.settings.arguments as Map;
-  _driverId       = args['uid'] as String;
-  _licenseNumber  = args['licenseNumber'] as String;
-  _initDone = true;
-}
+  @override void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_initDone) return;
+    final args = ModalRoute.of(context)!.settings.arguments as Map;
+    _driverId      = args['uid'] as String;
+    _licenseNumber = args['licenseNumber'] as String;
+    _initDone = true;
+  }
 
+  // ───────── UI ─────────
   @override
-  Widget build(BuildContext context) {
-    return Form(
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          scrolledUnderElevation: 0,
-          title: const Text(
-            'Crea tu cuenta de repartidor',
-            style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold, color: Colors.black),
-          ),
-          automaticallyImplyLeading: false,
-        ),
-        body: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-          child: SafeArea(
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // ───────── dropdown vehículo ─────────
-                  DropdownButtonFormField<String>(
-                    value: _selectedOption,
-                    items: const [
-                      DropdownMenuItem(value: 'car',       child: Text('Automóvil')),
-                      DropdownMenuItem(value: 'motorbike', child: Text('Motocicleta')),
-                      DropdownMenuItem(value: 'bike',      child: Text('Bicicleta')),
-                    ],
-                    onChanged: (v) => setState(() => _selectedOption = v),
-                    decoration: const InputDecoration(
-                      labelText: 'Selecciona el tipo de vehículo',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
+  Widget build(BuildContext context) => Scaffold(
+    backgroundColor: Colors.white,
+    appBar: AppBar(
+      backgroundColor: Colors.white, scrolledUnderElevation: 0,
+      automaticallyImplyLeading: false,
+      title: const Text('Crea tu cuenta de repartidor',
+          style: TextStyle(fontSize:25,fontWeight:FontWeight.bold)),
+    ),
+    body: SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20,20,20,0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children:[
+            // Dropdown vehículo
+            DropdownButtonFormField<String>(
+              value: _selectedOption,
+              items: const [
+                DropdownMenuItem(value:'car',       child:Text('Automóvil')),
+                DropdownMenuItem(value:'motorbike', child:Text('Motocicleta')),
+                DropdownMenuItem(value:'bike',      child:Text('Bicicleta')),
+              ],
+              onChanged:(v)=>setState(()=>_selectedOption=v),
+              decoration: const InputDecoration(
+                labelText:'Selecciona el tipo de vehículo',
+                border:OutlineInputBorder()),
+            ),
+            const SizedBox(height:20),
 
-                  // ───────── textos y botón archivo según tipo ─────────
-                  if (_selectedOption != null) ...[
-                    const Text(
-                      'Documentos requeridos para registrar el vehículo',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                    ),
-                    const SizedBox(height: 20),
-                    if (_selectedOption == 'car') ...[
-                      const Text('- Certificado de antecedentes penales'),
-                      const Text('- Licencia de conducir'),
-                      const Text('- Marchamo vigente'),
-                      const Text('- Información bancaria'),
-                      const Text('- Revisión técnica vehicular'),
-                      const Text('- Póliza de seguro'),
-                    ] else if (_selectedOption == 'motorbike') ...[
-                      const Text('- Hoja de delincuencia'),
-                      const Text('- Licencia de conducir'),
-                      const Text('- Marchamo vigente'),
-                      const Text('- Información bancaria'),
-                      const Text('- Revisión técnica vehicular'),
-                      const Text('- Póliza de seguro'),
-                    ] else ...[
-                      const Text('- Hoja de delincuencia'),
-                      const Text('- Póliza de seguro'),
-                      const Text('- Información bancaria'),
-                    ],
-                    const SizedBox(height: 20),
-                    _btnSelectFile(
-                      label: _licencia == null ? 'Subir licencia' : 'Licencia ✔',
-                      onTap: () async {
-                        final f = await _pickFile();
-                        if (f != null) setState(() => _licencia = f);
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    _btnSelectFile(
-                      label: _antecedentes == null
-                          ? 'Subir certificado de antecedentes'
-                          : 'Antecedentes ✔',
-                      onTap: () async {
-                        final f = await _pickFile();
-                        if (f != null) setState(() => _antecedentes = f);
-                      },
-                    ),
-                  ],
+            if(_selectedOption!=null)...[
+              const Text('Documentos requeridos para registrar el vehículo',
+                  style:TextStyle(fontWeight:FontWeight.bold,fontSize:14)),
+              const SizedBox(height:12),
+              // (lista fija; la tuya original)
+              if(_selectedOption=='car')...[
+                const Text('- Certificado de antecedentes penales'),
+                const Text('- Licencia de conducir'),
+                const Text('- Marchamo vigente'),
+                const Text('- Información bancaria'),
+                const Text('- Revisión técnica vehicular'),
+                const Text('- Póliza de seguro'),
+              ] else if(_selectedOption=='motorbike')...[
+                const Text('- Hoja de delincuencia'),
+                const Text('- Licencia de conducir'),
+                const Text('- Marchamo vigente'),
+                const Text('- Información bancaria'),
+                const Text('- Revisión técnica vehicular'),
+                const Text('- Póliza de seguro'),
+              ] else ...[
+                const Text('- Hoja de delincuencia'),
+                const Text('- Póliza de seguro'),
+                const Text('- Información bancaria'),
+              ],
+              const SizedBox(height:20),
+              _btnSelectFiles(),
+              if(_files.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top:8),
+                  child: Text('${_files.length} archivo(s) seleccionado(s) ✔'),
+                ),
+            ],
 
-                  if (_selectedOption == null)
-                    const Center(
-                      child: Padding(
-                        padding: EdgeInsets.only(top: 12),
-                        child: Text(
-                          'Por favor selecciona un tipo de vehiculo',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ),
+            if(_selectedOption==null)
+              const Padding(
+                padding:EdgeInsets.only(top:12),
+                child:Text('Por favor selecciona un tipo de vehículo',
+                    style:TextStyle(color:Colors.red,fontSize:16,fontWeight:FontWeight.bold)),
+              ),
 
-                  const SizedBox(height: 40),
-                  if (_error != null)
-                    Text(_error!, style: const TextStyle(color: Colors.red)),
-                  const SizedBox(height: 16),
+            const SizedBox(height:40),
+            if(_error!=null) Text(_error!,style:const TextStyle(color:Colors.red)),
+            const SizedBox(height:16),
 
-                  // ───────── botón Registrar ─────────
-                  SizedBox(
-                    height: 70,
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xffd72a23),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      ),
-                      onPressed: _loading ? null : _uploadAndSave,
-                      child: _loading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text('Registrar', style: TextStyle(color: Colors.white, fontSize: 20)),
-                    ),
-                  ),
-                ],
+            SizedBox(
+              height:70,width:double.infinity,
+              child:ElevatedButton(
+                onPressed:_loading?null:_uploadAndSave,
+                style:ElevatedButton.styleFrom(
+                  backgroundColor:const Color(0xffd72a23),
+                  shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(10))),
+                child:_loading
+                  ? const CircularProgressIndicator(color:Colors.white)
+                  : const Text('Registrar',style:TextStyle(fontSize:20,color:Colors.white)),
               ),
             ),
-          ),
+          ],
         ),
       ),
-    );
-  }
+    ),
+  );
 
-  // ───────── widget botón seleccionar archivo ─────────
-  Widget _btnSelectFile({required String label, required VoidCallback onTap}) {
-    return Center(
-      child: SizedBox(
-        height: 55,
-        width: double.infinity,
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xffd72a23),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          ),
-          onPressed: onTap,
-          child: Text(label, style: const TextStyle(color: Colors.white)),
-        ),
-      ),
-    );
-  }
+  Widget _btnSelectFiles() => SizedBox(
+    height:55,width:double.infinity,
+    child:ElevatedButton(
+      onPressed:_pickFiles,
+      style:ElevatedButton.styleFrom(
+        backgroundColor:const Color(0xffd72a23),
+        shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(10))),
+      child: const Text('Seleccionar archivos',
+          style:TextStyle(color:Colors.white)),
+    ),
+  );
 }

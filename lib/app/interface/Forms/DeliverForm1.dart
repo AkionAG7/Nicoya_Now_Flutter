@@ -10,12 +10,12 @@ class DeliverForm1 extends StatefulWidget {
 
 class _DeliverForm1State extends State<DeliverForm1> {
   // ───── controladores ─────
-  final _cedula     = TextEditingController();
+  final _cedula     = TextEditingController();   // cédula (ID nacional)
+  final _license    = TextEditingController();   // Nº de licencia de conducir
   final _nombre     = TextEditingController();
   final _apellido1  = TextEditingController();
   final _apellido2  = TextEditingController();
   final _telefono   = TextEditingController();
-  final _domicilio  = TextEditingController();
   final _email      = TextEditingController();
   final _pass       = TextEditingController();
   final _passConf   = TextEditingController();
@@ -44,30 +44,24 @@ class _DeliverForm1State extends State<DeliverForm1> {
       if (res.user == null) throw const AuthException('No se pudo crear la cuenta');
       final uid = res.user!.id;
 
-      // 2· actualizar profile
+      // 2· actualizar profile (incluye cédula)
       await supa.from('profile').update({
         'first_name' : _nombre.text.trim(),
         'last_name1' : _apellido1.text.trim(),
         'last_name2' : _apellido2.text.trim(),
         'phone'      : _telefono.text.trim(),
         'role'       : 'driver',
+        'id_number'  : _cedula.text.trim(),     
       }).eq('user_id', uid);
 
-      // 3· insertar domicilio
-      await supa.from('address').insert({
-        'user_id' : uid,
-        'street'  : _domicilio.text.trim(),
-        'district': '',
-      });
-
-      // 4· ir a la pantalla de documentos
+      // 3· ir a la pantalla de documentos con la licencia
       if (!mounted) return;
       Navigator.pushReplacementNamed(
         context,
         Routes.deliver_Form2,
         arguments: {
           'uid'          : uid,
-          'licenseNumber': _cedula.text.trim(),
+          'licenseNumber': _license.text.trim(),
         },
       );
     } on AuthException catch (e) {
@@ -79,7 +73,6 @@ class _DeliverForm1State extends State<DeliverForm1> {
     }
   }
 
-  // ───── utilidades UI ─────
   InputDecoration _dec(String l) => InputDecoration(labelText: l);
 
   @override
@@ -105,6 +98,14 @@ class _DeliverForm1State extends State<DeliverForm1> {
                   maxLength: 9,
                   keyboardType: TextInputType.number,
                   validator: (v) => v!.length == 9 ? null : '9 dígitos',
+                ),
+                const SizedBox(height: 20),
+                // Nº de Licencia
+                TextFormField(
+                  controller: _license,
+                  decoration: _dec('Número de licencia'),
+                  maxLength: 12,
+                  validator: (v) => v!.isNotEmpty ? null : 'Requerido',
                 ),
                 const SizedBox(height: 20),
                 // Nombre
@@ -136,9 +137,6 @@ class _DeliverForm1State extends State<DeliverForm1> {
                   keyboardType: TextInputType.phone,
                   validator: (v) => v!.length == 8 ? null : '8 dígitos',
                 ),
-                const SizedBox(height: 20),
-                // Domicilio
-                TextFormField(controller: _domicilio, decoration: _dec('Domicilio')),
                 const SizedBox(height: 20),
                 // Email
                 TextFormField(
@@ -194,11 +192,11 @@ class _DeliverForm1State extends State<DeliverForm1> {
   void dispose() {
     for (final c in [
       _cedula,
+      _license,
       _nombre,
       _apellido1,
       _apellido2,
       _telefono,
-      _domicilio,
       _email,
       _pass,
       _passConf
