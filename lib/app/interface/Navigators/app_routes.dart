@@ -26,16 +26,11 @@ al ser una ruta fija que no se va a modifiar al widget se le pone const
 */
 Map<String, Widget Function(BuildContext)> get appRoutes {
   return {
-    Routes.selecctTypeAccount: (context) => const SelectTypeAccount(),
-
-    Routes.preLogin: (context) {
-      final args = ModalRoute.of(context)!.settings.arguments as AccountType?;
-      return Home(accountType: args);
-    },
-
-    Routes.login_page: (context) {
-      final args = ModalRoute.of(context)!.settings.arguments as AccountType?;
-      return LoginPage(accountType: args);
+    Routes.selecctTypeAccount: (context) => const SelectTypeAccount(),    Routes.preLogin: (context) {
+      // No necesitamos pasar el tipo de cuenta inicialmente
+      return const Home(accountType: null);
+    },    Routes.login_page: (context) {
+      return const LoginPage(accountType: null);
     },
     
     Routes.register_user_page: (context) => const RegisterUser(),

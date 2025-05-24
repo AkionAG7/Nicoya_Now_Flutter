@@ -26,10 +26,18 @@ class AuthController extends ChangeNotifier {
   })  : _signInUseCase = signInUseCase,
         _signUpUseCase = signUpUseCase;
 
-
   AuthState get state => _state;
   User? get user => _user;
   String? get errorMessage => _errorMessage;
+  
+  // Obtener el rol principal del usuario
+  String? get userRole => _user?.role;
+  
+  // Obtener todos los roles del usuario como una lista
+  List<String> get userRoles => _user?.getRoles() ?? ['client'];
+  
+  // Verificar si el usuario tiene un rol específico
+  bool hasRole(String roleName) => _user?.hasRole(roleName) ?? false;
 
   Future<bool> signIn(String email, String password) async {
     _state = AuthState.loading;

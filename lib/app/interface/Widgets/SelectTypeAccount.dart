@@ -52,9 +52,8 @@ class _SelectTypeAccountState extends State<SelectTypeAccount> {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         backgroundColor: const Color(0xffffffff),
-                      ),
-                      onPressed: () {
-                        Navigator.pushNamed(context, Routes.preLogin, arguments: AccountType.repartidor);
+                      ),                      onPressed: () {
+                        Navigator.pushNamed(context, Routes.deliver_Form1);
                       },
                       child: Column(
                         children: [
@@ -87,9 +86,8 @@ class _SelectTypeAccountState extends State<SelectTypeAccount> {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         backgroundColor: const Color(0xffffffff),
-                      ),
-                      onPressed: () {
-                        Navigator.pushNamed(context, Routes.preLogin, arguments: AccountType.comercio);
+                      ),                      onPressed: () {
+                        Navigator.pushNamed(context, Routes.merchantStepBusiness);
                       },
                       child: Column(
                         children: [
@@ -120,9 +118,8 @@ class _SelectTypeAccountState extends State<SelectTypeAccount> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     backgroundColor: const Color(0xffffffff),
-                  ),
-                  onPressed: () {
-                    Navigator.pushNamed(context, Routes.preLogin, arguments: AccountType.cliente);
+                  ),                  onPressed: () {
+                    Navigator.pushNamed(context, Routes.client_Form);
                   },
                   child: Column(
                     children: [
