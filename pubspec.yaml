@@ -18,6 +18,9 @@ dependencies:
   provider: ^6.1.5 # state-management más sencillo
   image_picker: ^1.1.2
   file_picker: ^10.1.7
+  flutter_launcher_icons: ^0.14.3
+  shared_preferences: ^2.5.3
+
 
 dev_dependencies:
   flutter_test:
@@ -25,9 +28,9 @@ dev_dependencies:
 
   flutter_lints: ^5.0.0
 
-flutter_icons:
+flutter_launcher_icons:
   android: true
-  ios: true
+  ios: false
   image_path: "lib/app/interface/public/LogoApp.png"
 
 flutter:
