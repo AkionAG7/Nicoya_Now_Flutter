@@ -13,6 +13,7 @@ import 'package:nicoya_now/app/interface/Widgets/Home.dart';
 import 'package:nicoya_now/app/interface/Widgets/HomeFood.dart';
 import 'package:nicoya_now/app/interface/Widgets/LoginPage.dart';
 import 'package:nicoya_now/app/interface/Widgets/OrderSucces.dart';
+import 'package:nicoya_now/app/interface/Widgets/ProductDetail.dart';
 import 'package:nicoya_now/app/interface/Widgets/RegisterUser.dart';
 import 'package:nicoya_now/app/interface/Widgets/SelectTypeAccount.dart';
 
@@ -46,5 +47,6 @@ Map<String, Widget Function(BuildContext)> get appRoutes {
     Routes.merchantStepBusiness : (context) => const MerchantStepBusiness(),
     Routes.merchantStepOwner    : (context) => const MerchantStepOwner(),
     Routes.merchantStepPassword : (context) => const MerchantStepPassword(),
+    Routes.product_Detail: (context) => const ProductDetail(),
   };
 }
