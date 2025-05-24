@@ -16,6 +16,7 @@ abstract class MerchantDataSource {
     required String logoPath,    
     required String password,
     required String phone,
+    String? cedula,
   });
 }
 
@@ -37,19 +38,27 @@ class SupabaseMerchantDataSource implements MerchantDataSource {
     required String logoPath,    
     required String password,
     required String phone,
+    String? cedula,
   }) async {
     final auth = await _supa.auth.signUp(email: email, password: password);
     if (auth.user == null) throw const AuthException('No se pudo crear cuenta');
     final uid = auth.user!.id;
 
-    try {
-      await _supa.from('profile').update({
+    try {      // Actualizar perfil con datos del propietario
+      final Map<String, dynamic> profileData = {
         'first_name' : firstName,
         'last_name1' : lastName1,
         'last_name2' : lastName2,
         'phone'      : phone,
         'role'       : 'merchant',
-      }).eq('user_id', uid);
+      };
+      
+      // Si hay cédula física, la guardamos en el perfil
+      if (cedula != null && cedula.isNotEmpty) {
+        profileData['id_number'] = cedula;
+      }
+      
+      await _supa.from('profile').update(profileData).eq('user_id', uid);
 
       final addr = await _supa.from('address').insert({
         'user_id': uid,

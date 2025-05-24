@@ -8,7 +8,7 @@ class RegisterMerchantUseCase {
   Future<Merchant> execute({
     required String email,
     required String password,
-    required String legalId,
+    String? legalId,
     required String businessName,
     required String corporateName,
     required String phone,
@@ -17,11 +17,12 @@ class RegisterMerchantUseCase {
     required String firstName,
     required String lastName1,
     required String lastName2,
+    String? cedula,
   }) {
     return _repository.registerMerchant(
       email        : email,
       password     : password,
-      legalId      : legalId,
+      legalId      : legalId ?? '',
       businessName : businessName,
       corporateName: corporateName,
       phone        : phone,
@@ -30,6 +31,7 @@ class RegisterMerchantUseCase {
       firstName    : firstName,
       lastName1    : lastName1,
       lastName2    : lastName2,
+      cedula       : cedula,
     );
   }
 }

@@ -3,59 +3,47 @@ import 'package:image_picker/image_picker.dart';
 import 'package:nicoya_now/app/features/merchant/domain/entities/merchant.dart';
 import 'package:nicoya_now/app/features/merchant/domain/usecases/register_merchant_usecase.dart';
 
-// ────────────────────────────────────────────────────────────
-//  ESTADOS
-// ────────────────────────────────────────────────────────────
 enum MerchantRegistrationState { initial, loading, success, error }
 
-// ────────────────────────────────────────────────────────────
-//  CONTROLLER
-// ────────────────────────────────────────────────────────────
 class MerchantRegistrationController extends ChangeNotifier {
-  // ------------ constructor -------------
-  /// ❶  **El parámetro se llama exactamente igual** que en tu service locator
+
   MerchantRegistrationController({
     required RegisterMerchantUseCase registerMerchantUseCase,
   }) : _registerMerchantUseCase = registerMerchantUseCase;
 
-  // ------------ dependencias ------------
+
   final RegisterMerchantUseCase _registerMerchantUseCase;
 
-  // ------------ estado público ----------
+ 
   MerchantRegistrationState get state        => _state;
   String?                    get errorMessage=> _errorMessage;
   Merchant?                  get merchant    => _merchant;
 
-  // ------------ estado interno ----------
   MerchantRegistrationState _state = MerchantRegistrationState.initial;
   String?  _errorMessage;
   Merchant? _merchant;
-
-  // ------------ datos acumulados --------
   String? _legalId;
   String? _businessName, _corpName, _address, _logoPath;
   String? _firstName, _last1, _last2, _email, _phone;
+  bool _isCedulaJuridica = true;
 
-  // ──────────────────────────────────
-  //  Paso 1 – datos del comercio
-  // ──────────────────────────────────
+
   void updateBusinessInfo({
     required String legalId,
     required String businessName,
     required String address,
     required XFile  logo,
     String corporateName = '',
+    bool isCedulaJuridica = true,
   }) {
-    _legalId      = legalId;
-    _businessName = businessName;
-    _corpName     = corporateName;
-    _address      = address;
-    _logoPath     = logo.path;    
+    _legalId          = legalId;
+    _businessName     = businessName;
+    _corpName         = corporateName;
+    _address          = address;
+    _logoPath         = logo.path;
+    _isCedulaJuridica = isCedulaJuridica;
   }
 
-  // ──────────────────────────────────
-  //  Paso 2 – datos del encargado
-  // ──────────────────────────────────
   void updateOwnerInfo({
     required String firstName,
     required String lastName1,
@@ -69,7 +57,7 @@ class MerchantRegistrationController extends ChangeNotifier {
     _email     = email;
     _phone     = phone;
   }
-
+  
   Future<bool> finishRegistration({required String password}) async {
     _state = MerchantRegistrationState.loading;
     _errorMessage = null;
@@ -79,7 +67,7 @@ class MerchantRegistrationController extends ChangeNotifier {
       _merchant = await _registerMerchantUseCase.execute(
         email        : _email!,
         password     : password,
-        legalId      : _legalId!,
+        legalId      : _isCedulaJuridica ? _legalId! : '',
         businessName : _businessName!,
         corporateName: _corpName ?? '',
         phone        : _phone!,
@@ -88,6 +76,7 @@ class MerchantRegistrationController extends ChangeNotifier {
         firstName    : _firstName!,
         lastName1    : _last1!,
         lastName2    : _last2!,
+        cedula       : _isCedulaJuridica ? null : _legalId,
       );
 
       _state = MerchantRegistrationState.success;

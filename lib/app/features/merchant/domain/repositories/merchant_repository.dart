@@ -1,7 +1,6 @@
 import 'package:nicoya_now/app/features/merchant/domain/entities/merchant.dart';
 
-abstract class MerchantRepository {
-  Future<Merchant> registerMerchant({
+abstract class MerchantRepository {  Future<Merchant> registerMerchant({
     required String email,
     required String password,
     required String legalId,
@@ -13,5 +12,6 @@ abstract class MerchantRepository {
     required String firstName,
     required String lastName1,
     required String lastName2,
+    String? cedula,
   });
 }

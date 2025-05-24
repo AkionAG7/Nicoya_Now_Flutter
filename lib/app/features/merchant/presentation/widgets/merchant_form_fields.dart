@@ -13,6 +13,8 @@ class MerchantFields extends StatelessWidget {
   final TextEditingController? address;
   final XFile?                logo;
   final VoidCallback?         onPickLogo;
+  final bool                  isCedulaJuridica; // Nuevo campo
+  final ValueChanged<bool>?   onCedulaTypeChanged; // Nuevo callback
 
   /* ──────────── OWNER ──────────── */
   final TextEditingController? firstName;
@@ -43,6 +45,8 @@ class MerchantFields extends StatelessWidget {
     this.address,
     this.logo,
     this.onPickLogo,
+    this.isCedulaJuridica = true,
+    this.onCedulaTypeChanged,
     /* owner */
     this.firstName,
     this.lastName1,
@@ -70,8 +74,38 @@ if (group == MerchantFieldGroup.business) {
     _sp,
     _text(corpName     , 'Razón social (opcional)', required: false),
     _sp,
-    _text(legalId      , 'Cédula jurídica',
-          keyboard: TextInputType.number, maxLen: 11),
+    Container(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          const Text('Tipo de cédula:', style: TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(width: 5),
+          Expanded(
+            child: Row(
+              children: [
+                Radio<bool>(
+                  value: true,
+                  groupValue: isCedulaJuridica,
+                  onChanged: (val) => onCedulaTypeChanged?.call(true),
+                ),
+                const Text('Jurídica'),
+                const SizedBox(width: 5),
+                Radio<bool>(
+                  value: false,
+                  groupValue: isCedulaJuridica,
+                  onChanged: (val) => onCedulaTypeChanged?.call(false),
+                ),
+                const Text('Física'),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+    _sp,
+    _text(legalId, isCedulaJuridica ? 'Cédula jurídica' : 'Cédula física',
+          keyboard: TextInputType.number, 
+          maxLen: isCedulaJuridica ? 11 : 9),
     _sp,
     _text(address      , 'Dirección del local', maxLines: 2),
     const SizedBox(height: 25),
@@ -95,14 +129,15 @@ if (group == MerchantFieldGroup.owner) {
           keyboard: TextInputType.phone, maxLen: 8),
   ]);
 }
-
-// 3️⃣ PASSWORD
 if (group == MerchantFieldGroup.password) {
   widgets.addAll([
-    _password(pw       , hidePw ,  togglePw ,  'Contraseña'),
+    _password(pw, hidePw, togglePw, 'Contraseña'),
     _sp,
-    _password(pwConfirm, hidePw2, togglePw2,
-              'Confirmar contraseña', validate: pw?.text),
+    _password(
+      pwConfirm, hidePw2, togglePw2,
+      'Confirmar contraseña',
+      compareTo: pw,             
+    ),
   ]);
 }
 
@@ -143,29 +178,34 @@ if (group == MerchantFieldGroup.password) {
     );
   }
 
-  Widget _password(TextEditingController? c, bool hide, VoidCallback? onToggle,
-      String lbl, {String? validate}) {
-    assert(c != null, 'Controller para $lbl no provisto');
+Widget _password(
+  TextEditingController? c,
+  bool hide,
+  VoidCallback? onToggle,
+  String lbl, {
+  TextEditingController? compareTo,     // <-- NUEVO
+}) {
+  assert(c != null, 'Controller para $lbl no provisto');
 
-    return TextFormField(
-      controller: c,
-      obscureText: hide,
-      decoration: InputDecoration(
-        labelText: lbl,
-        border: const OutlineInputBorder(),
-        suffixIcon: IconButton(
-          icon: Icon(hide ? Icons.visibility_off : Icons.visibility),
-          onPressed: onToggle,
-        ),
+  return TextFormField(
+    controller: c,
+    obscureText: hide,
+    decoration: InputDecoration(
+      labelText: lbl,
+      border: const OutlineInputBorder(),
+      suffixIcon: IconButton(
+        icon: Icon(hide ? Icons.visibility_off : Icons.visibility),
+        onPressed: onToggle,
       ),
-      validator: (v) {
-        if (v == null || v.isEmpty) return 'Requerido';
-        if (v.length < 6) return 'Mín 6 caracteres';
-        if (validate != null && v != validate) return 'No coincide';
-        return null;
-      },
-    );
-  }
+    ),
+    validator: (v) {
+      if (v == null || v.isEmpty)     return 'Requerido';
+      if (v.length < 6)               return 'Mín 6 caracteres';
+      if (compareTo != null && v != compareTo.text) return 'No coincide';
+      return null;
+    },
+  );
+}
 
   Widget _logoButton() => SizedBox(
         height: 120,

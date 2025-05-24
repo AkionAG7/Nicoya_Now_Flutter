@@ -32,7 +32,6 @@ class _MerchantStepPasswordState extends State<MerchantStepPassword> {
             key: _fKey,
             child: Column(
               children: [
-                /* --- campos paso 3 (contraseñas) --- */
                 MerchantFields(
                   group      : MerchantFieldGroup.password,
                   pw         : _pw,
@@ -45,7 +44,6 @@ class _MerchantStepPasswordState extends State<MerchantStepPassword> {
 
                 const Spacer(),
 
-                /* --- botón registrar --- */
                 SizedBox(
                   width: double.infinity,
                   height: 55,
