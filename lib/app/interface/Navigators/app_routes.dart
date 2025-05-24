@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:nicoya_now/app/features/auth/presentation/pages/driver_register_done.dart';
+import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_step_business.dart';
+import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_step_owner.dart';
+import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_step_password.dart';
 import 'package:nicoya_now/app/interface/Forms/ClientForm.dart';
-import 'package:nicoya_now/app/interface/Forms/ComerseForm.dart';
 import 'package:nicoya_now/app/interface/Forms/DeliverForm1.dart';
 import 'package:nicoya_now/app/interface/Forms/DeliverForm2.dart';
 import 'package:nicoya_now/app/interface/SplashWidgets/SplashFT1.dart';
@@ -43,7 +46,10 @@ Map<String, Widget Function(BuildContext)> get appRoutes {
     Routes.client_Form: (context) => const ClientForm(),
     Routes.deliver_Form1: (context) => const DeliverForm1(),
     Routes.deliver_Form2: (context) => const DeliverForm2(),
-    Routes.comerse_Form: (context) => const ComerseForm(),
+    Routes.driverPending: (context) => const DriverPendingPage(),
     Routes.home_food: (context) => const HomeFood(),
+    Routes.merchantStepBusiness : (context) => const MerchantStepBusiness(),
+    Routes.merchantStepOwner    : (context) => const MerchantStepOwner(),
+    Routes.merchantStepPassword : (context) => const MerchantStepPassword(),
   };
 }

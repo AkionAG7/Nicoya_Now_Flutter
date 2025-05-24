@@ -1,6 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-// Interfaz para la fuente de datos de autenticación
+
 abstract class AuthDataSource {
   Future<Map<String, dynamic>> signIn(String email, String password);
   Future<Map<String, dynamic>> signUp(String email, String password);
@@ -10,12 +10,10 @@ abstract class AuthDataSource {
   Future<void> createAddress(String userId, Map<String, dynamic> data);
 }
 
-// Implementación concreta usando Supabase
 class SupabaseAuthDataSource implements AuthDataSource {
   final SupabaseClient _supabaseClient;
 
   SupabaseAuthDataSource(this._supabaseClient);
-
   @override
   Future<Map<String, dynamic>> signIn(String email, String password) async {
     final response = await _supabaseClient.auth.signInWithPassword(
@@ -27,17 +25,40 @@ class SupabaseAuthDataSource implements AuthDataSource {
       throw AuthException('No se pudo iniciar sesión');
     }
 
-    // Obtiene datos adicionales del perfil
     final profileResponse = await _supabaseClient
         .from('profile')
         .select()
         .eq('user_id', response.user!.id)
         .single();
+        
+    final String role = profileResponse['role'] ?? 'client';
+    if (role == 'driver') {
+      try {
+        final driverVerification = await _supabaseClient.from('driver')
+            .select('is_verified')
+            .eq('driver_id', response.user!.id)
+            .single();
+            
+        if (driverVerification['is_verified'] != true) {
+          await _supabaseClient.auth.signOut();
+          throw AuthException(
+            'Aún no hemos validado tus documentos. Intenta más tarde.');
+        }
+      } catch (e) {
+        await _supabaseClient.auth.signOut();
+        if (e is PostgrestException) {
+          throw AuthException(
+            'Tu cuenta de conductor no está configurada correctamente. Contacta a soporte.');
+        }
+        rethrow;
+      }
+    }
 
-    // Combina datos de autenticación y perfil
+
     return {
       'id': response.user!.id,
       'email': response.user!.email,
+      'role': role,
       ...profileResponse,
     };
   }
@@ -85,7 +106,6 @@ class SupabaseAuthDataSource implements AuthDataSource {
         ...profileResponse,
       };
     } catch (e) {
-      // Si el perfil no existe, devuelve solo los datos básicos
       return {
         'id': currentUser.id,
         'email': currentUser.email,

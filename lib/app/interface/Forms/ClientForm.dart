@@ -11,8 +11,6 @@ class ClientForm extends StatefulWidget {
 
 class _ClientFormState extends State<ClientForm> {
   final _formKey = GlobalKey<FormState>();
-
-  // ───── Controllers ──────────────────────────────────────────────
   final _firstName = TextEditingController();
   final _lastName1 = TextEditingController();
   final _lastName2 = TextEditingController();
@@ -27,7 +25,7 @@ class _ClientFormState extends State<ClientForm> {
   bool   _hidePw2  = true;
   String? _error;
 
-  // ───── Registro ────────────────────────────────────────────────
+ 
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
     if (_password.text != _passConf.text) {
@@ -56,7 +54,7 @@ class _ClientFormState extends State<ClientForm> {
       if (!mounted) return;
       
       if (success) {
-        Navigator.pop(context); // o navega a Home
+        Navigator.pop(context); 
       } else {
         setState(() => _error = authController.errorMessage);
       }
@@ -85,7 +83,6 @@ class _ClientFormState extends State<ClientForm> {
     super.dispose();
   }
 
-  // ───── UI helpers ───────────────────────────────────────────────
   Widget _text(String label, TextEditingController c,
       {TextInputType? type, int? maxLen}) {
     return TextFormField(

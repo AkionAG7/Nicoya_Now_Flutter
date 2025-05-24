@@ -10,7 +10,7 @@ import 'package:nicoya_now/app/features/auth/domain/usecases/get_products_usecas
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HomeFood extends StatefulWidget {
-  const HomeFood({Key? key}) : super(key: key);
+  const HomeFood({super.key});
 
   @override
   _HomeFoodState createState() => _HomeFoodState();
