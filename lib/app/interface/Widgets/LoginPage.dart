@@ -24,19 +24,11 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void initState() {
-    super.initState();
-    _tapRegister =
+    super.initState();    _tapRegister =
         TapGestureRecognizer()
           ..onTap = () async {
-            final email = await Navigator.pushNamed(
-              context,
-              Routes.register_user_page,
-            );
-            if (email != null && email is String) {
-              setState(() {
-                _emailController.text = email;
-              });
-            }
+            // Dirigir al usuario a la selección de tipo de cuenta
+            Navigator.pushNamed(context, Routes.selecctTypeAccount);
           };
   }
 
@@ -217,6 +209,67 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
+  // Construye un diálogo para seleccionar el rol cuando el usuario tiene múltiples roles
+  Widget _buildRoleSelectionDialog(BuildContext context, AuthController authController) {
+    // Lista de roles disponibles para mostrar (usando el nuevo método del controlador)
+    final roles = authController.userRoles;
+    
+    return AlertDialog(
+      title: Text('Selecciona tu rol'),
+      content: SingleChildScrollView(
+        child: ListBody(
+          children: roles.map((role) {
+            String title;
+            IconData icon;
+            
+            // Configurar título e icono según el rol
+            switch (role) {
+              case 'client':
+                title = 'Cliente';
+                icon = Icons.person;
+                break;
+              case 'driver':
+                title = 'Repartidor';
+                icon = Icons.delivery_dining;
+                break;
+              case 'merchant':
+                title = 'Comerciante';
+                icon = Icons.store;
+                break;
+              default:
+                title = 'Usuario';
+                icon = Icons.person;
+            }
+            
+            return ListTile(
+              leading: Icon(icon, color: Color(0xffd72a23)),
+              title: Text(title),
+              onTap: () {
+                // Manejar selección del rol
+                switch (role) {
+                  case 'client':
+                    Navigator.pushNamedAndRemoveUntil(
+                      context, Routes.home_food, (route) => false);
+                    break;
+                  case 'driver':
+                    Navigator.pushNamedAndRemoveUntil(
+                      context, Routes.home_food, (route) => false); // Cambiar a pantalla de repartidores
+                    break;
+                  case 'merchant':
+                    Navigator.pushNamedAndRemoveUntil(
+                      context, Routes.home_food, (route) => false); // Cambiar a pantalla de comercios
+                    break;
+                  default:
+                    Navigator.pushNamedAndRemoveUntil(
+                      context, Routes.home_food, (route) => false);
+                }
+              },
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
 
   Future<void> _login() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
@@ -234,31 +287,57 @@ class _LoginPageState extends State<LoginPage> {
       final authController = Provider.of<AuthController>(
         context,
         listen: false,
-      );
-      final success = await authController.signIn(
+      );      final success = await authController.signIn(
         _emailController.text.trim(),
         _passwordController.text,
       );
-
-      if (!mounted) return;
-
-      if (success) {
-        if (widget.accountType != null) {
-          switch (widget.accountType) {
-            case AccountType.cliente:
-              Navigator.pushNamed(context, Routes.home_food);
+      
+      if (!mounted) return;      if (success) {
+        // Obtener los roles del usuario usando el nuevo método del controlador
+        final roles = authController.userRoles;
+        
+        // Si hay múltiples roles, mostrar diálogo de selección
+        if (roles.length > 1) {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => _buildRoleSelectionDialog(context, authController),
+          );
+        } else {
+          // Si solo hay un rol, redirigir directamente
+          final userRole = roles.isNotEmpty ? roles.first : 'client';
+          switch (userRole) {
+            case 'client':
+              Navigator.pushNamedAndRemoveUntil(
+                context, 
+                Routes.home_food,
+                (route) => false
+              );
               break;
-            case AccountType.repartidor:
-              Navigator.pushNamed(context, Routes.preLogin);
+            case 'driver':
+              Navigator.pushNamedAndRemoveUntil(
+                context, 
+                Routes.home_food, // Cambiar a la pantalla para repartidores
+                (route) => false
+              );
               break;
-            case AccountType.comercio:
-              Navigator.pushNamed(context, Routes.preLogin);
+            case 'merchant':
+              Navigator.pushNamedAndRemoveUntil(
+                context, 
+                Routes.home_food, // Cambiar a la pantalla para comercios
+                (route) => false
+              );
               break;
             default:
-              Navigator.pushNamed(context, Routes.preLogin);
+              // Si no hay rol definido, ir a la pantalla principal
+              Navigator.pushNamedAndRemoveUntil(
+                context, 
+                Routes.home_food,
+                (route) => false
+              );
           }
         }
-      } else {
+      }else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(authController.errorMessage ?? 'Error desconocido'),
