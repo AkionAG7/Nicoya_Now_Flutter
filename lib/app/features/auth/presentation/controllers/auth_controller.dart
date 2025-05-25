@@ -29,11 +29,13 @@ class AuthController extends ChangeNotifier {
   })  : _signInUseCase = signInUseCase,
         _signUpUseCase = signUpUseCase,
         _roleService = roleService;
-
   AuthState get state => _state;
   User? get user => _user;
   String? get errorMessage => _errorMessage;
   List<Map<String, dynamic>>? get userRoles => _userRoles;
+
+  // Getter para debugging
+  bool get hasActiveSession => _user != null && _state == AuthState.authenticated;
 
   // Obtener los roles del usuario desde Supabase
   Future<void> loadUserRoles() async {
@@ -54,25 +56,49 @@ class AuthController extends ChangeNotifier {
   // Verificar si el usuario tiene un rol específico
   Future<bool> hasRole(String slug) async {
     return await _roleService.hasRole(slug);
-  }
-
-  // Agregar un nuevo rol al usuario
+  }  // Agregar un nuevo rol al usuario
   Future<void> addRole(String slug) async {
+    print('🔍 [AuthController.addRole] Usuario en sesión: ${_user?.id ?? "null"}');
+    print('🔍 [AuthController.addRole] Email del usuario: ${_user?.email ?? "null"}');
+    
+    if (_user == null) {
+      print('❌ [AuthController.addRole] ERROR: No hay usuario en sesión');
+      throw Exception('No hay usuario en sesión');
+    }
+    
     await _roleService.addRoleIfNotExists(slug);
     await loadUserRoles(); // Recargar los roles después de agregar uno nuevo
-  }
-
-  // ...existing code...
-  Future<bool> signIn(String email, String password) async {
-    _state = AuthState.loading;
-    _errorMessage = null;
-    notifyListeners();
-
+    print('✅ [AuthController.addRole] Rol $slug agregado exitosamente');
+  }  // Método especializado para agregar rol después de login exitoso
+  Future<bool> addRoleToExistingUser(String email, String password, String roleSlug) async {
+    print('🔄 [AuthController.addRoleToExistingUser] Iniciando login para agregar rol $roleSlug');
     try {
-      _user = await _signInUseCase.execute(email, password);
-      _state = AuthState.authenticated;
-      notifyListeners();
+      // Primero hacer login
+      final loginSuccess = await signIn(email, password);
+      if (!loginSuccess) {
+        print('❌ [AuthController.addRoleToExistingUser] Login falló');
+        return false;
+      }
+
+      print('✅ [AuthController.addRoleToExistingUser] Login exitoso');
+      print('🔍 [AuthController.addRoleToExistingUser] Usuario después del login: ${_user?.id ?? "null"}');
+      print('🔍 [AuthController.addRoleToExistingUser] Estado: $_state');
+
+      // Verificar si ya tiene este rol
+      final alreadyHasRole = await hasRole(roleSlug);
+      
+      if (alreadyHasRole) {
+        // El usuario ya tiene el rol - esto es OK, no es un error
+        print('ℹ️ [AuthController.addRoleToExistingUser] El usuario ya tiene el rol $roleSlug');
+        return true;
+      }
+      
+      // Agregar el rol si no lo tiene
+      print('🔄 [AuthController.addRoleToExistingUser] Agregando rol $roleSlug...');
+      await addRole(roleSlug);
+      print('✅ [AuthController.addRoleToExistingUser] Rol agregado exitosamente');
       return true;
+      
     } catch (e) {
       _state = AuthState.error;
       _errorMessage = e.toString();
@@ -80,8 +106,28 @@ class AuthController extends ChangeNotifier {
       return false;
     }
   }
+  // ...existing code...
+  Future<bool> signIn(String email, String password) async {
+    print('🔄 [AuthController.signIn] Iniciando login para $email');
+    _state = AuthState.loading;
+    _errorMessage = null;
+    notifyListeners();
 
-  Future<bool> signUp({
+    try {
+      _user = await _signInUseCase.execute(email, password);
+      _state = AuthState.authenticated;
+      print('✅ [AuthController.signIn] Login exitoso para usuario: ${_user?.id}');
+      print('🔍 [AuthController.signIn] Estado: $_state');
+      notifyListeners();
+      return true;
+    } catch (e) {
+      print('❌ [AuthController.signIn] Error en login: $e');
+      _state = AuthState.error;
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }Future<bool> signUp({
     required String email,
     required String password,
     String? firstName,
@@ -89,6 +135,7 @@ class AuthController extends ChangeNotifier {
     String? lastName2,
     String? phone,
     String? address,
+    String? roleSlug, // Añadido para manejar el rol
   }) async {
     _state = AuthState.loading;
     _errorMessage = null;
@@ -104,6 +151,12 @@ class AuthController extends ChangeNotifier {
         phone: phone,
         address: address,
       );
+
+      // Si se especifica un rol, agregarlo después del registro
+      if (roleSlug != null) {
+        await addRole(roleSlug);
+      }
+
       _state = AuthState.authenticated;
       notifyListeners();
       return true;

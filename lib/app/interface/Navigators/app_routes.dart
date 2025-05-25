@@ -39,14 +39,37 @@ Map<String, Widget Function(BuildContext)> get appRoutes {
     Routes.splashFT2: (context) => const SplashFT2(),
     Routes.splashFT3: (context) => const SplashFT3(),
     Routes.order_Success: (context) => const OrderSucces(),
-    Routes.client_Form: (context) => const ClientForm(),
-    Routes.deliver_Form1: (context) => const DeliverForm1(),
-    Routes.deliver_Form2: (context) => const DeliverForm2(),
+    Routes.client_Form: (context) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      final isAddingRole = args?['isAddingRole'] as bool? ?? false;
+      return ClientForm(isAddingRole: isAddingRole);
+    },    Routes.deliver_Form1: (context) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      final isAddingRole = args?['isAddingRole'] as bool? ?? false;
+      return DeliverForm1(isAddingRole: isAddingRole);
+    },
+    Routes.deliver_Form2: (context) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      final isAddingRole = args?['isAddingRole'] ?? false;
+      return DeliverForm2(isAddingRole: isAddingRole);
+    },
     Routes.driverPending: (context) => const DriverPendingPage(),
     Routes.home_food: (context) => const HomeFood(),
-    Routes.merchantStepBusiness : (context) => const MerchantStepBusiness(),
-    Routes.merchantStepOwner    : (context) => const MerchantStepOwner(),
-    Routes.merchantStepPassword : (context) => const MerchantStepPassword(),
+    Routes.merchantStepBusiness : (context) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      final isAddingRole = args?['isAddingRole'] as bool? ?? false;
+      return MerchantStepBusiness(isAddingRole: isAddingRole);
+    },
+    Routes.merchantStepOwner    : (context) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      final isAddingRole = args?['isAddingRole'] as bool? ?? false;
+      return MerchantStepOwner(isAddingRole: isAddingRole);
+    },
+    Routes.merchantStepPassword : (context) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      final isAddingRole = args?['isAddingRole'] as bool? ?? false;
+      return MerchantStepPassword(isAddingRole: isAddingRole);
+    },
     Routes.product_Detail: (context) => const ProductDetail(),
   };
 }

@@ -27,7 +27,7 @@ class MerchantFields extends StatelessWidget {
 
   final MerchantFieldGroup     group;
   final String?                error;
-
+  final bool                   isAddingRole; // Nuevo parámetro
   const MerchantFields({
     super.key,
     required this.group,
@@ -54,6 +54,7 @@ class MerchantFields extends StatelessWidget {
     this.togglePw,
     this.togglePw2,
     this.error,
+    this.isAddingRole = false, // Nuevo parámetro con valor por defecto
   });
 
   @override
@@ -107,18 +108,19 @@ if (group == MerchantFieldGroup.business) {
 
 if (group == MerchantFieldGroup.owner) {
   widgets.addAll([
-    _text(firstName , 'Nombre del encargado'),
+    _text(firstName , 'Nombre del encargado', isPersonalField: true),
     _sp,
-    _text(lastName1 , 'Primer apellido del encargado'),
+    _text(lastName1 , 'Primer apellido del encargado', isPersonalField: true),
     _sp,
-    _text(lastName2 , 'Segundo apellido del encargado'),
+    _text(lastName2 , 'Segundo apellido del encargado', isPersonalField: true),
     _sp,
     _text(email     , 'Correo del comercio/encargado',
           keyboard: TextInputType.emailAddress,
-          validator: (v) => v!.contains('@') ? null : 'Correo inválido'),
+          validator: (v) => v!.contains('@') ? null : 'Correo inválido',
+          isPersonalField: true),
     _sp,
     _text(phone     , 'Número del comercio/encargado',
-          keyboard: TextInputType.phone, maxLen: 8),
+          keyboard: TextInputType.phone, maxLen: 8, isPersonalField: true),
   ]);
 }
 if (group == MerchantFieldGroup.password) {
@@ -148,24 +150,39 @@ if (group == MerchantFieldGroup.password) {
   InputDecoration _dec(String lbl) => InputDecoration(
         labelText: lbl,
         border: const OutlineInputBorder(),
-      );
-
-  Widget _text(TextEditingController? c, String lbl,
+      );  Widget _text(TextEditingController? c, String lbl,
       {bool required = true,
        int? maxLen,
        int maxLines = 1,
        TextInputType keyboard = TextInputType.text,
-       String? Function(String?)? validator}) {
+       String? Function(String?)? validator,
+       bool isPersonalField = false}) {
     assert(c != null, 'Controller para $lbl no provisto');
+
+    // Deshabilitar campos personales cuando se está agregando rol
+    final bool isEnabled = !(isAddingRole && isPersonalField);
 
     return TextFormField(
       controller: c,
       maxLength : maxLen,
       maxLines  : maxLines,
       keyboardType: keyboard,
-      decoration: _dec(lbl),
-      validator : validator ??
-          (v) => required && (v == null || v.trim().isEmpty) ? 'Requerido' : null,
+      enabled: isEnabled,
+      decoration: _dec(lbl).copyWith(
+        fillColor: isEnabled ? null : Colors.grey.shade100,
+        filled: !isEnabled,
+        suffixIcon: !isEnabled ? Icon(Icons.lock_outline, color: Colors.grey) : null,
+      ),
+      validator: (v) {
+        // Si el campo está deshabilitado (campo personal en modo agregar rol), no validar
+        if (!isEnabled) return null;
+        
+        // Usar validador personalizado si se proporciona
+        if (validator != null) return validator(v);
+        
+        // Validación por defecto solo si es requerido y está habilitado
+        return required && (v == null || v.trim().isEmpty) ? 'Requerido' : null;
+      },
     );
   }
 

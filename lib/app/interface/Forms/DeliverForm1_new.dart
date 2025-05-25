@@ -74,7 +74,9 @@ class _DeliverForm1State extends BaseRegistrationFormState<DeliverForm1>
       'phone': phoneController.text.trim(),
       'role': 'driver',
       'id_number': _cedulaController.text.trim(),
-    }).eq('user_id', uid);    // Continuar al formulario 2 con los datos
+    }).eq('user_id', uid);
+
+    // Continuar al formulario 2 con los datos
     if (mounted) {
       Navigator.pushReplacementNamed(
         context,
@@ -82,11 +84,11 @@ class _DeliverForm1State extends BaseRegistrationFormState<DeliverForm1>
         arguments: {
           'uid': uid,
           'licenseNumber': _licenseController.text.trim(),
-          'isAddingRole': false,
         },
       );
     }
   }
+
   @override
   Future<void> performRoleAddition() async {
     // Para agregar rol de driver, solo necesitamos continuar al siguiente paso
@@ -106,8 +108,8 @@ class _DeliverForm1State extends BaseRegistrationFormState<DeliverForm1>
         arguments: {
           'uid': user.id,
           'licenseNumber': _licenseController.text.trim(),
-          'isAddingRole': true,
-        },      );
+        },
+      );
     }
   }
 

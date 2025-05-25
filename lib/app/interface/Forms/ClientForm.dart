@@ -1,98 +1,106 @@
 import 'package:flutter/material.dart';
 import 'package:nicoya_now/app/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:provider/provider.dart';
+import 'package:nicoya_now/app/interface/Widgets/BaseRegistrationForm.dart';
+import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 
-class ClientForm extends StatefulWidget {
-  const ClientForm({Key? key}) : super(key: key);
+class ClientForm extends BaseRegistrationForm {
+  const ClientForm({Key? key, bool isAddingRole = false}) 
+      : super(
+          key: key,
+          roleSlug: 'client',
+          roleTitle: 'Cliente',
+          isAddingRole: isAddingRole,
+        );
 
   @override
   State<ClientForm> createState() => _ClientFormState();
 }
 
-class _ClientFormState extends State<ClientForm> {
+class _ClientFormState extends BaseRegistrationFormState<ClientForm>
+    with CommonFormFields {
   final _formKey = GlobalKey<FormState>();
-  final _firstName = TextEditingController();
-  final _lastName1 = TextEditingController();
-  final _lastName2 = TextEditingController();
-  final _phone     = TextEditingController();
-  final _address   = TextEditingController();
-  final _email     = TextEditingController();
-  final _password  = TextEditingController();
-  final _passConf  = TextEditingController();
+  final _addressController = TextEditingController();
 
-  bool   _loading  = false;
-  bool   _hidePw   = true;
-  bool   _hidePw2  = true;
-  String? _error;
-
- 
-  Future<void> _register() async {
-    if (!_formKey.currentState!.validate()) return;
-    if (_password.text != _passConf.text) {
-      setState(() => _error = 'Las contraseñas no coinciden');
-      return;
+  @override
+  void initState() {
+    super.initState();
+    
+    // Si es agregar rol, pre-llenar campos desde el usuario actual
+    if (isAddingRole) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _fillExistingUserData();
+      });
     }
+  }
 
-    setState(() {
-      _loading = true;
-      _error   = null;
-    });
-
-    try {
-      final authController = Provider.of<AuthController>(context, listen: false);
-      
-      final success = await authController.signUp(
-        email: _email.text.trim(),
-        password: _password.text,
-        firstName: _firstName.text.trim(),
-        lastName1: _lastName1.text.trim(),
-        lastName2: _lastName2.text.trim(),
-        phone: _phone.text.trim(),
-        address: _address.text.trim(),
-      );
-
-      if (!mounted) return;
-      
-      if (success) {
-        Navigator.pop(context); 
-      } else {
-        setState(() => _error = authController.errorMessage);
-      }
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => _error = 'Error: ${e.toString()}');
-    } finally {
-      if (mounted) setState(() => _loading = false);
+  void _fillExistingUserData() {
+    final authController = context.read<AuthController>();
+    final user = authController.user;
+    
+    if (user != null) {
+      emailController.text = user.email;
+      firstNameController.text = user.firstName ?? '';
+      lastName1Controller.text = user.lastName1 ?? '';
+      lastName2Controller.text = user.lastName2 ?? '';
+      phoneController.text = user.phone ?? '';
     }
   }
 
   @override
-  void dispose() {
-    for (final c in [
-      _firstName,
-      _lastName1,
-      _lastName2,
-      _phone,
-      _address,
-      _email,
-      _password,
-      _passConf,
-    ]) {
-      c.dispose();
-    }
-    super.dispose();
+  bool validateForm() {
+    return _formKey.currentState?.validate() ?? false;
   }
 
-  Widget _text(String label, TextEditingController c,
-      {TextInputType? type, int? maxLen}) {
-    return TextFormField(
-      controller: c,
-      keyboardType: type,
-      maxLength: maxLen,
-      buildCounter: (_, {required currentLength, maxLength, required isFocused}) => null,
-      decoration: InputDecoration(labelText: label),
-      validator: (v) => v == null || v.trim().isEmpty ? 'Requerido' : null,
+  @override
+  Future<void> performRegistration() async {
+    final authController = context.read<AuthController>();
+    
+    final success = await authController.signUp(
+      email: emailController.text.trim(),
+      password: passwordController.text,
+      firstName: firstNameController.text.trim(),
+      lastName1: lastName1Controller.text.trim(),
+      lastName2: lastName2Controller.text.trim(),
+      phone: phoneController.text.trim(),
+      address: _addressController.text.trim(),
+      roleSlug: roleSlug,
     );
+
+    if (!success) {
+      throw Exception(authController.errorMessage ?? 'Error al crear la cuenta');
+    }
+  }
+
+  @override
+  Future<void> performRoleAddition() async {
+    // Para cliente, solo necesitamos agregar el rol
+    // Los datos personales ya existen
+  }
+
+  @override
+  void onRegistrationSuccess() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(isAddingRole
+            ? '¡Rol de Cliente agregado con éxito!'
+            : '¡Cuenta de cliente creada con éxito!'),
+        backgroundColor: Colors.green,
+      ),
+    );
+
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      Routes.home_food,
+      (route) => false,
+    );
+  }
+
+  @override
+  void dispose() {
+    disposeCommonControllers();
+    _addressController.dispose();
+    super.dispose();
   }
 
   @override
@@ -105,9 +113,9 @@ class _ClientFormState extends State<ClientForm> {
           backgroundColor: Colors.white,
           scrolledUnderElevation: 0,
           automaticallyImplyLeading: false,
-          title: const Text(
-            'Crea tu cuenta',
-            style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+          title: Text(
+            isAddingRole ? 'Agregar rol de Cliente' : 'Crea tu cuenta de Cliente',
+            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
           ),
         ),
         body: SafeArea(
@@ -115,105 +123,139 @@ class _ClientFormState extends State<ClientForm> {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
             child: Column(
               children: [
-                _text('Nombre', _firstName, type: TextInputType.name),
+                // Mostrar información si es agregar rol
+                if (isAddingRole) ...[
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    margin: const EdgeInsets.only(bottom: 20),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      border: Border.all(color: Colors.blue.shade200),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.info_outline, color: Colors.blue.shade600),
+                        const SizedBox(width: 8),
+                        const Expanded(
+                          child: Text(
+                            'Agregando rol de Cliente a tu cuenta existente. '
+                            'Los campos están prellenados con tu información.',
+                            style: TextStyle(fontSize: 14),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+
+                buildErrorWidget(),
+
+                buildTextField(
+                  label: 'Nombre',
+                  controller: firstNameController,
+                  keyboardType: TextInputType.name,
+                  enabled: !isAddingRole, // Deshabilitar si es agregar rol
+                ),
                 const SizedBox(height: 20),
-                _text('Primer apellido', _lastName1, type: TextInputType.name),
+
+                buildTextField(
+                  label: 'Primer apellido',
+                  controller: lastName1Controller,
+                  keyboardType: TextInputType.name,
+                  enabled: !isAddingRole,
+                ),
                 const SizedBox(height: 20),
-                _text('Segundo apellido', _lastName2, type: TextInputType.name),
+
+                buildTextField(
+                  label: 'Segundo apellido',
+                  controller: lastName2Controller,
+                  keyboardType: TextInputType.name,
+                  enabled: !isAddingRole,
+                ),
                 const SizedBox(height: 20),
-                _text('Teléfono', _phone,
-                    type: TextInputType.phone, maxLen: 8),
+
+                buildTextField(
+                  label: 'Teléfono',
+                  controller: phoneController,
+                  keyboardType: TextInputType.phone,
+                  maxLength: 8,
+                  validator: validatePhone,
+                  enabled: !isAddingRole,
+                ),
                 const SizedBox(height: 20),
-                _text('Domicilio', _address,
-                    type: TextInputType.streetAddress),
+
+                buildTextField(
+                  label: 'Domicilio',
+                  controller: _addressController,
+                  keyboardType: TextInputType.streetAddress,
+                ),
                 const SizedBox(height: 20),
-                TextFormField(
-                  controller: _email,
+
+                buildTextField(
+                  label: 'Email',
+                  controller: emailController,
                   keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(labelText: 'Email'),
-                  validator: (v) =>
-                      v != null && v.contains('@') ? null : 'Correo inválido',
+                  validator: validateEmail,
+                  enabled: !isAddingRole,
                 ),
-                const SizedBox(height: 20),
-                TextFormField(
-                  controller: _password,
-                  obscureText: _hidePw,
-                  decoration: InputDecoration(
-                    labelText: 'Contraseña',
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                          _hidePw ? Icons.visibility_off : Icons.visibility),
-                      onPressed: () => setState(() => _hidePw = !_hidePw),
+
+                // Solo mostrar campos de contraseña si no es agregar rol
+                if (!isAddingRole) ...[
+                  const SizedBox(height: 20),
+                  buildTextField(
+                    label: 'Contraseña',
+                    controller: passwordController,
+                    obscureText: hidePassword,
+                    validator: validatePassword,
+                    suffix: IconButton(
+                      icon: Icon(hidePassword ? Icons.visibility_off : Icons.visibility),
+                      onPressed: () => setState(() => hidePassword = !hidePassword),
                     ),
                   ),
-                  validator: (v) =>
-                      v != null && v.length >= 6 ? null : 'Mínimo 6 caracteres',
-                ),
-                const SizedBox(height: 20),
-                TextFormField(
-                  controller: _passConf,
-                  obscureText: _hidePw2,
-                  decoration: InputDecoration(
-                    labelText: 'Confirmar contraseña',
-                    suffixIcon: IconButton(
-                      icon: Icon(_hidePw2
-                          ? Icons.visibility_off
-                          : Icons.visibility),
-                      onPressed: () => setState(() => _hidePw2 = !_hidePw2),
+                  const SizedBox(height: 20),
+                  buildTextField(
+                    label: 'Confirmar contraseña',
+                    controller: confirmPasswordController,
+                    obscureText: hideConfirmPassword,
+                    validator: validateConfirmPassword,
+                    suffix: IconButton(
+                      icon: Icon(hideConfirmPassword ? Icons.visibility_off : Icons.visibility),
+                      onPressed: () => setState(() => hideConfirmPassword = !hideConfirmPassword),
                     ),
                   ),
-                  validator: (v) =>
-                      v == _password.text ? null : 'No coincide',
-                ),
+                ],
+
                 const SizedBox(height: 30),
-                if (_error != null)
-                  Text(_error!,
-                      style: const TextStyle(color: Colors.red, fontSize: 14)),
-                const SizedBox(height: 10),
-                SizedBox(
-                  width: double.infinity,
-                  height: 55,
-                  child: ElevatedButton(
-                    onPressed: _loading ? null : _register,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xffd72a23),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)),
-                    ),
-                    child: _loading
-                        ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child:
-                                CircularProgressIndicator(color: Colors.white))
-                        : const Text('Registrar',
-                            style:
-                                TextStyle(fontSize: 18, color: Colors.white)),
-                  ),
+
+                buildSubmitButton(
+                  label: isAddingRole ? 'Agregar Rol de Cliente' : 'Registrar Cliente',
                 ),
-                const SizedBox(height: 20),
-                // Google sign-up button
-                Consumer<AuthController>(
-                  builder: (context, authController, _) => SizedBox(
-                    width: double.infinity,
-                    height: 55,
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        // Aquí implementarías la lógica para sign-in con Google
-                        // usando el controlador de autenticación
-                      },
-                      icon: const Icon(Icons.login, size: 24),
-                      label: const Text('Google', style: TextStyle(fontSize: 18)),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xffd72a23),
-                        side: const BorderSide(color: Color(0xffd72a23)),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+
+                // Solo mostrar botón de Google si no es agregar rol
+                if (!isAddingRole) ...[
+                  const SizedBox(height: 20),
+                  Consumer<AuthController>(
+                    builder: (context, authController, _) => SizedBox(
+                      width: double.infinity,
+                      height: 55,
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          // Implementar lógica de Google Sign-In
+                        },
+                        icon: const Icon(Icons.login, size: 24),
+                        label: const Text('Google', style: TextStyle(fontSize: 18)),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xffd72a23),
+                          side: const BorderSide(color: Color(0xffd72a23)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
+                ],
               ],
             ),
           ),

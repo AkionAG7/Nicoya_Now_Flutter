@@ -6,7 +6,9 @@ import 'package:provider/provider.dart';
 import '../../../../interface/Navigators/routes.dart';
 
 class MerchantStepPassword extends StatefulWidget {
-  const MerchantStepPassword({super.key});
+  final bool isAddingRole;
+  
+  const MerchantStepPassword({super.key, this.isAddingRole = false});
 
   @override
   State<MerchantStepPassword> createState() => _MerchantStepPasswordState();
@@ -17,13 +19,16 @@ class _MerchantStepPasswordState extends State<MerchantStepPassword> {
   final _pw   = TextEditingController();
   final _pw2  = TextEditingController();
   bool _hide1 = true, _hide2 = true;
-
   @override
   Widget build(BuildContext context) {
     final ctrl = context.watch<MerchantRegistrationController>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Crea tu cuenta de comercio')),
+      appBar: AppBar(
+        title: Text(widget.isAddingRole 
+            ? 'Agregar rol de Comerciante' 
+            : 'Crea tu cuenta de comercio'),
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -31,15 +36,69 @@ class _MerchantStepPasswordState extends State<MerchantStepPassword> {
             key: _fKey,
             child: Column(
               children: [
-                MerchantFields(
-                  group      : MerchantFieldGroup.password,
-                  pw         : _pw,
-                  pwConfirm  : _pw2,
-                  hidePw     : _hide1,
-                  hidePw2    : _hide2,
-                  togglePw   : () => setState(() => _hide1 = !_hide1),
-                  togglePw2  : () => setState(() => _hide2 = !_hide2),
-                ),
+                // Mostrar información si es agregar rol
+                if (widget.isAddingRole) ...[
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    margin: const EdgeInsets.only(bottom: 20),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      border: Border.all(color: Colors.blue.shade200),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.info_outline, color: Colors.blue.shade600),
+                        const SizedBox(width: 8),
+                        const Expanded(
+                          child: Text(
+                            'Confirmando el rol de Comerciante para tu cuenta existente.',
+                            style: TextStyle(fontSize: 14),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                
+                // Solo mostrar campos de contraseña si NO es agregar rol
+                if (!widget.isAddingRole) ...[
+                  MerchantFields(
+                    group      : MerchantFieldGroup.password,
+                    pw         : _pw,
+                    pwConfirm  : _pw2,
+                    hidePw     : _hide1,
+                    hidePw2    : _hide2,
+                    togglePw   : () => setState(() => _hide1 = !_hide1),
+                    togglePw2  : () => setState(() => _hide2 = !_hide2),
+                  ),
+                ] else ...[
+                  const Expanded(
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.store, size: 80, color: Color(0xffd72a23)),
+                          SizedBox(height: 20),
+                          Text(
+                            '¡Listo para ser Comerciante!',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xffd72a23),
+                            ),
+                          ),
+                          SizedBox(height: 10),
+                          Text(
+                            'Ya puedes empezar a gestionar tu negocio',
+                            style: TextStyle(fontSize: 16),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
 
                 const Spacer(),
 
@@ -50,20 +109,41 @@ class _MerchantStepPasswordState extends State<MerchantStepPassword> {
                     style: FilledButton.styleFrom(
                       backgroundColor: const Color(0xffd72a23),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8))),
-                    onPressed: ctrl.state == MerchantRegistrationState.loading
+                        borderRadius: BorderRadius.circular(8))),                    onPressed: ctrl.state == MerchantRegistrationState.loading
                         ? null
                         : () async {
-                            if (!_fKey.currentState!.validate()) return;
-                            final ok = await ctrl
-                                .finishRegistration(password: _pw.text);
+                            // Si es agregar rol, no necesita validar contraseña
+                            if (!widget.isAddingRole) {
+                              if (!_fKey.currentState!.validate()) return;
+                            }
+                            
+                            final ok = await ctrl.finishRegistration(
+                              password: widget.isAddingRole ? '' : _pw.text,
+                              isAddingRole: widget.isAddingRole,
+                            );
+                            
                             if (!mounted) return;
                             if (ok) {
-                              Navigator.pushNamedAndRemoveUntil(
-                                context,
-                                Routes.driverPending,
-                                (_) => false,
-                              );
+                              if (widget.isAddingRole) {
+                                // Mostrar mensaje de éxito y redirigir a home
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('¡Rol de Comerciante agregado con éxito!'),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
+                                Navigator.pushNamedAndRemoveUntil(
+                                  context,
+                                  Routes.home_food,
+                                  (route) => false,
+                                );
+                              } else {
+                                Navigator.pushNamedAndRemoveUntil(
+                                  context,
+                                  Routes.driverPending,
+                                  (_) => false,
+                                );
+                              }
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
@@ -74,11 +154,12 @@ class _MerchantStepPasswordState extends State<MerchantStepPassword> {
                                 ),
                               );
                             }
-                          },
-                    child: ctrl.state == MerchantRegistrationState.loading
+                          },                    child: ctrl.state == MerchantRegistrationState.loading
                         ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text('Registrar',
-                            style: TextStyle(fontSize: 20)),
+                        : Text(
+                            widget.isAddingRole ? 'Agregar Rol' : 'Registrar',
+                            style: const TextStyle(fontSize: 20),
+                          ),
                   ),
                 ),
               ],

@@ -3,352 +3,230 @@ import 'package:flutter/material.dart';
 import 'package:nicoya_now/Icons/nicoya_now_icons_icons.dart';
 import 'package:nicoya_now/app/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
-import 'package:nicoya_now/app/interface/Widgets/SelectTypeAccount.dart';
 import 'package:provider/provider.dart';
+
+enum AccountType { repartidor, comercio, cliente }
 
 class LoginPage extends StatefulWidget {
   final AccountType? accountType;
   const LoginPage({Key? key, this.accountType}) : super(key: key);
 
   @override
-  _LoginPageState createState() => _LoginPageState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
 class _LoginPageState extends State<LoginPage> {
-  bool _obscureText = true;
-  bool _rememberMe = false;
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  late TapGestureRecognizer _tapRegister;
-  bool _isLoading = false;
+  bool _obscureText   = true;
+  bool _rememberMe    = false;
+  bool _isLoading     = false;
 
-  @override
-  void initState() {
-    super.initState();    _tapRegister =
-        TapGestureRecognizer()
-          ..onTap = () async {
-            // Dirigir al usuario a la selección de tipo de cuenta
-            Navigator.pushNamed(context, Routes.selecctTypeAccount);
-          };
-  }
+  final _email    = TextEditingController();
+  final _password = TextEditingController();
 
   @override
   void dispose() {
-    _tapRegister.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
+    _email.dispose();
+    _password.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    /* recognizer se crea aquí: siempre válido */
+    final tapRegister = TapGestureRecognizer()
+      ..onTap = () => Navigator.pushNamed(context, Routes.selecctTypeAccount);
+
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
-      child: Form(
-        child: Scaffold(
-          backgroundColor: Colors.white,
-          resizeToAvoidBottomInset: false,
-          body: Padding(
-            padding: const EdgeInsets.only(left: 20, right: 20),
-            child: SafeArea(
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 20),
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 270,
-                      child: Image.asset(
-                        'lib/app/interface/public/LoginImage.png',
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Iniciar sesión',
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        resizeToAvoidBottomInset: false,
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              children: [
+                const SizedBox(height: 20),
+                Image.asset('lib/app/interface/public/LoginImage.png',
+                            height: 270, width: double.infinity, fit: BoxFit.cover),
+                const SizedBox(height: 20),
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text('Iniciar sesión',
                       style: TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xfff10027),
+                        fontSize: 30, fontWeight: FontWeight.bold,
+                        color: Color(0xfff10027))),
+                ),
+                const SizedBox(height: 10),
+                _textField(_email, 'Email', hint: 'you@gmail.com',
+                           inputType: TextInputType.emailAddress),
+                const SizedBox(height: 20),
+                _passwordField(),
+                Row(
+                  children: [
+                    Expanded(
+                      child: CheckboxListTile(
+                        title: const Text('Recuérdame', style: TextStyle(fontSize: 12)),
+                        controlAffinity: ListTileControlAffinity.leading,
+                        value: _rememberMe,
+                        onChanged: (v) => setState(() => _rememberMe = !_rememberMe),
                       ),
                     ),
+                    const Text('¿Olvidaste tu contraseña?', style: TextStyle(fontSize: 12)),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                SizedBox(
+                  height: 60, width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xffd72a23),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                    onPressed: _isLoading ? null : _login,
+                    child: _isLoading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text('Iniciar sesión',
+                            style: TextStyle(color: Colors.white,
+                                             fontSize: 16, fontWeight: FontWeight.bold)),
                   ),
-                  const SizedBox(height: 10),
-                  TextFormField(
-                    key: const Key('emailField'),
-                    controller: _emailController,
-                    decoration: InputDecoration(
-                      labelText: 'Email',
-                      hintText: 'You@gmail.com',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 20),
-                  TextFormField(
-                    key: const Key('passwordField'),
-                    controller: _passwordController,
-                    obscureText: _obscureText,
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      hintText: 'YouPassword',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      suffixIcon: IconButton(
-                        onPressed: () {
-                          setState(() {
-                            _obscureText = !_obscureText;
-                          });
-                        },
-                        icon: Icon(
-                          _obscureText
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Row(
+                ),
+                const SizedBox(height: 20),
+                RichText(
+                  text: TextSpan(
+                    text: '¿No tienes una cuenta?',
+                    style: const TextStyle(color: Colors.black, fontSize: 12),
                     children: [
-                      Expanded(
-                        child: CheckboxListTile(
-                          key: const Key('rememberMeCheckbox'),
-                          title: const Text(
-                            'Recuerdame',
-                            style: TextStyle(fontSize: 12),
-                          ),
-                          value: _rememberMe,
-                          controlAffinity: ListTileControlAffinity.leading,
-                          onChanged: (bool? value) {
-                            setState(() {
-                              _rememberMe = !_rememberMe;
-                            });
-                          },
-                        ),
-                      ),
-                      Text(
-                        '¿Haz olvidado tu contraseña?',
-                        style: TextStyle(fontSize: 12),
+                      TextSpan(
+                        text: ' Regístrate',
+                        recognizer: tapRegister,
+                        style: const TextStyle(
+                          color: Color(0xffd72a23),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12),
                       ),
                     ],
                   ),
-                  SizedBox(
-                    height: 60,
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : _login,
-                      style: ElevatedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        backgroundColor: Color(0xffd72a23),
-                      ),
-                      child:
-                          _isLoading
-                              ? CircularProgressIndicator(color: Colors.white)
-                              : Text(
-                                'Iniciar sesión',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                    ),
-                  ),
-                  SizedBox(height: 20),
-                  RichText(
-                    text: TextSpan(
-                      text: '¿No tienes una cuenta?',
-                      style: TextStyle(color: Colors.black, fontSize: 12),
-                      children: [
-                        TextSpan(
-                          text: ' Registrate',
-                          style: TextStyle(
-                            color: Color(0xffd72a23),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
-                          recognizer: _tapRegister,
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: 20),
-                  Text(
-                    'O inicia sesión con',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      IconButton(
-                        onPressed:
-                            () => print('hello'), // implementar logica de login
-                        icon: Icon(NicoyaNowIcons.facebook, size: 40),
-                      ),
-                      const SizedBox(width: 40),
-                      IconButton(
-                        onPressed:
-                            () => print('hello'), // implementar logica de login
-                        icon: Icon(NicoyaNowIcons.google, size: 40),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 20),
+                const Text('O inicia sesión con',
+                           style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(icon: const Icon(NicoyaNowIcons.facebook, size: 40),
+                               onPressed: () {}),
+                    const SizedBox(width: 40),
+                    IconButton(icon: const Icon(NicoyaNowIcons.google, size: 40),
+                               onPressed: () {}),
+                  ],
+                ),
+              ],
             ),
           ),
         ),
       ),
     );
   }
-  // Método para navegar según el rol
-  void _navigateToRoleScreen(BuildContext context, String role) {
-    // Por ahora todas las rutas van a home_food, pero aquí podrías
-    // agregar rutas específicas para cada rol
-    String route = Routes.home_food;
-    switch (role) {
-      case 'driver':
-        route = Routes.home_food; // Cambiar cuando exista una pantalla específica
-        break;
-      case 'merchant':
-        route = Routes.home_food; // Cambiar cuando exista una pantalla específica
-        break;
-      case 'client':
-      default:
-        route = Routes.home_food;
-    }
 
-    Navigator.pushNamedAndRemoveUntil(
-      context,
-      route,
-      (route) => false,
+  // ---------- inputs helpers ----------
+  Widget _textField(TextEditingController c, String label,
+      {String? hint, TextInputType inputType = TextInputType.text}) =>
+    TextFormField(
+      controller: c,
+      keyboardType: inputType,
+      decoration: InputDecoration(
+        labelText: label, hintText: hint,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
     );
-  }
 
-  // Método para construir el diálogo de selección de rol
-  Widget _buildRoleSelectionDialog(BuildContext context, AuthController authController) {
-    return AlertDialog(
-      title: Text('Selecciona tu rol'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: (authController.userRoles ?? []).map<Widget>((roleData) {
-          final role = roleData['role'] as Map<String, dynamic>;
-          final slug = role['slug'] as String;
-          final label = role['label'] as String;
-
-          IconData icon;
-          switch (slug) {
-            case 'driver':
-              icon = Icons.delivery_dining;
-              break;
-            case 'merchant':
-              icon = Icons.store;
-              break;
-            case 'client':
-            default:
-              icon = Icons.person;
-          }
-
-          return ListTile(
-            leading: Icon(icon, color: Color(0xffd72a23)),
-            title: Text(label),
-            onTap: () {
-              Navigator.pop(context); // Cerrar diálogo
-              _navigateToRoleScreen(context, slug);
-            },
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  Future<void> _login() async {
-    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Por favor, ingresa email y contraseña')),
+  Widget _passwordField() => TextFormField(
+        controller: _password,
+        obscureText: _obscureText,
+        decoration: InputDecoration(
+          labelText: 'Password',
+          hintText: '*******',
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+          suffixIcon: IconButton(
+            icon: Icon(_obscureText ? Icons.visibility_off : Icons.visibility),
+            onPressed: () => setState(() => _obscureText = !_obscureText),
+          ),
+        ),
       );
+
+  // ---------- login ----------
+  Future<void> _login() async {
+    if (_email.text.isEmpty || _password.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ingrese email y contraseña')));
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
+    final auth = context.read<AuthController>();
 
-    try {
-      final authController = Provider.of<AuthController>(context, listen: false);
-      final success = await authController.signIn(
-        _emailController.text.trim(),
-        _passwordController.text,
-      );
+    final ok = await auth.signIn(_email.text.trim(), _password.text);
+    if (!mounted) return;
+    setState(() => _isLoading = false);
 
-      if (!mounted) return;
-
-      if (success) {
-        await authController.loadUserRoles();
-        
-        // Obtener el rol seleccionado de los argumentos si existe
-        final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-        final selectedRole = args?['selectedRole'] as String?;
-        
-        if (selectedRole != null) {
-          // Si venimos de la selección de tipo de cuenta, retornar true
-          Navigator.of(context).pop(true);
-        } else {
-          final roles = authController.userRoles ?? [];
-          if (roles.isEmpty) {
-            // Si no tiene roles, mostrar mensaje de error
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('No tienes roles asignados. Por favor, registra un rol.'),
-                action: SnackBarAction(
-                  label: 'Registrar',
-                  onPressed: () {
-                    Navigator.pushNamed(context, Routes.selecctTypeAccount);
-                  },
-                ),
-              ),
-            );
-          } else if (roles.length > 1) {
-            // Si tiene múltiples roles, mostrar diálogo de selección
-            showDialog(
-              context: context,
-              barrierDismissible: false,
-              builder: (context) => _buildRoleSelectionDialog(context, authController),
-            );
-          } else {
-            // Si solo tiene un rol, navegar a la pantalla correspondiente
-            final role = roles.first['role']['slug'] as String;
-            _navigateToRoleScreen(context, role);
-          }
-        }
-      } else {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(authController.errorMessage ?? 'Error desconocido')),
-        );
-      }
-    } catch (e) {
-      if (!mounted) return;
+    if (!ok) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error de conexión. Por favor, verifica tu conexión a internet.'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+        SnackBar(content: Text(auth.errorMessage ?? 'Error desconocido')));
+      return;
     }
+
+    await auth.loadUserRoles();
+    final roles = auth.userRoles ?? [];
+
+    // si se abrió desde selectTypeAccount → devolver true
+    final sel = ModalRoute.of(context)!.settings.arguments as Map<String,dynamic>?;
+    final selectedRole = sel?['selectedRole'] as String?;
+    if (selectedRole != null) {
+      Navigator.of(context).pop(true);
+      return;
+    }
+
+    if (roles.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: const Text('No tienes roles asignados'),
+                 action: SnackBarAction(
+                   label: 'Registrar',
+                   onPressed: () => Navigator.pushNamed(context, Routes.selecctTypeAccount))));
+    } else if (roles.length == 1) {
+      _navigateToRoleScreen(roles.first['role']['slug'] as String);
+    } else {
+      _showRoleDialog(auth);
+    }
+  }
+
+  void _showRoleDialog(AuthController auth) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AlertDialog(
+        title: const Text('Selecciona tu rol'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: (auth.userRoles ?? []).map((r) {
+            final slug  = r['role']['slug']  as String;
+            final label = r['role']['label'] as String;
+            return ListTile(
+              leading: const Icon(Icons.person, color: Color(0xffd72a23)),
+              title: Text(label),
+              onTap: () {
+                Navigator.pop(context);
+                _navigateToRoleScreen(slug);
+              });
+          }).toList(),
+        ),
+      ));
+  }
+
+  void _navigateToRoleScreen(String slug) {
+    String route = Routes.home_food;                 // cliente por defecto
+    if (slug == 'merchant') route = Routes.home_food;  // placeholder
+    if (slug == 'driver')   route = Routes.home_food;  // placeholder
+
+    Navigator.pushNamedAndRemoveUntil(context, route, (_) => false);
   }
 }

@@ -52,16 +52,14 @@ void setupServiceLocator() {
   locator.registerLazySingleton<RegisterMerchantUseCase>(
     () => RegisterMerchantUseCase(locator<MerchantRepository>()),
   );
-
-  locator.registerFactory<AuthController>(() => AuthController(
+  locator.registerLazySingleton<AuthController>(() => AuthController(
         signInUseCase : locator<SignInUseCase>(),
         signUpUseCase : locator<SignUpUseCase>(),
         roleService   : locator<RoleService>(),  
-      ));
-
-  locator.registerFactory<MerchantRegistrationController>(
+      ));locator.registerFactory<MerchantRegistrationController>(
     () => MerchantRegistrationController(
       registerMerchantUseCase: locator<RegisterMerchantUseCase>(),
+      authController: locator<AuthController>(),
     ),
   );
 }

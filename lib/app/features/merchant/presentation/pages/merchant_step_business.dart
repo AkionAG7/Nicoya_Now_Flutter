@@ -7,7 +7,9 @@ import 'package:provider/provider.dart';
 import '../../../../interface/Navigators/routes.dart';
 
 class MerchantStepBusiness extends StatefulWidget {
-  const MerchantStepBusiness({super.key});
+  final bool isAddingRole;
+  
+  const MerchantStepBusiness({super.key, this.isAddingRole = false});
 
   @override
   State<MerchantStepBusiness> createState() => _MerchantStepBusinessState();
@@ -23,6 +25,19 @@ class _MerchantStepBusinessState extends State<MerchantStepBusiness> {
   XFile? _logo;
   bool  _isCedulaJuridica = true;              
 
+  @override
+  void initState() {
+    super.initState();
+    
+    // Si es agregar rol, pre-llenar datos del usuario existente
+    if (widget.isAddingRole) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final ctrl = context.read<MerchantRegistrationController>();
+        ctrl.fillExistingUserData();
+      });
+    }
+  }
+
   Future<void> _pickLogo() async {
     final img = await ImagePicker()
         .pickImage(source: ImageSource.gallery, imageQuality: 75);
@@ -34,14 +49,41 @@ class _MerchantStepBusinessState extends State<MerchantStepBusiness> {
 
   @override
   Widget build(BuildContext context) {
-    final ctrl = context.read<MerchantRegistrationController>();
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('Crear cuenta de comercio')),
+    final ctrl = context.read<MerchantRegistrationController>();    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.isAddingRole 
+            ? 'Agregar rol de Comerciante' 
+            : 'Crear cuenta de comercio'),
+      ),
       resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: Column(
           children: [
+            // Mostrar información si es agregar rol
+            if (widget.isAddingRole) ...[
+              Container(
+                padding: const EdgeInsets.all(16),
+                margin: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  border: Border.all(color: Colors.blue.shade200),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.blue.shade600),
+                    const SizedBox(width: 8),
+                    const Expanded(
+                      child: Text(
+                        'Agregando rol de Comerciante a tu cuenta existente. '
+                        'Proporciona la información del negocio.',
+                        style: TextStyle(fontSize: 14),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             Expanded(
               child: SingleChildScrollView(
                 padding: EdgeInsets.fromLTRB(
@@ -51,8 +93,7 @@ class _MerchantStepBusinessState extends State<MerchantStepBusiness> {
                   MediaQuery.of(context).viewInsets.bottom + 20,
                 ),
                 child: Form(
-                  key: _fKey,
-                  child: MerchantFields(
+                  key: _fKey,                  child: MerchantFields(
                     group              : MerchantFieldGroup.business,
                     businessName       : _name,
                     corpName           : _corpName,
@@ -62,6 +103,7 @@ class _MerchantStepBusinessState extends State<MerchantStepBusiness> {
                     onPickLogo         : _pickLogo,
                     isCedulaJuridica   : _isCedulaJuridica,
                     onCedulaTypeChanged: _onCedulaTypeChanged,
+                    isAddingRole       : widget.isAddingRole,
                   ),
                 ),
               ),
@@ -88,9 +130,11 @@ class _MerchantStepBusinessState extends State<MerchantStepBusiness> {
                             address          : _address.text.trim(),
                             logo             : _logo!,
                             isCedulaJuridica : _isCedulaJuridica,
+                          );                          Navigator.pushNamed(
+                            context, 
+                            Routes.merchantStepOwner,
+                            arguments: {'isAddingRole': widget.isAddingRole},
                           );
-                          Navigator.pushNamed(
-                            context, Routes.merchantStepOwner);
                         },
                   child: const Text('Continuar',
                       style: TextStyle(fontSize: 20)),
