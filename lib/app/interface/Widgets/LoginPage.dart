@@ -221,10 +221,9 @@ class _LoginPageState extends State<LoginPage> {
           children: roles.map((role) {
             String title;
             IconData icon;
-            
-            // Configurar título e icono según el rol
+              // Configurar título e icono según el rol
             switch (role) {
-              case 'client':
+              case 'customer': // Updated to match database role name
                 title = 'Cliente';
                 icon = Icons.person;
                 break;
@@ -244,10 +243,9 @@ class _LoginPageState extends State<LoginPage> {
             return ListTile(
               leading: Icon(icon, color: Color(0xffd72a23)),
               title: Text(title),
-              onTap: () {
-                // Manejar selección del rol
+              onTap: () {                // Manejar selección del rol
                 switch (role) {
-                  case 'client':
+                  case 'customer': // Updated to match database role name
                     Navigator.pushNamedAndRemoveUntil(
                       context, Routes.home_food, (route) => false);
                     break;
@@ -302,12 +300,11 @@ class _LoginPageState extends State<LoginPage> {
             context: context,
             barrierDismissible: false,
             builder: (context) => _buildRoleSelectionDialog(context, authController),
-          );
-        } else {
+          );        } else {
           // Si solo hay un rol, redirigir directamente
-          final userRole = roles.isNotEmpty ? roles.first : 'client';
+          final userRole = roles.isNotEmpty ? roles.first : 'customer'; // Updated default role
           switch (userRole) {
-            case 'client':
+            case 'customer': // Updated to match database role name
               Navigator.pushNamedAndRemoveUntil(
                 context, 
                 Routes.home_food,

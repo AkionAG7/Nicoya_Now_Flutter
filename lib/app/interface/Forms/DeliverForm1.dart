@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:nicoya_now/app/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
+import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class DeliverForm1 extends StatefulWidget {
@@ -25,7 +27,6 @@ class _DeliverForm1State extends State<DeliverForm1> {
   bool   _hidePw = true, _hidePw2 = true, _loading = false;
   String? _error;
 
-
   Future<void> _next() async {
     if (!_formKey.currentState!.validate()) return;
     if (_pass.text != _passConf.text) {
@@ -35,36 +36,32 @@ class _DeliverForm1State extends State<DeliverForm1> {
     setState(() { _loading = true; _error = null; });
 
     try {
-
-      final res = await supa.auth.signUp(
-        email   : _email.text.trim(),
+      final authController = Provider.of<AuthController>(context, listen: false);
+      
+      final success = await authController.signUpDriver(
+        email: _email.text.trim(),
         password: _pass.text,
+        firstName: _nombre.text.trim(),
+        lastName1: _apellido1.text.trim(),
+        lastName2: _apellido2.text.trim(),
+        phone: _telefono.text.trim(),
+        idNumber: _cedula.text.trim(),
       );
-      if (res.user == null) throw const AuthException('No se pudo crear la cuenta');
-      final uid = res.user!.id;
 
-    
-      await supa.from('profile').update({
-        'first_name' : _nombre.text.trim(),
-        'last_name1' : _apellido1.text.trim(),
-        'last_name2' : _apellido2.text.trim(),
-        'phone'      : _telefono.text.trim(),
-        'role'       : 'driver',
-        'id_number'  : _cedula.text.trim(),     
-      }).eq('user_id', uid);
-
-   
       if (!mounted) return;
-      Navigator.pushReplacementNamed(
-        context,
-        Routes.deliver_Form2,
-        arguments: {
-          'uid'          : uid,
-          'licenseNumber': _license.text.trim(),
-        },
-      );
-    } on AuthException catch (e) {
-      setState(() => _error = e.message);
+      
+      if (success) {
+        Navigator.pushReplacementNamed(
+          context,
+          Routes.deliver_Form2,
+          arguments: {
+            'uid'          : authController.user!.id,
+            'licenseNumber': _license.text.trim(),
+          },
+        );
+      } else {
+        setState(() => _error = authController.errorMessage);
+      }
     } catch (e) {
       setState(() => _error = 'Error: $e');
     } finally {

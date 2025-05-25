@@ -1,6 +1,7 @@
 import 'package:nicoya_now/app/features/merchant/data/datasources/merchant_data_source.dart';
 import 'package:nicoya_now/app/features/merchant/domain/entities/merchant.dart';
 import 'package:nicoya_now/app/features/merchant/domain/repositories/merchant_repository.dart';
+import 'package:nicoya_now/app/features/auth/presentation/controllers/auth_controller.dart';
 
 class MerchantRepositoryImpl implements MerchantRepository {
   final MerchantDataSource _ds;
@@ -23,21 +24,23 @@ class MerchantRepositoryImpl implements MerchantRepository {
     required String logoPath,
     required String password,
     required String phone,
+    required AuthController authController,
     String? cedula,
   }) async {
     final m = await _ds.registerMerchant(
-      address: address,
-      businessName: businessName,
-      corporateName: corporateName,
-      email: email,
-      firstName: firstName,
-      lastName1: lastName1,
-      lastName2: lastName2,
-      legalId: legalId,
-      logoPath: logoPath,
-      password: password,
-      phone: phone,
-      cedula: cedula,
+      address        : address,
+      businessName   : businessName,
+      corporateName  : corporateName,
+      email          : email,
+      firstName      : firstName,
+      lastName1      : lastName1,
+      lastName2      : lastName2,
+      legalId        : legalId,
+      logoPath       : logoPath,
+      password       : password,
+      phone          : phone,
+      authController : authController,
+      cedula         : cedula,
     );
 
     return Merchant.fromMap(m);

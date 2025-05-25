@@ -1,4 +1,5 @@
 import 'package:nicoya_now/app/features/merchant/domain/entities/merchant.dart';
+import 'package:nicoya_now/app/features/auth/presentation/controllers/auth_controller.dart';
 
 abstract class MerchantRepository {
   Future<List<Merchant>> getAllMerchants();
@@ -15,6 +16,7 @@ abstract class MerchantRepository {
     required String firstName,
     required String lastName1,
     required String lastName2,
+    required AuthController authController,
     String? cedula,
   });
 }

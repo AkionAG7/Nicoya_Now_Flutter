@@ -14,4 +14,5 @@ abstract class AuthRepository {
   
   Future<bool> isSignedIn();
   Future<void> resetPassword(String email);
+  Future<void> updateProfile(String userId, Map<String, dynamic> data);
 }

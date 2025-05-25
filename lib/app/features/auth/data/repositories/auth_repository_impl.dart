@@ -53,7 +53,7 @@ class AuthRepositoryImpl implements AuthRepository {
         lastName1: lastName1,
         lastName2: lastName2,
         phone: phone,
-        role: 'client', 
+        role: 'customer', // Consistent with database role name 
       );
     } catch (e) {
       rethrow;
@@ -82,6 +82,12 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<void> resetPassword(String email) async {
     throw UnimplementedError();
   }
+  
+  @override
+  Future<void> updateProfile(String userId, Map<String, dynamic> data) async {
+    await dataSource.updateProfile(userId, data);
+  }
+  
   User _mapToUser(Map<String, dynamic> userData) {
     return User(
       id: userData['id'],
@@ -90,7 +96,7 @@ class AuthRepositoryImpl implements AuthRepository {
       lastName1: userData['last_name1'],
       lastName2: userData['last_name2'],
       phone: userData['phone'],
-      role: userData['role'] ?? 'client', 
+      role: userData['role'] ?? 'customer', 
     );
   }
 }
