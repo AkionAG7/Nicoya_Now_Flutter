@@ -209,64 +209,63 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
-  // Construye un diálogo para seleccionar el rol cuando el usuario tiene múltiples roles
+  // Método para navegar según el rol
+  void _navigateToRoleScreen(BuildContext context, String role) {
+    // Por ahora todas las rutas van a home_food, pero aquí podrías
+    // agregar rutas específicas para cada rol
+    String route = Routes.home_food;
+    switch (role) {
+      case 'driver':
+        route = Routes.home_food; // Cambiar cuando exista una pantalla específica
+        break;
+      case 'merchant':
+        route = Routes.home_food; // Cambiar cuando exista una pantalla específica
+        break;
+      case 'client':
+      default:
+        route = Routes.home_food;
+    }
+
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      route,
+      (route) => false,
+    );
+  }
+
+  // Método para construir el diálogo de selección de rol
   Widget _buildRoleSelectionDialog(BuildContext context, AuthController authController) {
-    // Lista de roles disponibles para mostrar (usando el nuevo método del controlador)
-    final roles = authController.userRoles;
-    
     return AlertDialog(
       title: Text('Selecciona tu rol'),
-      content: SingleChildScrollView(
-        child: ListBody(
-          children: roles.map((role) {
-            String title;
-            IconData icon;
-            
-            // Configurar título e icono según el rol
-            switch (role) {
-              case 'client':
-                title = 'Cliente';
-                icon = Icons.person;
-                break;
-              case 'driver':
-                title = 'Repartidor';
-                icon = Icons.delivery_dining;
-                break;
-              case 'merchant':
-                title = 'Comerciante';
-                icon = Icons.store;
-                break;
-              default:
-                title = 'Usuario';
-                icon = Icons.person;
-            }
-            
-            return ListTile(
-              leading: Icon(icon, color: Color(0xffd72a23)),
-              title: Text(title),
-              onTap: () {
-                // Manejar selección del rol
-                switch (role) {
-                  case 'client':
-                    Navigator.pushNamedAndRemoveUntil(
-                      context, Routes.home_food, (route) => false);
-                    break;
-                  case 'driver':
-                    Navigator.pushNamedAndRemoveUntil(
-                      context, Routes.home_food, (route) => false); // Cambiar a pantalla de repartidores
-                    break;
-                  case 'merchant':
-                    Navigator.pushNamedAndRemoveUntil(
-                      context, Routes.home_food, (route) => false); // Cambiar a pantalla de comercios
-                    break;
-                  default:
-                    Navigator.pushNamedAndRemoveUntil(
-                      context, Routes.home_food, (route) => false);
-                }
-              },
-            );
-          }).toList(),
-        ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: (authController.userRoles ?? []).map<Widget>((roleData) {
+          final role = roleData['role'] as Map<String, dynamic>;
+          final slug = role['slug'] as String;
+          final label = role['label'] as String;
+
+          IconData icon;
+          switch (slug) {
+            case 'driver':
+              icon = Icons.delivery_dining;
+              break;
+            case 'merchant':
+              icon = Icons.store;
+              break;
+            case 'client':
+            default:
+              icon = Icons.person;
+          }
+
+          return ListTile(
+            leading: Icon(icon, color: Color(0xffd72a23)),
+            title: Text(label),
+            onTap: () {
+              Navigator.pop(context); // Cerrar diálogo
+              _navigateToRoleScreen(context, slug);
+            },
+          );
+        }).toList(),
       ),
     );
   }
@@ -284,71 +283,66 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      final authController = Provider.of<AuthController>(
-        context,
-        listen: false,
-      );      final success = await authController.signIn(
+      final authController = Provider.of<AuthController>(context, listen: false);
+      final success = await authController.signIn(
         _emailController.text.trim(),
         _passwordController.text,
       );
-      
-      if (!mounted) return;      if (success) {
-        // Obtener los roles del usuario usando el nuevo método del controlador
-        final roles = authController.userRoles;
+
+      if (!mounted) return;
+
+      if (success) {
+        await authController.loadUserRoles();
         
-        // Si hay múltiples roles, mostrar diálogo de selección
-        if (roles.length > 1) {
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (context) => _buildRoleSelectionDialog(context, authController),
-          );
+        // Obtener el rol seleccionado de los argumentos si existe
+        final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        final selectedRole = args?['selectedRole'] as String?;
+        
+        if (selectedRole != null) {
+          // Si venimos de la selección de tipo de cuenta, retornar true
+          Navigator.of(context).pop(true);
         } else {
-          // Si solo hay un rol, redirigir directamente
-          final userRole = roles.isNotEmpty ? roles.first : 'client';
-          switch (userRole) {
-            case 'client':
-              Navigator.pushNamedAndRemoveUntil(
-                context, 
-                Routes.home_food,
-                (route) => false
-              );
-              break;
-            case 'driver':
-              Navigator.pushNamedAndRemoveUntil(
-                context, 
-                Routes.home_food, // Cambiar a la pantalla para repartidores
-                (route) => false
-              );
-              break;
-            case 'merchant':
-              Navigator.pushNamedAndRemoveUntil(
-                context, 
-                Routes.home_food, // Cambiar a la pantalla para comercios
-                (route) => false
-              );
-              break;
-            default:
-              // Si no hay rol definido, ir a la pantalla principal
-              Navigator.pushNamedAndRemoveUntil(
-                context, 
-                Routes.home_food,
-                (route) => false
-              );
+          final roles = authController.userRoles ?? [];
+          if (roles.isEmpty) {
+            // Si no tiene roles, mostrar mensaje de error
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('No tienes roles asignados. Por favor, registra un rol.'),
+                action: SnackBarAction(
+                  label: 'Registrar',
+                  onPressed: () {
+                    Navigator.pushNamed(context, Routes.selecctTypeAccount);
+                  },
+                ),
+              ),
+            );
+          } else if (roles.length > 1) {
+            // Si tiene múltiples roles, mostrar diálogo de selección
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (context) => _buildRoleSelectionDialog(context, authController),
+            );
+          } else {
+            // Si solo tiene un rol, navegar a la pantalla correspondiente
+            final role = roles.first['role']['slug'] as String;
+            _navigateToRoleScreen(context, role);
           }
         }
-      }else {
+      } else {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(authController.errorMessage ?? 'Error desconocido'),
-          ),
+          SnackBar(content: Text(authController.errorMessage ?? 'Error desconocido')),
         );
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(e.toString())));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error de conexión. Por favor, verifica tu conexión a internet.'),
+          backgroundColor: Colors.red,
+        ),
+      );
     } finally {
       if (mounted) {
         setState(() {

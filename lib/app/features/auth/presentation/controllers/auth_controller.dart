@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nicoya_now/app/core/services/role_service.dart';
 import 'package:nicoya_now/app/features/auth/domain/entities/user.dart';
 import 'package:nicoya_now/app/features/auth/domain/usecases/sign_in_usecase.dart';
 import 'package:nicoya_now/app/features/auth/domain/usecases/sign_up_usecase.dart';
@@ -11,34 +12,57 @@ enum AuthState {
   error,
 }
 
-
 class AuthController extends ChangeNotifier {
   final SignInUseCase _signInUseCase;
   final SignUpUseCase _signUpUseCase;
+  final RoleService _roleService;
 
   AuthState _state = AuthState.initial;
   User? _user;
   String? _errorMessage;
+  List<Map<String, dynamic>>? _userRoles;
 
   AuthController({
     required SignInUseCase signInUseCase,
     required SignUpUseCase signUpUseCase,
+    required RoleService roleService,
   })  : _signInUseCase = signInUseCase,
-        _signUpUseCase = signUpUseCase;
+        _signUpUseCase = signUpUseCase,
+        _roleService = roleService;
 
   AuthState get state => _state;
   User? get user => _user;
   String? get errorMessage => _errorMessage;
-  
-  // Obtener el rol principal del usuario
-  String? get userRole => _user?.role;
-  
-  // Obtener todos los roles del usuario como una lista
-  List<String> get userRoles => _user?.getRoles() ?? ['client'];
-  
-  // Verificar si el usuario tiene un rol específico
-  bool hasRole(String roleName) => _user?.hasRole(roleName) ?? false;
+  List<Map<String, dynamic>>? get userRoles => _userRoles;
 
+  // Obtener los roles del usuario desde Supabase
+  Future<void> loadUserRoles() async {
+    try {
+      _userRoles = await _roleService.getUserRoles();
+      notifyListeners();
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+    }
+  }
+
+  // Verificar si el usuario ya está registrado
+  Future<bool> isUserRegistered() async {
+    return await _roleService.isUserRegistered();
+  }
+
+  // Verificar si el usuario tiene un rol específico
+  Future<bool> hasRole(String slug) async {
+    return await _roleService.hasRole(slug);
+  }
+
+  // Agregar un nuevo rol al usuario
+  Future<void> addRole(String slug) async {
+    await _roleService.addRoleIfNotExists(slug);
+    await loadUserRoles(); // Recargar los roles después de agregar uno nuevo
+  }
+
+  // ...existing code...
   Future<bool> signIn(String email, String password) async {
     _state = AuthState.loading;
     _errorMessage = null;
@@ -56,7 +80,6 @@ class AuthController extends ChangeNotifier {
       return false;
     }
   }
-
 
   Future<bool> signUp({
     required String email,

@@ -1,4 +1,5 @@
 import 'package:get_it/get_it.dart';
+import 'package:nicoya_now/app/core/services/role_service.dart';
 import 'package:nicoya_now/app/features/auth/data/datasources/auth_data_source.dart';
 import 'package:nicoya_now/app/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:nicoya_now/app/features/auth/domain/repositories/auth_repository.dart';
@@ -21,6 +22,10 @@ void setupServiceLocator() {
     locator.registerSingleton<SupabaseClient>(supabase);
   }
 
+  locator.registerLazySingleton<RoleService>(
+    () => RoleService(locator<SupabaseClient>()),
+  );  
+  
   // Data sources
   locator.registerLazySingleton<AuthDataSource>(
     () => SupabaseAuthDataSource(locator<SupabaseClient>()),
@@ -48,13 +53,12 @@ void setupServiceLocator() {
     () => RegisterMerchantUseCase(locator<MerchantRepository>()),
   );
 
-  // Controllers
-  locator.registerFactory<AuthController>(
-    () => AuthController(
-      signInUseCase: locator<SignInUseCase>(),
-      signUpUseCase: locator<SignUpUseCase>(),
-    ),
-  );
+  locator.registerFactory<AuthController>(() => AuthController(
+        signInUseCase : locator<SignInUseCase>(),
+        signUpUseCase : locator<SignUpUseCase>(),
+        roleService   : locator<RoleService>(),  
+      ));
+
   locator.registerFactory<MerchantRegistrationController>(
     () => MerchantRegistrationController(
       registerMerchantUseCase: locator<RegisterMerchantUseCase>(),
