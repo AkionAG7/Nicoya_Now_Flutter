@@ -21,6 +21,7 @@ class Routes {
   static const comerse_Form = '/comerseForm';
   static const driverPending = '/driverPending';
   static const home_food = '/homeFood';
+  static const home_merchant = '/homeMerchant';
  static const merchantStepBusiness  = '/merchant/step1';
  static const merchantStepOwner     = '/merchant/step2';
  static const merchantStepPassword  = '/merchant/step3';

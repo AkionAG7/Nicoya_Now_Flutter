@@ -255,7 +255,7 @@ class _LoginPageState extends State<LoginPage> {
                     break;
                   case 'merchant':
                     Navigator.pushNamedAndRemoveUntil(
-                      context, Routes.home_food, (route) => false); // Cambiar a pantalla de comercios
+                      context, Routes.home_merchant, (route) => false); // Cambiar a pantalla de comercios
                     break;
                   default:
                     Navigator.pushNamedAndRemoveUntil(
@@ -321,7 +321,7 @@ class _LoginPageState extends State<LoginPage> {
             case 'merchant':
               Navigator.pushNamedAndRemoveUntil(
                 context, 
-                Routes.home_food, // Cambiar a la pantalla para comercios
+                Routes.home_merchant, // Cambiar a la pantalla para comercios
                 (route) => false
               );
               break;
