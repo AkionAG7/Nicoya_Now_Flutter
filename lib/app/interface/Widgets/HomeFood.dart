@@ -12,14 +12,8 @@ import 'package:nicoya_now/app/features/auth/domain/usecases/get_products_usecas
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+enum valorVerMas { postres, platosFuertes, comidaRapida, bebidas, todos }
 
-enum valorVerMas{
-  postres,
-  platosFuertes,
-  comidaRapida,
-  bebidas,
-  todos
-}
 class HomeFood extends StatefulWidget {
   const HomeFood({super.key});
 
@@ -120,12 +114,21 @@ class _HomeFoodState extends State<HomeFood> {
                         ),
                       ),
 
-                      Text(
-                        'ver más',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xffd72a23),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.pushNamed(
+                            context,
+                            Routes.food_filter,
+                            arguments: valorVerMas.todos,
+                          );
+                        },
+                        child: Text(
+                          'ver más',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xffd72a23),
+                          ),
                         ),
                       ),
                     ],
@@ -211,12 +214,21 @@ class _HomeFoodState extends State<HomeFood> {
                         ),
                       ),
 
-                      Text(
-                        'ver más',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xffd72a23),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.pushNamed(
+                            context,
+                            Routes.food_filter,
+                            arguments: valorVerMas.postres,
+                          );
+                        },
+                        child: Text(
+                          'ver más',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xffd72a23),
+                          ),
                         ),
                       ),
                     ],
@@ -303,12 +315,21 @@ class _HomeFoodState extends State<HomeFood> {
                         ),
                       ),
 
-                      Text(
-                        'ver más',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xffd72a23),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.pushNamed(
+                            context,
+                            Routes.food_filter,
+                            arguments: valorVerMas.platosFuertes,
+                          );
+                        },
+                        child: Text(
+                          'ver más',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xffd72a23),
+                          ),
                         ),
                       ),
                     ],
@@ -395,12 +416,21 @@ class _HomeFoodState extends State<HomeFood> {
                         ),
                       ),
 
-                      Text(
-                        'ver más',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xffd72a23),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.pushNamed(
+                            context,
+                            Routes.food_filter,
+                            arguments: valorVerMas.comidaRapida,
+                          );
+                        },
+                        child: Text(
+                          'ver más',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xffd72a23),
+                          ),
                         ),
                       ),
                     ],
@@ -480,19 +510,28 @@ class _HomeFoodState extends State<HomeFood> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text(
-                        'Comida rápida',
+                        'Bebidas',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
 
-                      Text(
-                        'ver más',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xffd72a23),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.pushNamed(
+                            context,
+                            Routes.food_filter,
+                            arguments: valorVerMas.bebidas,
+                          );
+                        },
+                        child: Text(
+                          'ver más',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xffd72a23),
+                          ),
                         ),
                       ),
                     ],
