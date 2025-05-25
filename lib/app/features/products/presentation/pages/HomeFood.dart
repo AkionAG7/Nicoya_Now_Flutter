@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:nicoya_now/Icons/nicoya_now_icons_icons.dart';
-import 'package:nicoya_now/app/features/auth/data/datasources/Products_data_source.dart';
-import 'package:nicoya_now/app/features/auth/data/repositories/products_repository_impl.dart';
-import 'package:nicoya_now/app/features/auth/domain/entities/products.dart';
-import 'package:nicoya_now/app/features/auth/domain/usecases/get_bebida_usecase.dart';
-import 'package:nicoya_now/app/features/auth/domain/usecases/get_comida_rapida_usecase.dart';
-import 'package:nicoya_now/app/features/auth/domain/usecases/get_plato_fuerte_usecase.dart';
-import 'package:nicoya_now/app/features/auth/domain/usecases/get_postres_usecase.dart';
-import 'package:nicoya_now/app/features/auth/domain/usecases/get_products_usecase.dart';
+import 'package:nicoya_now/app/features/products/data/datasources/Products_data_source.dart';
+import 'package:nicoya_now/app/features/products/data/repositories/products_repository_impl.dart';
+import 'package:nicoya_now/app/features/products/domain/entities/products.dart';
+import 'package:nicoya_now/app/features/products/domain/usecases/get_bebida_usecase.dart';
+import 'package:nicoya_now/app/features/products/domain/usecases/get_comida_rapida_usecase.dart';
+import 'package:nicoya_now/app/features/products/domain/usecases/get_plato_fuerte_usecase.dart';
+import 'package:nicoya_now/app/features/products/domain/usecases/get_postres_usecase.dart';
+import 'package:nicoya_now/app/features/products/domain/usecases/get_products_usecase.dart';
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 

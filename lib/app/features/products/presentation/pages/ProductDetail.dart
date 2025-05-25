@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nicoya_now/Icons/nicoya_now_icons_icons.dart';
-import 'package:nicoya_now/app/features/auth/domain/entities/products.dart';
+import 'package:nicoya_now/app/features/products/domain/entities/products.dart';
 
 class ProductDetail extends StatefulWidget {
   const ProductDetail({Key? key}) : super(key: key);

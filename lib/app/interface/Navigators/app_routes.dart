@@ -9,12 +9,12 @@ import 'package:nicoya_now/app/interface/Forms/DeliverForm2.dart';
 import 'package:nicoya_now/app/interface/SplashWidgets/SplashFT1.dart';
 import 'package:nicoya_now/app/interface/SplashWidgets/SplashFT2.dart';
 import 'package:nicoya_now/app/interface/SplashWidgets/SplashFT3.dart';
-import 'package:nicoya_now/app/interface/Widgets/FoodFilter.dart';
+import 'package:nicoya_now/app/features/products/presentation/pages/FoodFilter.dart';
 import 'package:nicoya_now/app/interface/Widgets/Home.dart';
-import 'package:nicoya_now/app/interface/Widgets/HomeFood.dart';
+import 'package:nicoya_now/app/features/products/presentation/pages/HomeFood.dart';
 import 'package:nicoya_now/app/interface/Widgets/LoginPage.dart';
 import 'package:nicoya_now/app/interface/Widgets/OrderSucces.dart';
-import 'package:nicoya_now/app/interface/Widgets/ProductDetail.dart';
+import 'package:nicoya_now/app/features/products/presentation/pages/ProductDetail.dart';
 import 'package:nicoya_now/app/interface/Widgets/RegisterUser.dart';
 import 'package:nicoya_now/app/interface/Widgets/SelectTypeAccount.dart';
 

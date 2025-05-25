@@ -1,6 +1,6 @@
-import 'package:nicoya_now/app/features/auth/data/datasources/Products_data_source.dart';
-import 'package:nicoya_now/app/features/auth/domain/entities/products.dart';
-import 'package:nicoya_now/app/features/auth/domain/repositories/products_repository.dart';
+import 'package:nicoya_now/app/features/products/data/datasources/Products_data_source.dart';
+import 'package:nicoya_now/app/features/products/domain/entities/products.dart';
+import 'package:nicoya_now/app/features/products/domain/repositories/products_repository.dart';
 
 class ProductsRepositoryImpl implements ProductsRepository {
   final ProductsDataSource dataSource;
