@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nicoya_now/app/features/auth/presentation/pages/driver_register_done.dart';
+import 'package:nicoya_now/app/features/merchant/presentation/pages/home_merchant_page.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_step_business.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_step_owner.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_step_password.dart';
@@ -47,6 +48,7 @@ Map<String, Widget Function(BuildContext)> get appRoutes {
     Routes.deliver_Form2: (context) => const DeliverForm2(),
     Routes.driverPending: (context) => const DriverPendingPage(),
     Routes.home_food: (context) => const HomeFood(),
+    Routes.home_merchant: (context) => const HomeMerchantPage(),
     Routes.merchantStepBusiness: (context) => const MerchantStepBusiness(),
     Routes.merchantStepOwner: (context) => const MerchantStepOwner(),
     Routes.merchantStepPassword: (context) => const MerchantStepPassword(),
