@@ -25,5 +25,6 @@ class Routes {
  static const merchantStepOwner     = '/merchant/step2';
  static const merchantStepPassword  = '/merchant/step3';
  static const product_Detail = '/productDetail';
+ static const food_filter = '/foodFilter';
 }
 

@@ -6,7 +6,12 @@ import 'package:nicoya_now/app/features/auth/presentation/controllers/auth_contr
 class MerchantRepositoryImpl implements MerchantRepository {
   final MerchantDataSource _ds;
 
-  MerchantRepositoryImpl(this._ds);  @override
+  MerchantRepositoryImpl(this._ds);
+
+  @override
+  Future<List<Merchant>> getAllMerchants() => _ds.fetchAllMerchants();
+
+  @override
   Future<Merchant> registerMerchant({
     required String address,
     required String businessName,
@@ -38,6 +43,6 @@ class MerchantRepositoryImpl implements MerchantRepository {
       cedula         : cedula,
     );
 
-    return Merchant.fromMap(m);   
+    return Merchant.fromMap(m);
   }
 }

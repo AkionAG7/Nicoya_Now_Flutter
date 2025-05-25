@@ -9,11 +9,12 @@ import 'package:nicoya_now/app/interface/Forms/DeliverForm2.dart';
 import 'package:nicoya_now/app/interface/SplashWidgets/SplashFT1.dart';
 import 'package:nicoya_now/app/interface/SplashWidgets/SplashFT2.dart';
 import 'package:nicoya_now/app/interface/SplashWidgets/SplashFT3.dart';
+import 'package:nicoya_now/app/features/products/presentation/pages/FoodFilter.dart';
 import 'package:nicoya_now/app/interface/Widgets/Home.dart';
-import 'package:nicoya_now/app/interface/Widgets/HomeFood.dart';
+import 'package:nicoya_now/app/features/products/presentation/pages/HomeFood.dart';
 import 'package:nicoya_now/app/interface/Widgets/LoginPage.dart';
 import 'package:nicoya_now/app/interface/Widgets/OrderSucces.dart';
-import 'package:nicoya_now/app/interface/Widgets/ProductDetail.dart';
+import 'package:nicoya_now/app/features/products/presentation/pages/ProductDetail.dart';
 import 'package:nicoya_now/app/interface/Widgets/RegisterUser.dart';
 import 'package:nicoya_now/app/interface/Widgets/SelectTypeAccount.dart';
 
@@ -27,13 +28,15 @@ al ser una ruta fija que no se va a modifiar al widget se le pone const
 */
 Map<String, Widget Function(BuildContext)> get appRoutes {
   return {
-    Routes.selecctTypeAccount: (context) => const SelectTypeAccount(),    Routes.preLogin: (context) {
+    Routes.selecctTypeAccount: (context) => const SelectTypeAccount(),
+    Routes.preLogin: (context) {
       // No necesitamos pasar el tipo de cuenta inicialmente
       return const Home(accountType: null);
-    },    Routes.login_page: (context) {
+    },
+    Routes.login_page: (context) {
       return const LoginPage(accountType: null);
     },
-    
+
     Routes.register_user_page: (context) => const RegisterUser(),
     Routes.splashFT1: (context) => const SplashFT1(),
     Routes.splashFT2: (context) => const SplashFT2(),
@@ -44,9 +47,10 @@ Map<String, Widget Function(BuildContext)> get appRoutes {
     Routes.deliver_Form2: (context) => const DeliverForm2(),
     Routes.driverPending: (context) => const DriverPendingPage(),
     Routes.home_food: (context) => const HomeFood(),
-    Routes.merchantStepBusiness : (context) => const MerchantStepBusiness(),
-    Routes.merchantStepOwner    : (context) => const MerchantStepOwner(),
-    Routes.merchantStepPassword : (context) => const MerchantStepPassword(),
+    Routes.merchantStepBusiness: (context) => const MerchantStepBusiness(),
+    Routes.merchantStepOwner: (context) => const MerchantStepOwner(),
+    Routes.merchantStepPassword: (context) => const MerchantStepPassword(),
     Routes.product_Detail: (context) => const ProductDetail(),
+    Routes.food_filter: (context) => const FoodFilter(),
   };
 }
