@@ -1,5 +1,6 @@
 import 'package:nicoya_now/app/features/merchant/domain/entities/merchant.dart';
 import 'package:nicoya_now/app/features/merchant/domain/repositories/merchant_repository.dart';
+import 'package:nicoya_now/app/features/auth/presentation/controllers/auth_controller.dart';
 
 class RegisterMerchantUseCase {
   final MerchantRepository _repository;
@@ -17,6 +18,7 @@ class RegisterMerchantUseCase {
     required String firstName,
     required String lastName1,
     required String lastName2,
+    required AuthController authController,
     String? cedula,
   }) {
     return _repository.registerMerchant(
@@ -31,6 +33,7 @@ class RegisterMerchantUseCase {
       firstName    : firstName,
       lastName1    : lastName1,
       lastName2    : lastName2,
+      authController: authController,
       cedula       : cedula,
     );
   }

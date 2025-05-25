@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:nicoya_now/app/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract class MerchantDataSource {
@@ -15,6 +16,7 @@ abstract class MerchantDataSource {
     required String logoPath,    
     required String password,
     required String phone,
+    required AuthController authController,
     String? cedula,
   });
 }
@@ -37,27 +39,27 @@ class SupabaseMerchantDataSource implements MerchantDataSource {
     required String logoPath,    
     required String password,
     required String phone,
+    required AuthController authController,
     String? cedula,
   }) async {
-    final auth = await _supa.auth.signUp(email: email, password: password);
-    if (auth.user == null) throw const AuthException('No se pudo crear cuenta');
-    final uid = auth.user!.id;
+    // Use AuthController for merchant registration with proper role handling
+    final success = await authController.signUpMerchant(
+      email: email,
+      password: password,
+      firstName: firstName,
+      lastName1: lastName1,
+      lastName2: lastName2,
+      phone: phone,
+      idNumber: cedula,
+    );
+    
+    if (!success) {
+      throw AuthException('No se pudo crear la cuenta de comerciante');
+    }
+    
+    final uid = authController.user!.id;
 
-    try {     
-      final Map<String, dynamic> profileData = {
-        'first_name' : firstName,
-        'last_name1' : lastName1,
-        'last_name2' : lastName2,
-        'phone'      : phone,
-        'role'       : 'merchant',
-      };
-      
-      if (cedula != null && cedula.isNotEmpty) {
-        profileData['id_number'] = cedula;
-      }
-      
-      await _supa.from('profile').update(profileData).eq('user_id', uid);
-
+    try {
       final addr = await _supa.from('address').insert({
         'user_id': uid,
         'street' : address,
@@ -95,7 +97,8 @@ class SupabaseMerchantDataSource implements MerchantDataSource {
 
       return row;
     } catch (e) {
-      try { await _supa.auth.admin.deleteUser(uid); } catch (_) {}
+      // If merchant setup fails, we should handle cleanup appropriately
+      // Note: AuthController has already created the user and assigned the role
       rethrow;
     }
   }

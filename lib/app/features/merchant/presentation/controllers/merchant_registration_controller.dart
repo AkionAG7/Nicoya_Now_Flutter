@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:nicoya_now/app/features/merchant/domain/entities/merchant.dart';
 import 'package:nicoya_now/app/features/merchant/domain/usecases/register_merchant_usecase.dart';
+import 'package:nicoya_now/app/features/auth/presentation/controllers/auth_controller.dart';
 
 enum MerchantRegistrationState { initial, loading, success, error }
 
@@ -57,8 +58,10 @@ class MerchantRegistrationController extends ChangeNotifier {
     _email     = email;
     _phone     = phone;
   }
-  
-  Future<bool> finishRegistration({required String password}) async {
+    Future<bool> finishRegistration({
+    required String password,
+    required AuthController authController,
+  }) async {
     _state = MerchantRegistrationState.loading;
     _errorMessage = null;
     notifyListeners();
@@ -76,6 +79,7 @@ class MerchantRegistrationController extends ChangeNotifier {
         firstName    : _firstName!,
         lastName1    : _last1!,
         lastName2    : _last2!,
+        authController: authController,
         cedula       : _isCedulaJuridica ? null : _legalId,
       );
 
