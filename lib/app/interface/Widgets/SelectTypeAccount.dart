@@ -12,6 +12,47 @@ class SelectTypeAccount extends StatefulWidget {
 }
 
 class _SelectTypeAccountState extends State<SelectTypeAccount> {
+  
+  /// Shows a login prompt dialog for the customer role
+  void _showLoginPrompt(String roleSlug) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Iniciar Sesión'),
+          content: Text('Para continuar como cliente, necesitas iniciar sesión o crear una cuenta.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                // Navigate to login page 
+                Navigator.pushNamed(context, Routes.login_page);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xffd72a23),
+              ),
+              child: Text('Iniciar Sesión', style: TextStyle(color: Colors.white)),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                // Navigate to client registration form
+                Navigator.pushNamed(context, Routes.client_Form);
+              },
+              child: Text('Crear Cuenta', style: TextStyle(color: const Color(0xffd72a23))),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -119,7 +160,7 @@ class _SelectTypeAccountState extends State<SelectTypeAccount> {
                     ),
                     backgroundColor: const Color(0xffffffff),
                   ),                  onPressed: () {
-                    Navigator.pushNamed(context, Routes.client_Form);
+                    _showLoginPrompt('customer');
                   },
                   child: Column(
                     children: [

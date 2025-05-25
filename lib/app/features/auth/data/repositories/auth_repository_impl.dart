@@ -53,7 +53,7 @@ class AuthRepositoryImpl implements AuthRepository {
         lastName1: lastName1,
         lastName2: lastName2,
         phone: phone,
-        role: 'client', 
+        role: 'customer', // Consistent with database role name 
       );
     } catch (e) {
       rethrow;
@@ -90,7 +90,7 @@ class AuthRepositoryImpl implements AuthRepository {
       lastName1: userData['last_name1'],
       lastName2: userData['last_name2'],
       phone: userData['phone'],
-      role: userData['role'] ?? 'client', 
+      role: userData['role'] ?? 'customer', // Consistent with database role name 
     );
   }
 }

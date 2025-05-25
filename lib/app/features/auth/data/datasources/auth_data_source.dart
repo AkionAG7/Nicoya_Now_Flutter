@@ -23,16 +23,21 @@ class SupabaseAuthDataSource implements AuthDataSource {
     
     if (response.session == null || response.user == null) {
       throw AuthException('No se pudo iniciar sesión');
-    }
-
-    final profileResponse = await _supabaseClient
+    }    final profileResponse = await _supabaseClient
         .from('profile')
         .select()
         .eq('user_id', response.user!.id)
         .single();
         
-    final String role = profileResponse['role'] ?? 'client';
-    if (role == 'driver') {
+    // Obtener roles desde la tabla user_role en lugar de profile.role
+    final roles = await _supabaseClient
+        .from('user_role')
+        .select('role:role_id(slug)')
+        .eq('user_id', response.user!.id);
+
+    final primaryRole = roles.isNotEmpty ? roles.first['role']['slug'] : 'customer';
+    
+    if (primaryRole == 'driver') {
       try {
         final driverVerification = await _supabaseClient.from('driver')
             .select('is_verified')
@@ -53,12 +58,10 @@ class SupabaseAuthDataSource implements AuthDataSource {
         rethrow;
       }
     }
-
-
     return {
       'id': response.user!.id,
       'email': response.user!.email,
-      'role': role,
+      'role': primaryRole,
       ...profileResponse,
     };
   }
@@ -91,33 +94,43 @@ class SupabaseAuthDataSource implements AuthDataSource {
     
     if (currentUser == null) {
       return null;
-    }
-
-    try {
+    }    try {
       final profileResponse = await _supabaseClient
           .from('profile')
           .select()
           .eq('user_id', currentUser.id)
           .single();
 
+      // Obtener roles desde la tabla user_role
+      final roles = await _supabaseClient
+          .from('user_role')
+          .select('role:role_id(slug)')
+          .eq('user_id', currentUser.id);
+
+      final primaryRole = roles.isNotEmpty ? roles.first['role']['slug'] : 'customer';
+
       return {
         'id': currentUser.id,
         'email': currentUser.email,
+        'role': primaryRole,
         ...profileResponse,
-      };
-    } catch (e) {
+      };    } catch (e) {
       return {
         'id': currentUser.id,
         'email': currentUser.email,
+        'role': 'customer', // Default role if profile/roles can't be fetched
       };
     }
   }
-
   @override
   Future<void> updateProfile(String userId, Map<String, dynamic> data) async {
+    // Crear una copia de los datos sin la columna 'role'
+    final profileData = Map<String, dynamic>.from(data);
+    profileData.remove('role');
+    
     await _supabaseClient
         .from('profile')
-        .update(data)
+        .update(profileData)
         .eq('user_id', userId);
   }
 

@@ -15,7 +15,7 @@ class User {
     this.lastName1,
     this.lastName2,
     this.phone,
-    this.role = 'client', 
+    this.role = 'customer', // Consistent with database role name 
   });
   
   // Método para verificar si el usuario tiene un rol específico
@@ -34,7 +34,7 @@ class User {
   
   // Método para obtener la lista de roles del usuario
   List<String> getRoles() {
-    if (role.isEmpty) return ['client']; // Default
+    if (role.isEmpty) return ['customer']; // Default consistent with database
     
     if (role.contains(',')) {
       return role.split(',')
