@@ -20,8 +20,7 @@ class SupabaseAuthDataSource implements AuthDataSource {
       email: email,
       password: password,
     );
-    
-    if (response.session == null || response.user == null) {
+      if (response.session == null || response.user == null) {
       throw AuthException('No se pudo iniciar sesión');
     }
 
@@ -31,8 +30,18 @@ class SupabaseAuthDataSource implements AuthDataSource {
         .eq('user_id', response.user!.id)
         .single();
         
-    final String role = profileResponse['role'] ?? 'client';
-    if (role == 'driver') {
+    // Obtener los roles del usuario desde la nueva estructura
+    final userRoles = await _supabaseClient
+        .from('user_role')
+        .select('role:role_id(slug)')
+        .eq('user_id', response.user!.id);
+    
+    // Crear una lista de roles y generar el string de roles
+    final List<String> rolesList = userRoles.map((r) => r['role']['slug'] as String).toList();
+    final String role = rolesList.isNotEmpty ? rolesList.join(',') : 'client';
+    
+    // Verificar si es driver y está verificado
+    if (rolesList.contains('driver')) {
       try {
         final driverVerification = await _supabaseClient.from('driver')
             .select('is_verified')
@@ -52,14 +61,16 @@ class SupabaseAuthDataSource implements AuthDataSource {
         }
         rethrow;
       }
-    }
-
-
-    return {
+    }    return {
       'id': response.user!.id,
       'email': response.user!.email,
       'role': role,
-      ...profileResponse,
+      'phone': profileResponse['phone'],
+      'first_name': profileResponse['first_name'],
+      'last_name1': profileResponse['last_name1'],
+      'last_name2': profileResponse['last_name2'],
+      'id_number': profileResponse['id_number'],
+      'avatar_url': profileResponse['avatar_url'],
     };
   }
 
@@ -79,7 +90,6 @@ class SupabaseAuthDataSource implements AuthDataSource {
       'email': response.user!.email,
     };
   }
-
   @override
   Future<void> signOut() async {
     await _supabaseClient.auth.signOut();
@@ -100,15 +110,32 @@ class SupabaseAuthDataSource implements AuthDataSource {
           .eq('user_id', currentUser.id)
           .single();
 
-      return {
+      // Obtener los roles del usuario desde la nueva estructura
+      final userRoles = await _supabaseClient
+          .from('user_role')
+          .select('role:role_id(slug)')
+          .eq('user_id', currentUser.id);
+      
+      // Crear una lista de roles y generar el string de roles
+      final List<String> rolesList = userRoles.map((r) => r['role']['slug'] as String).toList();
+      final String role = rolesList.isNotEmpty ? rolesList.join(',') : 'client';      return {
         'id': currentUser.id,
         'email': currentUser.email,
-        ...profileResponse,
+        'role': role,
+        'phone': profileResponse['phone'],
+        'first_name': profileResponse['first_name'],
+        'last_name1': profileResponse['last_name1'],
+        'last_name2': profileResponse['last_name2'],
+        'id_number': profileResponse['id_number'],
+        'avatar_url': profileResponse['avatar_url'],
       };
     } catch (e) {
+      // Si no hay profile, al menos devolver los datos básicos del usuario
+      // pero sin roles (será 'client' por defecto)
       return {
         'id': currentUser.id,
         'email': currentUser.email,
+        'role': 'client',
       };
     }
   }

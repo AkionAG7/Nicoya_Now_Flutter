@@ -43,7 +43,7 @@ class RoleService {
     } catch (e) {
       print('Error usando RPC, intentando inserción directa: $e');
       
-      // Fallback: inserción directa si RPC no funciona
+
       try {
         // Obtener el role_id del slug
         final roleData = await _supa
