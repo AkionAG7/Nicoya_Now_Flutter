@@ -1,12 +1,12 @@
 import 'package:nicoya_now/app/features/merchant/data/datasources/merchant_data_source.dart';
 import 'package:nicoya_now/app/features/merchant/domain/entities/merchant.dart';
 import 'package:nicoya_now/app/features/merchant/domain/repositories/merchant_repository.dart';
+import 'package:nicoya_now/app/features/auth/presentation/controllers/auth_controller.dart';
 
 class MerchantRepositoryImpl implements MerchantRepository {
   final MerchantDataSource _ds;
 
-  MerchantRepositoryImpl(this._ds);
-  @override
+  MerchantRepositoryImpl(this._ds);  @override
   Future<Merchant> registerMerchant({
     required String address,
     required String businessName,
@@ -19,6 +19,7 @@ class MerchantRepositoryImpl implements MerchantRepository {
     required String logoPath,
     required String password,
     required String phone,
+    required AuthController authController,
     String? cedula,
   }) async {
     final m = await _ds.registerMerchant(
@@ -33,6 +34,7 @@ class MerchantRepositoryImpl implements MerchantRepository {
       logoPath       : logoPath,
       password       : password,
       phone          : phone,
+      authController : authController,
       cedula         : cedula,
     );
 

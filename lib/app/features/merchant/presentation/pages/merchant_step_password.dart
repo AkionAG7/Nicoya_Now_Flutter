@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/controllers/merchant_registration_controller.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/widgets/merchant_form_fields.dart';
+import 'package:nicoya_now/app/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../interface/Navigators/routes.dart';
@@ -17,10 +18,10 @@ class _MerchantStepPasswordState extends State<MerchantStepPassword> {
   final _pw   = TextEditingController();
   final _pw2  = TextEditingController();
   bool _hide1 = true, _hide2 = true;
-
   @override
   Widget build(BuildContext context) {
     final ctrl = context.watch<MerchantRegistrationController>();
+    final authController = context.read<AuthController>();
 
     return Scaffold(
       appBar: AppBar(title: const Text('Crea tu cuenta de comercio')),
@@ -55,8 +56,10 @@ class _MerchantStepPasswordState extends State<MerchantStepPassword> {
                         ? null
                         : () async {
                             if (!_fKey.currentState!.validate()) return;
-                            final ok = await ctrl
-                                .finishRegistration(password: _pw.text);
+                            final ok = await ctrl.finishRegistration(
+                              password: _pw.text,
+                              authController: authController,
+                            );
                             if (!mounted) return;
                             if (ok) {
                               Navigator.pushNamedAndRemoveUntil(
