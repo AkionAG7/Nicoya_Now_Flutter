@@ -6,6 +6,10 @@ class MerchantRepositoryImpl implements MerchantRepository {
   final MerchantDataSource _ds;
 
   MerchantRepositoryImpl(this._ds);
+
+  @override
+  Future<List<Merchant>> getAllMerchants() => _ds.fetchAllMerchants();
+
   @override
   Future<Merchant> registerMerchant({
     required String address,
@@ -22,20 +26,20 @@ class MerchantRepositoryImpl implements MerchantRepository {
     String? cedula,
   }) async {
     final m = await _ds.registerMerchant(
-      address        : address,
-      businessName   : businessName,
-      corporateName  : corporateName,
-      email          : email,
-      firstName      : firstName,
-      lastName1      : lastName1,
-      lastName2      : lastName2,
-      legalId        : legalId,
-      logoPath       : logoPath,
-      password       : password,
-      phone          : phone,
-      cedula         : cedula,
+      address: address,
+      businessName: businessName,
+      corporateName: corporateName,
+      email: email,
+      firstName: firstName,
+      lastName1: lastName1,
+      lastName2: lastName2,
+      legalId: legalId,
+      logoPath: logoPath,
+      password: password,
+      phone: phone,
+      cedula: cedula,
     );
 
-    return Merchant.fromMap(m);   
+    return Merchant.fromMap(m);
   }
 }

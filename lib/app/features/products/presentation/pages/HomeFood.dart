@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:nicoya_now/Icons/nicoya_now_icons_icons.dart';
+import 'package:nicoya_now/app/features/merchant/data/datasources/merchant_data_source.dart';
+import 'package:nicoya_now/app/features/merchant/data/repositories/merchant_repository_impl.dart';
+import 'package:nicoya_now/app/features/merchant/domain/entities/merchant.dart';
+import 'package:nicoya_now/app/features/merchant/domain/repositories/merchant_repository.dart';
+import 'package:nicoya_now/app/features/merchant/domain/usecases/get_merchants_usecase.dart';
 import 'package:nicoya_now/app/features/products/data/datasources/Products_data_source.dart';
 import 'package:nicoya_now/app/features/products/data/repositories/products_repository_impl.dart';
 import 'package:nicoya_now/app/features/products/domain/entities/products.dart';
@@ -12,7 +17,7 @@ import 'package:nicoya_now/app/features/products/domain/usecases/get_products_us
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-enum valorVerMas { postres, platosFuertes, comidaRapida, bebidas, todos }
+enum valorVerMas { postres, platosFuertes, comidaRapida, bebidas, todos, merchant }
 
 class HomeFood extends StatefulWidget {
   const HomeFood({super.key});
@@ -27,6 +32,7 @@ class _HomeFoodState extends State<HomeFood> {
   late Future<List<Product>> _platoFuerteFuture;
   late Future<List<Product>> _comidaRapida;
   late Future<List<Product>> _bebidasFuture;
+  late Future<List<Merchant>> _merchantsFuture;
 
   @override
   void initState() {
@@ -34,18 +40,22 @@ class _HomeFoodState extends State<HomeFood> {
     final supabase = Supabase.instance.client;
     final dataSource = ProductsDataSourceImpl(supabaseClient: supabase);
     final repository = ProductsRepositoryImpl(dataSource: dataSource);
+    final merchantSource = SupabaseMerchantDataSource(supabase);
+    final merchantRepository = MerchantRepositoryImpl(merchantSource);
 
     final getPostres = GetPostre(repository);
     final getAllProducts = GetAllProducts(repository);
     final getPlatoFuerte = GetPlatoFuerte(repository);
     final getComidaRapida = GetComidaRapida(repository);
     final getBebidas = GetBebidas(repository);
+    final getAllMerchants = GetAllMerchants(merchantRepository);
 
     _productsFuture = getAllProducts();
     _postreFuture = getPostres();
     _platoFuerteFuture = getPlatoFuerte();
     _comidaRapida = getComidaRapida();
     _bebidasFuture = getBebidas();
+    _merchantsFuture = getAllMerchants();
   }
 
   @override
@@ -103,6 +113,105 @@ class _HomeFoodState extends State<HomeFood> {
                   ),
 
                   const SizedBox(height: 40),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Nuestros comercios',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.pushNamed(
+                            context,
+                            Routes.food_filter,
+                            arguments: valorVerMas.merchant,
+                          );
+                        },
+                        child: Text(
+                          'ver más',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xffd72a23),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    width: 400,
+                    height: 400,
+                    child: FutureBuilder<List<Merchant>>(
+                      future: _merchantsFuture,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const SizedBox.shrink();
+                        } else if (snapshot.hasError) {
+                          return Center(
+                            child: Text('Error: ${snapshot.error}'),
+                          );
+                        } else if (!snapshot.hasData ||
+                            snapshot.data!.isEmpty) {
+                          return const Center(
+                            child: Text('No hay mercaderes disponibles.'),
+                          );
+                        }
+
+                        final mercaderes = snapshot.data!;
+                        return GridView.builder(
+                          shrinkWrap: true,
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.all(8),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                crossAxisSpacing: 0,
+                                mainAxisSpacing: 0,
+                                childAspectRatio: 1.1,
+                              ),
+                          itemCount: mercaderes.length,
+                          itemBuilder: (context, index) {
+                            final mercader = mercaderes[index];
+
+                            return Card(
+                              margin: const EdgeInsets.all(8),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: SizedBox(
+                                  width: 50,
+                                  height: 100,
+                                  child:
+                                      mercader.logoUrl != null
+                                          ? GestureDetector(
+                                            onTap: () {
+                                              Navigator.pushNamed(
+                                                context,
+                                                Routes.product_Detail,
+                                                arguments: mercader,
+                                              );
+                                            },
+                                            child: Image.network(
+                                              mercader.logoUrl!,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          )
+                                          : const Text('No imagen suported'),
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
