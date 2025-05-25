@@ -7,6 +7,9 @@ abstract class ProductsDataSource {
   Future<List<Product>> fetchPlatoFuerteProduct();
   Future<List<Product>> fetchBebidaProduct();
   Future<List<Product>> fetchComidaRapidaProduct();
+
+  /// Nuevo: obtiene productos filtrados por merchant_id
+  Future<List<Product>> fetchProductsByMerchant(String merchantId);
 }
 
 class ProductsDataSourceImpl implements ProductsDataSource {
@@ -36,23 +39,32 @@ class ProductsDataSourceImpl implements ProductsDataSource {
   Future<List<Product>> fetchComidaRapidaProduct() =>
       _fetchProductsByCategoryName('Comida rápida');
 
+  @override
+  Future<List<Product>> fetchProductsByMerchant(String merchantId) async {
+    final response = await supabaseClient
+        .from('product')
+        .select()
+        .eq('merchant_id', merchantId);
+
+    return _mapResponseToProducts(response);
+  }
+
   Future<List<Product>> _fetchProductsByCategoryName(
     String categoryName,
   ) async {
     // Paso 1: obtener el ID de la categoría
-    final categoryResponse =
-        await supabaseClient
-            .from('category')
-            .select('category_id')
-            .eq('name', categoryName)
-            .maybeSingle();
+    final categoryResponse = await supabaseClient
+        .from('category')
+        .select('category_id')
+        .eq('name', categoryName)
+        .maybeSingle();
 
     if (categoryResponse == null) {
-      print('⚠️ Categoría "$categoryName" no encontrada.');
+      print('Categoría "$categoryName" no encontrada.');
       return [];
     }
 
-    final categoryId = categoryResponse['category_id'];
+    final categoryId = categoryResponse['category_id'] as String;
 
     // Paso 2: obtener los productos filtrados por ese ID
     final response = await supabaseClient
@@ -70,10 +82,10 @@ class ProductsDataSourceImpl implements ProductsDataSource {
         merchant_id: item['merchant_id'] as String,
         name: item['name'] as String,
         description: item['description'] as String,
-        price: item['price'] as double,
+        price: (item['price'] as num).toDouble(),
         image_url: item['image_url'] as String?,
-        is_activate: item['is_active'] ?? true,
-        created_at: DateTime.parse(item['created_at']),
+        is_activate: item['is_active'] as bool? ?? true,
+        created_at: DateTime.parse(item['created_at'] as String),
         category_id: item['category_id'] as String,
       );
     }).toList();
