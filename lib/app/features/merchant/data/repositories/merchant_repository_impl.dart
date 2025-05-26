@@ -12,6 +12,9 @@ class MerchantRepositoryImpl implements MerchantRepository {
   Future<List<Merchant>> getAllMerchants() => _ds.fetchAllMerchants();
 
   @override
+  Future<Merchant> getMerchantByOwner(String ownerId) => _ds.getMerchantByOwner(ownerId);
+
+  @override
   Future<Merchant> registerMerchant({
     required String address,
     required String businessName,

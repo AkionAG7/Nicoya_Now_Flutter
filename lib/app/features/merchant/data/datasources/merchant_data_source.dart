@@ -22,11 +22,34 @@ abstract class MerchantDataSource {
   });
 
   Future<List<Merchant>> fetchAllMerchants();
+  Future<Merchant>              getMerchantByOwner(String ownerId);
 }
-
 class SupabaseMerchantDataSource implements MerchantDataSource {
   SupabaseMerchantDataSource(this._supa);
   final SupabaseClient _supa;
+
+  @override
+  Future<Merchant> getMerchantByOwner(String ownerId) async {
+    final resp = await _supa
+      .from('merchant')
+      .select('merchant_id, owner_id, legal_id, business_name, corporate_name, main_address_id, logo_url, is_active, created_at')
+      .eq('owner_id', ownerId)
+      .maybeSingle();
+
+    if (resp == null) throw Exception('Comercio no encontrado');
+
+    return Merchant(
+      merchantId:     resp['merchant_id'],
+      ownerId:        resp['owner_id'],
+      legalId:        resp['legal_id'],
+      businessName:   resp['business_name'],
+      corporateName:  resp['corporate_name'],
+      mainAddressId:  resp['main_address_id'],
+      logoUrl:        resp['logo_url'] ?? '',
+      isActive:       resp['is_active'] ?? false,
+      createdAt:      DateTime.parse(resp['created_at'] as String),
+    );
+  }
 
   @override
   Future<List<Merchant>> fetchAllMerchants() async {
@@ -143,5 +166,5 @@ class SupabaseMerchantDataSource implements MerchantDataSource {
       // Note: AuthController has already created the user and assigned the role
       rethrow;
     }
-  }
+}
 }
