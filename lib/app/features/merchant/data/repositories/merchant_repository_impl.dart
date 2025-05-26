@@ -9,6 +9,9 @@ class MerchantRepositoryImpl implements MerchantRepository {
   MerchantRepositoryImpl(this._ds);
 
   @override
+  Future<List<Merchant>> getMerchantSearch(String query) => _ds.fetchMerchantSearch(query);
+
+  @override
   Future<List<Merchant>> getAllMerchants() => _ds.fetchAllMerchants();
 
   @override

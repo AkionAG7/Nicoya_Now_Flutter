@@ -5,6 +5,7 @@ import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_set
 import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_step_business.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_step_owner.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_step_password.dart';
+import 'package:nicoya_now/app/features/products/presentation/pages/SearchFilter.dart';
 import 'package:nicoya_now/app/interface/Forms/ClientForm.dart';
 import 'package:nicoya_now/app/interface/Forms/DeliverForm1.dart';
 import 'package:nicoya_now/app/interface/Forms/DeliverForm2.dart';
@@ -56,5 +57,6 @@ Map<String, Widget Function(BuildContext)> get appRoutes {
     Routes.merchantSettings: (context) => const MerchantSettingsPage(),
     Routes.product_Detail: (context) => const ProductDetail(),
     Routes.food_filter: (context) => const FoodFilter(),
+    Routes.searchFilter: (context) => const SearchFilter(),
   };
 }

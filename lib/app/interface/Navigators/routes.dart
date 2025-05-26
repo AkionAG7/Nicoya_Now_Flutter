@@ -28,5 +28,6 @@ class Routes {
  static const merchantSettings   = '/merchantSettings';
  static const product_Detail = '/productDetail';
  static const food_filter = '/foodFilter';
+ static const searchFilter = '/searchFilter';
 }
 

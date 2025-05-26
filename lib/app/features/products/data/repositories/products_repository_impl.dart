@@ -7,6 +7,9 @@ class ProductsRepositoryImpl implements ProductsRepository {
   ProductsRepositoryImpl({required this.dataSource});
 
   @override
+  Future<List<Product>> getproductSearch(String query) => dataSource.fetchBySearch(query);
+
+  @override
   Future<List<Product>> getAllProducts() => dataSource.fetchAllProducts();
 
   @override

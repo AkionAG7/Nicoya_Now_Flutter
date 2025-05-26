@@ -4,6 +4,7 @@ import 'package:nicoya_now/app/features/auth/presentation/controllers/auth_contr
 abstract class MerchantRepository {
   Future<List<Merchant>> getAllMerchants();
   Future<Merchant> getMerchantByOwner(String ownerId);
+  Future<List<Merchant>> getMerchantSearch(String query);
 
   Future<Merchant> registerMerchant({
     required String email,

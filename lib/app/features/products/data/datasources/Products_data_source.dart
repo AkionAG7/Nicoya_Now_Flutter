@@ -10,12 +10,24 @@ abstract class ProductsDataSource {
 
   /// Nuevo: obtiene productos filtrados por merchant_id
   Future<List<Product>> fetchProductsByMerchant(String merchantId);
+  Future<List<Product>> fetchBySearch (String query);
 }
 
 class ProductsDataSourceImpl implements ProductsDataSource {
   final SupabaseClient supabaseClient;
 
   ProductsDataSourceImpl({required this.supabaseClient});
+
+
+  @override
+  Future<List<Product>> fetchBySearch(String query) async {
+    final response = await supabaseClient
+        .from('product')
+        .select()
+        .ilike('name', '%$query%');
+
+    return _mapResponseToProducts(response);
+  }
 
   @override
   Future<List<Product>> fetchAllProducts() async {

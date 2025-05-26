@@ -17,7 +17,14 @@ import 'package:nicoya_now/app/features/products/domain/usecases/get_products_us
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-enum valorVerMas { postres, platosFuertes, comidaRapida, bebidas, todos, merchant }
+enum valorVerMas {
+  postres,
+  platosFuertes,
+  comidaRapida,
+  bebidas,
+  todos,
+  merchant,
+}
 
 class HomeFood extends StatefulWidget {
   const HomeFood({super.key});
@@ -33,6 +40,7 @@ class _HomeFoodState extends State<HomeFood> {
   late Future<List<Product>> _comidaRapida;
   late Future<List<Product>> _bebidasFuture;
   late Future<List<Merchant>> _merchantsFuture;
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -60,6 +68,7 @@ class _HomeFoodState extends State<HomeFood> {
 
   @override
   void dispose() {
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -91,6 +100,7 @@ class _HomeFoodState extends State<HomeFood> {
                     children: [
                       Expanded(
                         child: TextField(
+                          controller: _searchController,
                           decoration: InputDecoration(
                             hintText: '¿Que quieres comer hoy?',
                             prefixIcon: const Icon(Icons.storefront_outlined),
@@ -106,7 +116,11 @@ class _HomeFoodState extends State<HomeFood> {
                       IconButton(
                         icon: const Icon(Icons.search),
                         onPressed: () {
-                          // Acción al presionar el botón de búsqueda
+                          Navigator.pushNamed(
+                            context,
+                            Routes.searchFilter,
+                            arguments: _searchController.text.trim(),
+                          );
                         },
                       ),
                     ],
@@ -197,7 +211,7 @@ class _HomeFoodState extends State<HomeFood> {
                                               );
                                             },
                                             child: Image.network(
-                                              mercader.logoUrl!,
+                                              mercader.logoUrl,
                                               fit: BoxFit.cover,
                                             ),
                                           )
