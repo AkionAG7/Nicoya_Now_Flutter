@@ -307,7 +307,7 @@ class _LoginPageState extends State<LoginPage> {
             case 'customer': // Updated to match database role name
               Navigator.pushNamedAndRemoveUntil(
                 context, 
-                Routes.home_food,
+                Routes.clientNav,
                 (route) => false
               );
               break;
@@ -329,7 +329,7 @@ class _LoginPageState extends State<LoginPage> {
               // Si no hay rol definido, ir a la pantalla principal
               Navigator.pushNamedAndRemoveUntil(
                 context, 
-                Routes.home_food,
+                Routes.clientNav,
                 (route) => false
               );
           }

@@ -18,7 +18,7 @@ Future<void> main() async {
     url: dotenv.env['SUPABASE_URL']!,
     anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
     authOptions: const FlutterAuthClientOptions(
-      authFlowType: AuthFlowType.pkce, 
+      authFlowType: AuthFlowType.pkce,
     ),
   );
 
@@ -31,11 +31,10 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {    return MultiProvider(
+  Widget build(BuildContext context) {
+    return MultiProvider(
       providers: [
-        ChangeNotifierProvider(
-          create: (_) => locator<AuthController>(),
-        ),
+        ChangeNotifierProvider(create: (_) => locator<AuthController>()),
         ChangeNotifierProvider(
           create: (_) => locator<MerchantRegistrationController>(),
         ),
@@ -43,7 +42,8 @@ class MyApp extends StatelessWidget {
       child: GestureDetector(
         onTap: () {
           FocusScope.of(context).unfocus();
-        },        child: MaterialApp(
+        },
+        child: MaterialApp(
           title: 'Nicoya Now',
           theme: AppTheme.lightTheme,
           initialRoute: Routes.preLogin,

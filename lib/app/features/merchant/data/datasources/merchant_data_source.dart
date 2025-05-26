@@ -35,8 +35,7 @@ class SupabaseMerchantDataSource implements MerchantDataSource {
     final response = await _supa
         .from('merchant')
         .select()
-        .ilike('business_name', '%$query%')
-        .or('corporate_name.ilike.%$query%');
+        .or('business_name.ilike.%$query%,corporate_name.ilike.%$query%');
 
     if (response is List) {
       return response.map((item) {

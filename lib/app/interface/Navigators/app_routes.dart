@@ -13,6 +13,7 @@ import 'package:nicoya_now/app/interface/SplashWidgets/SplashFT1.dart';
 import 'package:nicoya_now/app/interface/SplashWidgets/SplashFT2.dart';
 import 'package:nicoya_now/app/interface/SplashWidgets/SplashFT3.dart';
 import 'package:nicoya_now/app/features/products/presentation/pages/FoodFilter.dart';
+import 'package:nicoya_now/app/interface/Widgets/BottomNavigator.dart';
 import 'package:nicoya_now/app/interface/Widgets/Home.dart';
 import 'package:nicoya_now/app/features/products/presentation/pages/HomeFood.dart';
 import 'package:nicoya_now/app/interface/Widgets/LoginPage.dart';
@@ -58,5 +59,6 @@ Map<String, Widget Function(BuildContext)> get appRoutes {
     Routes.product_Detail: (context) => const ProductDetail(),
     Routes.food_filter: (context) => const FoodFilter(),
     Routes.searchFilter: (context) => const SearchFilter(),
+    Routes.clientNav: (context) => const BottomNavigator(),
   };
 }

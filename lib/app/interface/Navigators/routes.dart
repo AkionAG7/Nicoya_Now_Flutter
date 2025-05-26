@@ -29,5 +29,6 @@ class Routes {
  static const product_Detail = '/productDetail';
  static const food_filter = '/foodFilter';
  static const searchFilter = '/searchFilter';
+ static const clientNav = '/clientNav';
 }
 
