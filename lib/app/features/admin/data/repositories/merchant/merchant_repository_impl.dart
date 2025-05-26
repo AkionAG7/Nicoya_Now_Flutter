@@ -8,25 +8,29 @@ import '../../datasources/merchant/merchant_remote_datasource.dart';
 import '../../models/merchant_model.dart';
 
 /// Implementation of [MerchantRepository]
-class MerchantRepositoryImpl implements MerchantRepository {
+class AdminMerchantRepositoryImpl implements MerchantRepository {
   final MerchantRemoteDataSource remoteDataSource;
   final NetworkInfo networkInfo;
 
-  MerchantRepositoryImpl({
+  AdminMerchantRepositoryImpl({
     required this.remoteDataSource,
     required this.networkInfo,
   });
-
   @override
   Future<Either<Failure, List<Merchant>>> getAllMerchants() async {
+    print('AdminMerchantRepositoryImpl: Checking network connection');
     if (await networkInfo.isConnected) {
       try {
+        print('AdminMerchantRepositoryImpl: Network is connected, getting merchants from data source');
         final merchants = await remoteDataSource.getAllMerchants();
+        print('AdminMerchantRepositoryImpl: Got ${merchants.length} merchants from data source');
         return Right(merchants);
       } catch (e) {
+        print('AdminMerchantRepositoryImpl: Error getting merchants: $e');
         return Left(ServerFailure(e.toString()));
       }
     } else {
+      print('AdminMerchantRepositoryImpl: No network connection');
       return Left(NetworkFailure());
     }
   }

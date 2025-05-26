@@ -6,10 +6,12 @@ abstract class NetworkInfo {
 
 /// Implementation of [NetworkInfo]
 class NetworkInfoImpl implements NetworkInfo {
-  final dynamic connectionChecker; // Replace with actual connectivity checking package type
-
-  NetworkInfoImpl(this.connectionChecker);
+  const NetworkInfoImpl();
 
   @override
-  Future<bool> get isConnected => connectionChecker.hasConnection;
+  Future<bool> get isConnected async {
+    // Simple implementation that assumes we have connection
+    // In a real app, you might want to use connectivity_plus package
+    return true;
+  }
 }

@@ -1,4 +1,5 @@
 import '../../models/merchant_model.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Abstract class for merchant remote data source
 abstract class MerchantRemoteDataSource {
@@ -26,16 +27,45 @@ abstract class MerchantRemoteDataSource {
 
 /// Implementation of [MerchantRemoteDataSource] that uses Supabase
 class MerchantRemoteDataSourceImpl implements MerchantRemoteDataSource {
-  final dynamic supabase; // Replace with actual Supabase client type
+  final SupabaseClient supabase;
   
   MerchantRemoteDataSourceImpl({required this.supabase});
-  
-  @override
+    @override
   Future<List<MerchantModel>> getAllMerchants() async {
     try {
+      print('MerchantRemoteDataSourceImpl: Fetching merchants from Supabase');
       final response = await supabase.from('merchant').select('*');
-      return (response as List).map((json) => MerchantModel.fromJson(json)).toList();
+      print('MerchantRemoteDataSourceImpl: Raw Supabase response: $response');
+        // Response cannot be null in modern Dart
+      
+      if (response is! List) {
+        print('MerchantRemoteDataSourceImpl: Response is not a List, type: ${response.runtimeType}');
+        return [];
+      }
+        final merchants = <MerchantModel>[];
+      for (var item in response) {
+        try {
+          print('MerchantRemoteDataSourceImpl: Converting JSON to model: $item');
+          
+          // Print each field to debug
+          print('merchant_id: ${item['merchant_id']}');
+          print('business_name: ${item['business_name']}');
+          print('business_category: ${item['business_category']}');
+          print('created_at: ${item['created_at']}');
+          print('is_verified: ${item['is_verified']}');
+          
+          merchants.add(MerchantModel.fromJson(item));
+        } catch (e) {
+          print('MerchantRemoteDataSourceImpl: Error converting JSON to model: $e');
+          // Continue instead of throwing to process as many records as possible
+          print('Skipping record due to error');
+        }
+      }
+      
+      print('MerchantRemoteDataSourceImpl: Returning ${merchants.length} merchant models');
+      return merchants;
     } catch (e) {
+      print('MerchantRemoteDataSourceImpl: Error getting merchants: $e');
       throw Exception('Failed to get merchants: $e');
     }
   }

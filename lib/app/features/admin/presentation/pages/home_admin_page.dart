@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../../../core/di/service_locator.dart';
+import '../controllers/admin_merchant_controller.dart';
 
 class HomeAdminPage extends StatefulWidget {
   const HomeAdminPage({Key? key}) : super(key: key);
@@ -24,42 +28,49 @@ class _HomeAdminPageState extends State<HomeAdminPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Panel de Administración'),
-        backgroundColor: const Color(0xFFE60023),
-        foregroundColor: Colors.white,
-      ),
-      body: SafeArea(
-        child: IndexedStack(
-          index: _selectedIndex,
-          children: const [
-            _AdminDashboardPage(),
-            _MerchantsManagementPage(),
-            _DriversManagementPage(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => locator<AdminMerchantController>(),
+        ),
+      ],
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Panel de Administración'),
+          backgroundColor: const Color(0xFFE60023),
+          foregroundColor: Colors.white,
+        ),
+        body: SafeArea(
+          child: IndexedStack(
+            index: _selectedIndex,
+            children: const [
+              _AdminDashboardPage(),
+              _MerchantsManagementPage(),
+              _DriversManagementPage(),
+            ],
+          ),
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          backgroundColor: const Color(0xFFE60023),
+          selectedItemColor: Colors.white,
+          unselectedItemColor: Colors.white70,
+          currentIndex: _selectedIndex,
+          onTap: _onItemTapped,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.dashboard), // Dashboard icon
+              label: 'Dashboard',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.store), // Comercios icon
+              label: 'Comercios',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.delivery_dining), // Repartidores icon
+              label: 'Repartidores',
+            ),
           ],
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: const Color(0xFFE60023),
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white70,
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard), // Dashboard icon
-            label: 'Dashboard',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.store), // Comercios icon
-            label: 'Comercios',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.delivery_dining), // Repartidores icon
-            label: 'Repartidores',
-          ),
-        ],
       ),
     );
   }
@@ -158,59 +169,177 @@ class _AdminDashboardPage extends StatelessWidget {
 }
 
 // Página de gestión de comerciantes
-class _MerchantsManagementPage extends StatelessWidget {
+class _MerchantsManagementPage extends StatefulWidget {
   const _MerchantsManagementPage();
 
   @override
+  State<_MerchantsManagementPage> createState() => _MerchantsManagementPageState();
+}
+
+class _MerchantsManagementPageState extends State<_MerchantsManagementPage> with SingleTickerProviderStateMixin {
+  late AdminMerchantController _controller;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+  late TabController _tabController;
+  
+  @override
+  void initState() {
+    super.initState();
+    _controller = locator<AdminMerchantController>();
+    _controller.loadMerchants();
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(_handleTabChange);
+    
+    // Add a delayed debug print to check controller state
+    Future.delayed(const Duration(seconds: 3), () {
+      print("DEBUG CONTROLLER STATE AFTER 3s: ");
+      print("State: ${_controller.state}");
+      print("Error: ${_controller.error}");
+      print("Merchants count: ${_controller.merchants.length}");
+      if (_controller.merchants.isNotEmpty) {
+        print("First merchant: ${_controller.merchants.first}");
+      }
+    });
+  }
+
+  void _handleTabChange() {
+    // Force UI to update when tab changes
+    setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _tabController.removeListener(_handleTabChange);
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Gestión de Comerciantes',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
-          
-          // Filtros o búsqueda
-          TextField(
-            decoration: InputDecoration(
-              hintText: 'Buscar comerciante...',
-              prefixIcon: const Icon(Icons.search),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
+    return ChangeNotifierProvider.value(
+      value: _controller,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Gestión de Comerciantes',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            
+            // Tab bar for filtering by approval status
+            TabBar(
+              controller: _tabController,
+              tabs: const [
+                Tab(text: 'Por Aprobar'),
+                Tab(text: 'Aprobados'),
+              ],
+              labelColor: const Color(0xFFE60023),
+              unselectedLabelColor: Colors.grey,
+              indicatorColor: const Color(0xFFE60023),
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // Filtros o búsqueda
+            TextField(
+              controller: _searchController,
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value;
+                });
+              },
+              decoration: InputDecoration(
+                hintText: 'Buscar comerciante...',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
             ),
-          ),
-          
-          const SizedBox(height: 16),
-          
-          // Lista de comerciantes
-          Expanded(
-            child: ListView(
-              children: [
-                _MerchantListItem(
-                  name: 'Restaurante Nicoya',
-                  status: 'Pendiente',
-                  onApprove: () => _showApprovalDialog(context, 'Restaurante Nicoya'),
-                ),
-                _MerchantListItem(
-                  name: 'Café del Centro',
-                  status: 'Aprobado',
-                  onApprove: () {},
-                  isApproved: true,
-                ),
-                _MerchantListItem(
-                  name: 'Tienda de Abarrotes',
-                  status: 'Pendiente',
-                  onApprove: () => _showApprovalDialog(context, 'Tienda de Abarrotes'),
-                ),
-              ],
+            
+            const SizedBox(height: 16),
+            
+            // Lista de comerciantes
+            Expanded(
+              child: Consumer<AdminMerchantController>(
+                builder: (context, controller, child) {
+                  if (controller.state == AdminMerchantState.loading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                    if (controller.state == AdminMerchantState.error) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            controller.error ?? 'Error desconocido',
+                            style: const TextStyle(color: Colors.red),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: () => controller.refresh(),
+                            child: const Text('Reintentar'),
+                          ),
+                          const SizedBox(height: 16),
+                          // Debug button
+                          ElevatedButton(
+                            onPressed: () {
+                              print("DEBUG CONTROLLER INFO:");
+                              print("State: ${controller.state}");
+                              print("Error: ${controller.error}");
+                              print("Merchants count: ${controller.merchants.length}");
+                              
+                              // Print raw network response
+                              locator<AdminMerchantController>().loadMerchants();
+                            },
+                            child: const Text('Debug Info (Check Console)'),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  
+                  // Use tab index to determine approval status filter
+                  final isApproved = _tabController.index == 1; // 0=pending, 1=approved
+                  final filteredMerchants = controller.getFilteredMerchants(
+                    _searchQuery, 
+                    isApproved: isApproved,
+                  );
+                  
+                  if (filteredMerchants.isEmpty) {
+                    return Center(
+                      child: Text(isApproved 
+                        ? 'No se encontraron comerciantes aprobados' 
+                        : 'No se encontraron comerciantes pendientes de aprobación'
+                      ),
+                    );
+                  }
+                  
+                  return RefreshIndicator(
+                    onRefresh: () => controller.refresh(),
+                    child: ListView.builder(
+                      itemCount: filteredMerchants.length,
+                      itemBuilder: (context, index) {
+                        final merchant = filteredMerchants[index];
+                        return _MerchantListItem(
+                          name: merchant.businessName,
+                          status: merchant.isVerified ? 'Aprobado' : 'Pendiente',
+                          onApprove: () => _showApprovalDialog(context, merchant.businessName),
+                          isApproved: merchant.isVerified,
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

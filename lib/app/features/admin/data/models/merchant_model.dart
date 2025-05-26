@@ -13,19 +13,34 @@ class MerchantModel extends Merchant {
     required super.isVerified,
     required super.createdAt,
   });
-
+  
   /// Creates a [MerchantModel] from a JSON map
   factory MerchantModel.fromJson(Map<String, dynamic> json) {
-    return MerchantModel(
-      merchantId: json['merchant_id'],
-      businessName: json['business_name'],
-      address: json['address'],
-      phoneNumber: json['phone_number'],
-      docsUrl: json['docs_url'],
-      businessCategory: json['business_category'],
-      isVerified: json['is_verified'],
-      createdAt: DateTime.parse(json['created_at']),
-    );
+    // Defensive parsing to handle potentially missing or invalid data
+    try {      // Check for is_active field to determine verification status
+      // For tab separation in admin panel:
+      // - is_active = false → merchant is NOT yet approved (pending approval), show in "Por Aprobar" tab
+      // - is_active = true → merchant IS approved, show in "Aprobados" tab
+      // We use !is_active because the tabs are: [0] = pending (not approved), [1] = approved
+      final bool isVerificationStatus = json['is_active'] == true;
+      
+      return MerchantModel(
+        merchantId: json['merchant_id']?.toString() ?? 'unknown',
+        businessName: json['business_name']?.toString() ?? 'Unknown Business',
+        address: json['address']?.toString(),
+        phoneNumber: json['phone_number']?.toString(),
+        docsUrl: json['docs_url']?.toString(),
+        businessCategory: json['business_category']?.toString() ?? 'other',
+        isVerified: isVerificationStatus,
+        createdAt: json['created_at'] != null 
+            ? DateTime.tryParse(json['created_at'].toString()) ?? DateTime.now()
+            : DateTime.now(),
+      );
+    } catch (e) {
+      print('Error in MerchantModel.fromJson: $e');
+      print('JSON data: $json');
+      rethrow;
+    }
   }
 
   /// Converts this model to a JSON map

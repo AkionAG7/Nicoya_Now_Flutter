@@ -11,6 +11,14 @@ import 'package:nicoya_now/app/features/merchant/data/repositories/merchant_repo
 import 'package:nicoya_now/app/features/merchant/domain/repositories/merchant_repository.dart';
 import 'package:nicoya_now/app/features/merchant/domain/usecases/register_merchant_usecase.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/controllers/merchant_registration_controller.dart';
+// Admin imports
+import 'package:nicoya_now/app/core/network/network_info.dart';
+import 'package:nicoya_now/app/features/admin/data/datasources/merchant/merchant_remote_datasource.dart';
+import 'package:nicoya_now/app/features/admin/data/repositories/merchant/merchant_repository_impl.dart';
+import 'package:nicoya_now/app/features/admin/domain/repositories/merchant/merchant_repository.dart'
+    as AdminMerchantRepo;
+import 'package:nicoya_now/app/features/admin/domain/usecases/merchant/merchant_usecases.dart';
+import 'package:nicoya_now/app/features/admin/presentation/controllers/admin_merchant_controller.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final GetIt locator = GetIt.instance;
@@ -63,5 +71,29 @@ void setupServiceLocator() {
     () => MerchantRegistrationController(
       registerMerchantUseCase: locator<RegisterMerchantUseCase>(),
     ),
+  );  // Admin dependencies
+  locator.registerLazySingleton<NetworkInfo>(
+        () => const NetworkInfoImpl(),
+  );
+  
+  locator.registerLazySingleton<MerchantRemoteDataSource>(
+        () => MerchantRemoteDataSourceImpl(supabase: locator<SupabaseClient>()),
+  );
+  
+  locator.registerLazySingleton<AdminMerchantRepo.MerchantRepository>(
+        () => AdminMerchantRepositoryImpl(
+          remoteDataSource: locator<MerchantRemoteDataSource>(),
+          networkInfo: locator<NetworkInfo>(),
+        ),
+  );
+  
+  locator.registerLazySingleton<GetAllMerchantsUseCase>(
+        () => GetAllMerchantsUseCase(locator<AdminMerchantRepo.MerchantRepository>()),
+  );
+  
+  locator.registerFactory<AdminMerchantController>(
+        () => AdminMerchantController(
+          getAllMerchantsUseCase: locator<GetAllMerchantsUseCase>(),
+        ),
   );
 }
