@@ -3,7 +3,7 @@ import 'package:nicoya_now/app/features/auth/presentation/controllers/auth_contr
 import 'package:provider/provider.dart';
 
 class ClientForm extends StatefulWidget {
-  const ClientForm({Key? key}) : super(key: key);
+  const ClientForm({super.key});
 
   @override
   State<ClientForm> createState() => _ClientFormState();

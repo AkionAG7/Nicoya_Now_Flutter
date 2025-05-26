@@ -5,7 +5,7 @@ import 'package:nicoya_now/app/interface/Widgets/SelectTypeAccount.dart';
 
 class Home extends StatelessWidget {
   final AccountType? accountType;
-  const Home({Key? key, required this.accountType}) : super(key: key);
+  const Home({super.key, required this.accountType});
 
   @override
   Widget build(BuildContext context) {

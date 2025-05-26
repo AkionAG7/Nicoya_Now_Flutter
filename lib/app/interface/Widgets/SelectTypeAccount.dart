@@ -5,7 +5,7 @@ import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 enum AccountType { repartidor, comercio, cliente }
 
 class SelectTypeAccount extends StatefulWidget {
-  const SelectTypeAccount({Key? key}) : super(key: key);
+  const SelectTypeAccount({super.key});
 
   @override
   _SelectTypeAccountState createState() => _SelectTypeAccountState();

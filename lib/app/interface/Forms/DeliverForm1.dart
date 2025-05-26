@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class DeliverForm1 extends StatefulWidget {
-  const DeliverForm1({Key? key}) : super(key: key);
+  const DeliverForm1({super.key});
   @override State<DeliverForm1> createState() => _DeliverForm1State();
 }
 

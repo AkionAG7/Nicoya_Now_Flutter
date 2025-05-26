@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:nicoya_now/app/features/products/domain/entities/products.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -57,10 +58,9 @@ class ProductsDataSourceImpl implements ProductsDataSource {
         .from('category')
         .select('category_id')
         .eq('name', categoryName)
-        .maybeSingle();
-
-    if (categoryResponse == null) {
-      print('Categoría "$categoryName" no encontrada.');
+        .maybeSingle();    if (categoryResponse == null) {
+      // Usar alternativa más segura a print
+      debugPrint('Categoría "$categoryName" no encontrada.');
       return [];
     }
 

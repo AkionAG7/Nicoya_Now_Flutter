@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nicoya_now/app/features/admin/presentation/pages/home_admin_page.dart';
 import 'package:nicoya_now/app/features/auth/presentation/pages/driver_register_done.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/pages/home_merchant_page.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_step_business.dart';
@@ -50,9 +51,9 @@ Map<String, Widget Function(BuildContext)> get appRoutes {
     Routes.home_food: (context) => const HomeFood(),
     Routes.home_merchant: (context) => const HomeMerchantPage(),
     Routes.merchantStepBusiness: (context) => const MerchantStepBusiness(),
-    Routes.merchantStepOwner: (context) => const MerchantStepOwner(),
-    Routes.merchantStepPassword: (context) => const MerchantStepPassword(),
+    Routes.merchantStepOwner: (context) => const MerchantStepOwner(),    Routes.merchantStepPassword: (context) => const MerchantStepPassword(),
     Routes.product_Detail: (context) => const ProductDetail(),
     Routes.food_filter: (context) => const FoodFilter(),
+    Routes.home_admin: (context) => const HomeAdminPage(),
   };
 }

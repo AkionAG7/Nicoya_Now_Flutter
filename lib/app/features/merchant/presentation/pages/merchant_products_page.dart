@@ -10,9 +10,9 @@ class MerchantProductsPage extends StatefulWidget {
   final String merchantId;
 
   const MerchantProductsPage({
-    Key? key,
+    super.key,
     required this.merchantId,
-  }) : super(key: key);
+  });
 
   @override
   State<MerchantProductsPage> createState() => _MerchantProductsPageState();
@@ -127,11 +127,11 @@ class _ProductRow extends StatelessWidget {
   final VoidCallback onDelete;
 
   const _ProductRow({
-    Key? key,
+    super.key,
     required this.product,
     required this.onEdit,
     required this.onDelete,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

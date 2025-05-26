@@ -27,28 +27,23 @@ abstract class MerchantDataSource {
 class SupabaseMerchantDataSource implements MerchantDataSource {
   SupabaseMerchantDataSource(this._supa);
   final SupabaseClient _supa;
-
   @override
   Future<List<Merchant>> fetchAllMerchants() async {
     try {
       final response = await _supa.from('merchant').select();
-      if (response is List) {
-        return response.map((item) {
-          return Merchant(
-            merchantId: item['merchant_id'] as String,
-            ownerId: item['owner_id'] as String,
-            legalId: item['legal_id'] as String,
-            businessName: item['business_name'] as String,
-            corporateName: item['corporate_name'] as String?,
-            logoUrl: item['logo_url'] as String? ?? '',
-            mainAddressId: item['main_address_id'] as String,
-            isActive: item['is_active'] as bool? ?? false,
-            createdAt: DateTime.parse(item['created_at'] as String),
-          );
-        }).toList();
-      } else {
-        throw Exception('La respuesta no es una lista');
-      }
+      return response.map((item) {
+        return Merchant(
+          merchantId: item['merchant_id'] as String,
+          ownerId: item['owner_id'] as String,
+          legalId: item['legal_id'] as String,
+          businessName: item['business_name'] as String,
+          corporateName: item['corporate_name'] as String?,
+          logoUrl: item['logo_url'] as String? ?? '',
+          mainAddressId: item['main_address_id'] as String,
+          isActive: item['is_active'] as bool? ?? false,
+          createdAt: DateTime.parse(item['created_at'] as String),
+        );
+      }).toList();
     } catch (e) {
       throw Exception('Error al obtener los comerciantes: $e');
     }

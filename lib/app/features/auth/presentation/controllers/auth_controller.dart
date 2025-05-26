@@ -149,7 +149,6 @@ class AuthController extends ChangeNotifier {
       return false;
     }
   }
-
   /// Specialized method for merchant registration
   Future<bool> signUpMerchant({
     required String email,
@@ -182,6 +181,43 @@ class AuthController extends ChangeNotifier {
           'id_number': idNumber,
         });
       }
+      
+      await _refreshUserData();
+      _state = AuthState.authenticated;
+      notifyListeners();
+      return true;    } catch (e) {
+      _state = AuthState.error;
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Specialized method for admin registration
+  Future<bool> signUpAdmin({
+    required String email,
+    required String password,
+    required String firstName,
+    required String lastName1,
+    required String lastName2,
+    required String phone,
+  }) async {
+    _state = AuthState.loading;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      _user = await _signUpUseCase.execute(
+        email,
+        password,
+        firstName: firstName,
+        lastName1: lastName1,
+        lastName2: lastName2,
+        phone: phone,
+      );
+      
+      // Add admin role to the user
+      await _roleService.addRoleIfNotExists('admin');
       
       await _refreshUserData();
       

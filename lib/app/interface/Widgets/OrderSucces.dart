@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class OrderSucces extends StatefulWidget {
-  const OrderSucces({Key? key}) : super(key: key);
+  const OrderSucces({super.key});
 
   @override
   _OrderSuccesState createState() => _OrderSuccesState();

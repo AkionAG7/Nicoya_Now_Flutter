@@ -3,7 +3,7 @@ import 'package:nicoya_now/app/features/merchant/data/datasources/merchant_data_
 import 'package:nicoya_now/app/features/merchant/data/repositories/merchant_repository_impl.dart';
 import 'package:nicoya_now/app/features/merchant/domain/entities/merchant.dart';
 import 'package:nicoya_now/app/features/merchant/domain/usecases/get_merchants_usecase.dart';
-import 'package:nicoya_now/app/features/products/data/datasources/Products_data_source.dart';
+import 'package:nicoya_now/app/features/products/data/datasources/products_data_source.dart';
 import 'package:nicoya_now/app/features/products/data/repositories/products_repository_impl.dart';
 import 'package:nicoya_now/app/features/products/domain/entities/products.dart';
 import 'package:nicoya_now/app/features/products/domain/usecases/get_bebida_usecase.dart';
@@ -16,7 +16,7 @@ import 'package:nicoya_now/app/features/products/presentation/pages/HomeFood.dar
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class FoodFilter extends StatefulWidget {
-  const FoodFilter({Key? key}) : super(key: key);
+  const FoodFilter({super.key});
 
   @override
   _FoodFilterState createState() => _FoodFilterState();

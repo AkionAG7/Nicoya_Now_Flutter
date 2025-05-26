@@ -6,7 +6,7 @@ import 'package:nicoya_now/app/features/merchant/data/repositories/merchant_repo
 import 'package:nicoya_now/app/features/merchant/domain/entities/merchant.dart';
 import 'package:nicoya_now/app/features/merchant/domain/repositories/merchant_repository.dart';
 import 'package:nicoya_now/app/features/merchant/domain/usecases/get_merchants_usecase.dart';
-import 'package:nicoya_now/app/features/products/data/datasources/Products_data_source.dart';
+import 'package:nicoya_now/app/features/products/data/datasources/products_data_source.dart';
 import 'package:nicoya_now/app/features/products/data/repositories/products_repository_impl.dart';
 import 'package:nicoya_now/app/features/products/domain/entities/products.dart';
 import 'package:nicoya_now/app/features/products/domain/usecases/get_bebida_usecase.dart';
@@ -197,7 +197,7 @@ class _HomeFoodState extends State<HomeFood> {
                                               );
                                             },
                                             child: Image.network(
-                                              mercader.logoUrl!,
+                                              mercader.logoUrl,
                                               fit: BoxFit.cover,
                                             ),
                                           )

@@ -6,7 +6,7 @@ import 'package:get_it/get_it.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 class DeliverForm2 extends StatefulWidget {
-  const DeliverForm2({Key? key}) : super(key: key);
+  const DeliverForm2({super.key});
   @override State<DeliverForm2> createState() => _DeliverForm2State();
 }
 

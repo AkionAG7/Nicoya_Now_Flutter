@@ -5,10 +5,13 @@ import 'package:nicoya_now/app/features/auth/presentation/controllers/auth_contr
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 import 'package:nicoya_now/app/interface/Widgets/SelectTypeAccount.dart';
 import 'package:provider/provider.dart';
+// Import admin redirector helper
+import 'package:nicoya_now/app/features/auth/presentation/helpers/login_page_helper.dart';
+import 'package:nicoya_now/app/features/admin/presentation/helpers/admin_redirector.dart';
 
 class LoginPage extends StatefulWidget {
   final AccountType? accountType;
-  const LoginPage({Key? key, this.accountType}) : super(key: key);
+  const LoginPage({super.key, this.accountType});
 
   @override
   _LoginPageState createState() => _LoginPageState();
@@ -24,7 +27,9 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void initState() {
-    super.initState();    _tapRegister =
+    super.initState();    
+    print('💼 Ruta Admin definida: ${Routes.home_admin}');
+    _tapRegister =
         TapGestureRecognizer()
           ..onTap = () async {
             // Dirigir al usuario a la selección de tipo de cuenta
@@ -230,10 +235,13 @@ class _LoginPageState extends State<LoginPage> {
               case 'driver':
                 title = 'Repartidor';
                 icon = Icons.delivery_dining;
-                break;
-              case 'merchant':
+                break;              case 'merchant':
                 title = 'Comerciante';
                 icon = Icons.store;
+                break;
+              case 'admin':
+                title = 'Administrador';
+                icon = Icons.admin_panel_settings;
                 break;
               default:
                 title = 'Usuario';
@@ -252,10 +260,13 @@ class _LoginPageState extends State<LoginPage> {
                   case 'driver':
                     Navigator.pushNamedAndRemoveUntil(
                       context, Routes.home_food, (route) => false); // Cambiar a pantalla de repartidores
-                    break;
-                  case 'merchant':
+                    break;                  case 'merchant':
                     Navigator.pushNamedAndRemoveUntil(
                       context, Routes.home_merchant, (route) => false); // Cambiar a pantalla de comercios
+                    break;
+                  case 'admin':
+                    Navigator.pushNamedAndRemoveUntil(
+                      context, Routes.home_admin, (route) => false); // Pantalla para administradores
                     break;
                   default:
                     Navigator.pushNamedAndRemoveUntil(
@@ -268,7 +279,6 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
-
   Future<void> _login() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -282,17 +292,39 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
+      print('🔐 Inicio de proceso de login');
       final authController = Provider.of<AuthController>(
         context,
         listen: false,
-      );      final success = await authController.signIn(
+      );
+      
+      print('Intentando iniciar sesión con: ${_emailController.text.trim()}');
+        print('📧 Intentando login con email: ${_emailController.text.trim()}');
+      final success = await authController.signIn(
         _emailController.text.trim(),
         _passwordController.text,
       );
       
-      if (!mounted) return;      if (success) {
+      if (!mounted) return;
+      
+      if (success) {
+        print('✅ Login exitoso');
         // Obtener los roles del usuario usando el nuevo método del controlador
         final roles = authController.userRoles;
+        print('👤 Roles del usuario: $roles');
+        
+        print('Inicio de sesión exitoso. Roles del usuario: $roles');
+          // Verificar explícitamente si hay rol de administrador
+        if (roles.contains('admin')) {
+          print('👑 Usuario tiene rol de administrador');
+          print('⚡ Redirigiendo a pantalla de admin: ${Routes.home_admin}');
+          Navigator.pushNamedAndRemoveUntil(
+            context, 
+            Routes.home_admin, 
+            (route) => false
+          );
+          return;
+        }
         
         // Si hay múltiples roles, mostrar diálogo de selección
         if (roles.length > 1) {
@@ -300,9 +332,13 @@ class _LoginPageState extends State<LoginPage> {
             context: context,
             barrierDismissible: false,
             builder: (context) => _buildRoleSelectionDialog(context, authController),
-          );        } else {
+          );
+        } else {
           // Si solo hay un rol, redirigir directamente
           final userRole = roles.isNotEmpty ? roles.first : 'customer'; // Updated default role
+          
+          print('Redirigiendo según rol: $userRole');
+          
           switch (userRole) {
             case 'customer': // Updated to match database role name
               Navigator.pushNamedAndRemoveUntil(
@@ -321,7 +357,15 @@ class _LoginPageState extends State<LoginPage> {
             case 'merchant':
               Navigator.pushNamedAndRemoveUntil(
                 context, 
-                Routes.home_merchant, // Cambiar a la pantalla para comercios
+                Routes.home_merchant, // Cambiar a pantalla de comercios
+                (route) => false
+              );
+              break;            case 'admin':
+              print('🚀 Redirigiendo a pantalla de administrador desde switch');
+              print('📱 Ruta de admin: ${Routes.home_admin}');
+              Navigator.pushNamedAndRemoveUntil(
+                context, 
+                Routes.home_admin, // Pantalla para administradores
                 (route) => false
               );
               break;
@@ -334,7 +378,7 @@ class _LoginPageState extends State<LoginPage> {
               );
           }
         }
-      }else {
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(authController.errorMessage ?? 'Error desconocido'),

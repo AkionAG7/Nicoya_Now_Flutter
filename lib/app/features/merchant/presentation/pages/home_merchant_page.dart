@@ -4,7 +4,7 @@ import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_pro
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HomeMerchantPage extends StatefulWidget {
-  const HomeMerchantPage({Key? key}) : super(key: key);
+  const HomeMerchantPage({super.key});
 
   @override
   State<HomeMerchantPage> createState() => _HomeMerchantPageState();
@@ -64,7 +64,7 @@ class _HomeMerchantPageState extends State<HomeMerchantPage> {
 }
 
 class MerchantProductsPagePlaceholder extends StatelessWidget {
-  const MerchantProductsPagePlaceholder({Key? key}) : super(key: key);
+  const MerchantProductsPagePlaceholder({super.key});
 
   @override
   Widget build(BuildContext context) {
