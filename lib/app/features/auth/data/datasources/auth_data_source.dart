@@ -8,6 +8,8 @@ abstract class AuthDataSource {
   Future<Map<String, dynamic>?> getCurrentUser();
   Future<void> updateProfile(String userId, Map<String, dynamic> data);
   Future<void> createAddress(String userId, Map<String, dynamic> data);
+  Future<List<String>> getRolesForUser(String userId);
+  Future<void> addRoleToUser(String userId, String roleId, Map<String, dynamic> roleData);
 }
 
 class SupabaseAuthDataSource implements AuthDataSource {
@@ -134,11 +136,70 @@ class SupabaseAuthDataSource implements AuthDataSource {
         .eq('user_id', userId);
   }
 
-  @override
-  Future<void> createAddress(String userId, Map<String, dynamic> data) async {
+  @override  Future<void> createAddress(String userId, Map<String, dynamic> data) async {
     await _supabaseClient.from('address').insert({
       'user_id': userId,
       ...data,
     });
+  }
+  
+  @override
+  Future<List<String>> getRolesForUser(String userId) async {
+    final roles = await _supabaseClient
+        .from('user_role')
+        .select('role:role_id(slug)')
+        .eq('user_id', userId);
+    
+    if (roles.isEmpty) {
+      return ['customer']; // Default role if no roles are found
+    }
+    
+    return roles.map<String>((role) => role['role']['slug'] as String).toList();
+  }
+
+  @override
+  Future<void> addRoleToUser(String userId, String roleSlug, Map<String, dynamic> roleData) async {
+    // First get the role_id from the role slug
+    final roleResult = await _supabaseClient
+        .from('role')
+        .select('id')
+        .eq('slug', roleSlug)
+        .single();
+    
+    final roleId = roleResult['id'];
+    
+    // Insert into the user_role table
+    await _supabaseClient.from('user_role').insert({
+      'user_id': userId,
+      'role_id': roleId,
+      'is_default': false, // Not setting as default unless specified
+    });
+    
+    // If additional role data is provided, store it based on role type
+    if (roleData.isNotEmpty) {
+      if (roleSlug == 'driver') {
+        await _supabaseClient.from('driver').insert({
+          'driver_id': userId,
+          'id_number': roleData['id_number'],
+          'is_verified': false, // Drivers need verification
+        });
+      } else if (roleSlug == 'merchant') {
+        await _supabaseClient.from('merchant').upsert({
+          'merchant_id': userId,
+          'id_number': roleData['id_number'],
+        });
+      }
+      
+      // Update the profile with any remaining role data
+      final profileData = Map<String, dynamic>.from(roleData);
+      profileData.remove('id_number'); // Already handled in role-specific tables
+      
+      if (profileData.isNotEmpty) {
+        await _supabaseClient
+            .from('profile')
+            .update(profileData)
+            .eq('user_id', userId);
+      }
+    }
   }
 }

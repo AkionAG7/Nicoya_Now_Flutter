@@ -42,11 +42,10 @@ class MyApp extends StatelessWidget {
       child: GestureDetector(
         onTap: () {
           FocusScope.of(context).unfocus();
-        },
-        child: MaterialApp(
+        },        child: MaterialApp(
           title: 'Nicoya Now',
           theme: AppTheme.lightTheme,
-          initialRoute: Routes.isFirstTime,
+          initialRoute: Routes.preLogin,
           routes: appRoutes,
         ),
       ),

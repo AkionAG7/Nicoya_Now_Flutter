@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:nicoya_now/app/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:nicoya_now/app/features/auth/presentation/pages/driver_register_done.dart';
+import 'package:nicoya_now/app/features/auth/presentation/pages/select_user_role_page.dart';
+import 'package:nicoya_now/app/features/auth/presentation/pages/role_form_page.dart';
+import 'package:nicoya_now/app/features/auth/presentation/pages/add_role_page.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/pages/add_product_merchant.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/pages/edit_product_merchant.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/pages/home_merchant_page.dart';
@@ -50,8 +54,7 @@ Map<String, Widget Function(BuildContext)> get appRoutes {
     Routes.splashFT2: (context) => const SplashFT2(),
     Routes.splashFT3: (context) => const SplashFT3(),
     Routes.order_Success: (context) => const OrderSucces(),
-    Routes.client_Form: (context) => const ClientForm(),
-    Routes.deliver_Form1: (context) => const DeliverForm1(),
+    Routes.client_Form: (context) => const ClientForm(),    Routes.deliver_Form1: (context) => const DeliverForm1(),
     Routes.deliver_Form2: (context) => const DeliverForm2(),
     Routes.driverPending: (context) => const DriverPendingPage(),
     Routes.home_food: (context) => const HomeFood(),
@@ -69,9 +72,21 @@ Map<String, Widget Function(BuildContext)> get appRoutes {
       return EditProductPage(product: product);
     },
     Routes.product_Detail: (context) => const ProductDetail(),
-    Routes.food_filter: (context) => const FoodFilter(),
-    Routes.searchFilter: (context) => const SearchFilter(),
+    Routes.food_filter: (context) => const FoodFilter(),    Routes.searchFilter: (context) => const SearchFilter(),
     Routes.clientNav: (context) => const BottomNavigator(),
     Routes.isFirstTime: (context) => const FirstTimeIn(),
+      // New routes for role management
+    Routes.selectUserRole: (context) => const SelectUserRolePage(),
+    Routes.roleFormPage: (context) {
+      final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+      final roleType = args['roleType'] as RoleType;
+      final isAddingRole = args['isAddingRole'] as bool? ?? false;
+      
+      return RoleFormPage(
+        roleType: roleType,
+        isAddingRole: isAddingRole,
+      );
+    },
+    Routes.addRolePage: (context) => const AddRolePage(),
   };
 }
