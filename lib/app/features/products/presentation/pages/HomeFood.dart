@@ -207,13 +207,13 @@ class _HomeFoodState extends State<HomeFood> {
                                   child:
                                       mercader.logoUrl != null
                                           ? GestureDetector(
-                                            onTap: () {
-                                              Navigator.pushNamed(
-                                                context,
-                                                Routes.product_Detail,
-                                                arguments: mercader,
-                                              );
-                                            },
+                                           onTap: () {
+  Navigator.pushNamed(
+    context,
+    Routes.merchantPublicProducts,
+    arguments: mercader,
+  );
+},
                                             child: Image.network(
                                               mercader.logoUrl,
                                               fit: BoxFit.cover,
