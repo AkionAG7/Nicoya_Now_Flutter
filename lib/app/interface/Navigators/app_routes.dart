@@ -31,6 +31,7 @@ import 'package:nicoya_now/app/interface/Widgets/OrderSucces.dart';
 import 'package:nicoya_now/app/features/products/presentation/pages/ProductDetail.dart';
 import 'package:nicoya_now/app/interface/Widgets/RegisterUser.dart';
 import 'package:nicoya_now/app/interface/Widgets/SelectTypeAccount.dart';
+import 'package:nicoya_now/app/features/admin/presentation/pages/home_admin_page.dart';
 
 import 'routes.dart';
 
@@ -73,9 +74,9 @@ Map<String, Widget Function(BuildContext)> get appRoutes {
     Routes.editProduct: (context) {
       final product = ModalRoute.of(context)!.settings.arguments as Product;
       return EditProductPage(product: product);
-    },
-    Routes.product_Detail: (context) => const ProductDetail(),
-    Routes.food_filter: (context) => const FoodFilter(),    Routes.searchFilter: (context) => const SearchFilter(),    Routes.clientNav: (context) => const BottomNavigator(),    Routes.isFirstTime: (context) => const FirstTimeIn(),
+    },    Routes.product_Detail: (context) => const ProductDetail(),
+    Routes.home_admin: (context) => const HomeAdminPage(),
+    Routes.food_filter: (context) => const FoodFilter(),Routes.searchFilter: (context) => const SearchFilter(),    Routes.clientNav: (context) => const BottomNavigator(),    Routes.isFirstTime: (context) => const FirstTimeIn(),
     Routes.appStartNavigation: (context) => const AppStartNavigation(),
     Routes.selectUserRole: (context) => const SelectUserRolePage(),
     Routes.roleFormPage: (context) {
