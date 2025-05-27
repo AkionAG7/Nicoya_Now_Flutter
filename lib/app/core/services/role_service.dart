@@ -3,15 +3,31 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class RoleService {
   final SupabaseClient _supabase;
   RoleService(this._supabase);
-
   Future<bool> hasRole(String slug) async {
-    final res = await _supabase
-        .from('user_role')
-        .select('role_id')
-        .eq('user_id', _supabase.auth.currentUser!.id)
-        .eq('role.slug', slug)
-        .maybeSingle();
-    return res != null;
+    try {
+      final userId = _supabase.auth.currentUser!.id;
+      
+      // First get the role ID from the slug
+      final roleResult = await _supabase
+          .from('role')
+          .select('role_id')
+          .eq('slug', slug)
+          .single();
+
+      final roleId = roleResult['role_id'];
+
+      // Then check if user has this role
+      final res = await _supabase
+          .from('user_role')
+          .select('role_id')
+          .eq('user_id', userId)
+          .eq('role_id', roleId)
+          .maybeSingle();
+      
+      return res != null;
+    } on PostgrestException catch (e) {
+      throw Exception('Error verificando rol: ${e.message}');
+    }
   }
   
   Future<void> addRoleIfNotExists(String slug) async {
@@ -33,8 +49,7 @@ class RoleService {
     try {
       // First get the current user ID
       final userId = _supabase.auth.currentUser!.id;
-      
-      // Get the role ID from the slug
+        // Get the role ID from the slug
       final roleResult = await _supabase
           .from('role')
           .select('role_id')
@@ -100,8 +115,7 @@ class RoleService {
       return ['customer']; // Default in case of error
     }
   }
-  
-  Future<void> setDefaultRole(String roleSlug) async {
+    Future<void> setDefaultRole(String roleSlug) async {
     try {
       final userId = _supabase.auth.currentUser!.id;
       
