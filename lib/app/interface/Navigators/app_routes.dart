@@ -17,6 +17,7 @@ import 'package:nicoya_now/app/interface/SplashWidgets/SplashFT2.dart';
 import 'package:nicoya_now/app/interface/SplashWidgets/SplashFT3.dart';
 import 'package:nicoya_now/app/features/products/presentation/pages/FoodFilter.dart';
 import 'package:nicoya_now/app/interface/Widgets/BottomNavigator.dart';
+import 'package:nicoya_now/app/interface/Widgets/FirstTimeIn.dart';
 import 'package:nicoya_now/app/interface/Widgets/Home.dart';
 import 'package:nicoya_now/app/features/products/presentation/pages/HomeFood.dart';
 import 'package:nicoya_now/app/interface/Widgets/LoginPage.dart';
@@ -59,17 +60,18 @@ Map<String, Widget Function(BuildContext)> get appRoutes {
     Routes.merchantStepOwner: (context) => const MerchantStepOwner(),
     Routes.merchantStepPassword: (context) => const MerchantStepPassword(),
     Routes.merchantSettings: (context) => const MerchantSettingsPage(),
-   Routes.addProduct: (context) {
-  final args = ModalRoute.of(context)!.settings.arguments as String;
-  return AddProductPage(merchantId: args);
-},
-Routes.editProduct: (context) {
-  final product = ModalRoute.of(context)!.settings.arguments as Product;
-  return EditProductPage(product: product);
-},
+    Routes.addProduct: (context) {
+      final args = ModalRoute.of(context)!.settings.arguments as String;
+      return AddProductPage(merchantId: args);
+    },
+    Routes.editProduct: (context) {
+      final product = ModalRoute.of(context)!.settings.arguments as Product;
+      return EditProductPage(product: product);
+    },
     Routes.product_Detail: (context) => const ProductDetail(),
     Routes.food_filter: (context) => const FoodFilter(),
     Routes.searchFilter: (context) => const SearchFilter(),
     Routes.clientNav: (context) => const BottomNavigator(),
+    Routes.isFirstTime: (context) => const FirstTimeIn(),
   };
 }

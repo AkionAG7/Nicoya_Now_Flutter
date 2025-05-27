@@ -32,5 +32,6 @@ class Routes {
  static const food_filter = '/foodFilter';
  static const searchFilter = '/searchFilter';
  static const clientNav = '/clientNav';
+ static const isFirstTime = '/isFirstTime';
 }
 
