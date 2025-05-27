@@ -23,6 +23,15 @@ import 'package:nicoya_now/app/features/products/domain/usecases/delete_product_
 import 'package:nicoya_now/app/features/products/domain/usecases/update_product_usecase.dart';
 import 'package:nicoya_now/app/features/products/presentation/controllers/add_product_controller.dart';
 import 'package:nicoya_now/app/features/products/presentation/controllers/update_product_controller.dart';
+// Admin imports
+import 'package:nicoya_now/app/core/network/network_info.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
+import 'package:nicoya_now/app/features/admin/data/datasources/merchant/merchant_remote_datasource.dart';
+import 'package:nicoya_now/app/features/admin/data/repositories/merchant/merchant_repository_impl.dart';
+import 'package:nicoya_now/app/features/admin/domain/repositories/merchant/merchant_repository.dart'
+    as AdminMerchantRepo;
+import 'package:nicoya_now/app/features/admin/domain/usecases/merchant/merchant_usecases.dart';
+import 'package:nicoya_now/app/features/admin/presentation/controllers/admin_merchant_controller.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final GetIt locator = GetIt.instance;
@@ -100,10 +109,40 @@ locator.registerLazySingleton<DeleteProductUseCase>(
     () => MerchantRegistrationController(
       registerMerchantUseCase: locator<RegisterMerchantUseCase>(),
     ),
-  );
-  locator.registerFactory<MerchantSettingsController>(
+  );  locator.registerFactory<MerchantSettingsController>(
      () => MerchantSettingsController(locator<GetMerchantByOwnerUseCase>()),
    );
+     // Admin dependencies
+  // Registrar el ConnectionChecker
+  locator.registerLazySingleton<InternetConnectionChecker>(
+    () => InternetConnectionChecker.createInstance(),
+  );
+
+  locator.registerLazySingleton<NetworkInfo>(
+    () => NetworkInfoImpl(connectionChecker: locator<InternetConnectionChecker>()),
+  );
+  
+  locator.registerLazySingleton<MerchantRemoteDataSource>(
+    () => MerchantRemoteDataSourceImpl(supabase: locator<SupabaseClient>()),
+  );
+  
+  locator.registerLazySingleton<AdminMerchantRepo.MerchantRepository>(
+    () => AdminMerchantRepositoryImpl(
+      remoteDataSource: locator<MerchantRemoteDataSource>(),
+      networkInfo: locator<NetworkInfo>(),
+    ),
+  );
+  
+  locator.registerLazySingleton<GetAllMerchantsUseCase>(
+    () => GetAllMerchantsUseCase(locator<AdminMerchantRepo.MerchantRepository>()),
+  );
+  
+  locator.registerFactory<AdminMerchantController>(
+    () => AdminMerchantController(
+      getAllMerchantsUseCase: locator<GetAllMerchantsUseCase>(),
+    ),
+  );
+   
    locator.registerFactory<AddProductsController>(
      () => AddProductsController(
        addProductUseCase: locator<AddProductUseCase>(),
