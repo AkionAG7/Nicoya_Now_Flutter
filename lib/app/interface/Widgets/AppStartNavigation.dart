@@ -109,10 +109,9 @@ class _AppStartNavigationState extends State<AppStartNavigation> {
         Navigator.pushReplacementNamed(context, Routes.selectUserRole);
       } else if (_isAuthenticated) {
         // Si está autenticado pero solo tiene un rol, ir directo a la página principal
-        Navigator.pushReplacementNamed(context, Routes.home_food);
-      } else {
-        // Si no está autenticado, mostrar selector de tipo de cuenta
-        Navigator.pushReplacementNamed(context, Routes.selecctTypeAccount);
+        Navigator.pushReplacementNamed(context, Routes.home_food);      } else {
+        // Si no está autenticado, redirigir a la página Home en lugar de SelectTypeAccount
+        Navigator.pushReplacementNamed(context, Routes.preLogin);
       }
     });
 

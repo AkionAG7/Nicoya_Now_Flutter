@@ -5,12 +5,54 @@ import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class SelectUserRolePage extends StatelessWidget {
+class SelectUserRolePage extends StatefulWidget {
   const SelectUserRolePage({Key? key}) : super(key: key);
+
+  @override
+  State<SelectUserRolePage> createState() => _SelectUserRolePageState();
+}
+
+class _SelectUserRolePageState extends State<SelectUserRolePage> {
+  bool _isLoading = true;
+  List<String> _availableRoles = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRoles();
+  }
+
+  Future<void> _loadRoles() async {
+    final authController = Provider.of<AuthController>(context, listen: false);
+    
+    // Si ya hay roles disponibles, usarlos
+    if (authController.availableRoles.isNotEmpty) {
+      setState(() {
+        _availableRoles = authController.availableRoles;
+        _isLoading = false;
+      });
+      return;
+    }
+    
+    // Si no hay roles, cargarlos directamente
+    try {
+      final roleService = RoleService(Supabase.instance.client);
+      final roles = await roleService.getUserRoles();
+      setState(() {
+        _availableRoles = roles;
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('Error cargando roles: $e');
+      setState(() {
+        _availableRoles = ['customer']; // Rol predeterminado como fallback
+        _isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final authController = Provider.of<AuthController>(context);
-    final availableRoles = authController.availableRoles;
     
     return Scaffold(
       appBar: AppBar(
@@ -35,13 +77,25 @@ class SelectUserRolePage extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 40),
-              
-              Wrap(
-                alignment: WrapAlignment.center,
-                spacing: 20,
-                runSpacing: 20,
-                children: availableRoles.map((role) => _buildRoleCard(context, role)).toList(),
-              ),
+                _isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(
+                      color: Color(0xffd72a23),
+                    ),
+                  )
+                : _availableRoles.isEmpty
+                  ? const Center(
+                      child: Text(
+                        'No se encontraron roles disponibles',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    )
+                  : Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: 20,
+                      runSpacing: 20,
+                      children: _availableRoles.map((role) => _buildRoleCard(context, role)).toList(),
+                    ),
             ],
           ),
         ),
