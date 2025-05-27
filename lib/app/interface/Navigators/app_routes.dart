@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nicoya_now/app/features/auth/presentation/pages/driver_register_done.dart';
+import 'package:nicoya_now/app/features/merchant/presentation/pages/add_product_merchant.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/pages/home_merchant_page.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_settings_page.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_step_business.dart';
@@ -56,6 +57,10 @@ Map<String, Widget Function(BuildContext)> get appRoutes {
     Routes.merchantStepOwner: (context) => const MerchantStepOwner(),
     Routes.merchantStepPassword: (context) => const MerchantStepPassword(),
     Routes.merchantSettings: (context) => const MerchantSettingsPage(),
+   Routes.addProduct: (context) {
+  final args = ModalRoute.of(context)!.settings.arguments as String;
+  return AddProductPage(merchantId: args);
+},
     Routes.product_Detail: (context) => const ProductDetail(),
     Routes.food_filter: (context) => const FoodFilter(),
     Routes.searchFilter: (context) => const SearchFilter(),

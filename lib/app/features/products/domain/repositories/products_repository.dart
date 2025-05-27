@@ -7,4 +7,5 @@ abstract class ProductsRepository {
   Future<List<Product>> getPlatoFuerte();
   Future<List<Product>> getBebida();
   Future<List<Product>> getComidaRapida();
+  Future<List<Product>> addProduct(Product product);
 }

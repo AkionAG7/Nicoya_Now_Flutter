@@ -11,12 +11,34 @@ abstract class ProductsDataSource {
   /// Nuevo: obtiene productos filtrados por merchant_id
   Future<List<Product>> fetchProductsByMerchant(String merchantId);
   Future<List<Product>> fetchBySearch (String query);
+  Future<void> addProduct(Product product);
+
 }
 
 class ProductsDataSourceImpl implements ProductsDataSource {
   final SupabaseClient supabaseClient;
 
   ProductsDataSourceImpl({required this.supabaseClient});
+
+  @override
+Future<void> addProduct(Product product) async {
+  try {
+    await supabaseClient.from('product').insert({
+      'product_id'  : product.product_id,
+      'merchant_id' : product.merchant_id,
+      'name'        : product.name,
+      'description' : product.description,
+      'price'       : product.price,
+      'image_url'   : product.image_url,
+      'is_active'   : product.is_activate,
+      'created_at'  : product.created_at.toIso8601String(),
+      'category_id' : product.category_id,
+    });
+  } catch (e) {
+    print('Error al agregar producto: $e');
+    rethrow;
+  }
+}
 
 
   @override

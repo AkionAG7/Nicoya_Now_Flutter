@@ -13,6 +13,10 @@ import 'package:nicoya_now/app/features/merchant/domain/usecases/get_merchant_by
 import 'package:nicoya_now/app/features/merchant/domain/usecases/register_merchant_usecase.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/controllers/merchant_registration_controller.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/controllers/merchant_settings_controller.dart';
+import 'package:nicoya_now/app/features/products/data/datasources/products_data_source.dart';
+import 'package:nicoya_now/app/features/products/domain/repositories/products_repository.dart';
+import 'package:nicoya_now/app/features/products/domain/usecases/add_product_usecase.dart';
+import 'package:nicoya_now/app/features/products/presentation/controllers/add_product_controller.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final GetIt locator = GetIt.instance;
@@ -34,6 +38,9 @@ void setupServiceLocator() {
   locator.registerLazySingleton<MerchantDataSource>(
     () => SupabaseMerchantDataSource(locator<SupabaseClient>()),
   );
+locator.registerLazySingleton<ProductsDataSource>(
+  () => ProductsDataSourceImpl(supabaseClient: locator<SupabaseClient>()),
+);
 
   // Repositories
   locator.registerLazySingleton<AuthRepository>(
@@ -56,6 +63,9 @@ void setupServiceLocator() {
   locator.registerLazySingleton<GetMerchantByOwnerUseCase>(
     () => GetMerchantByOwnerUseCase(locator<MerchantRepository>()),
   );
+  locator.registerLazySingleton<AddProductUseCase>(
+    () => AddProductUseCase(locator<ProductsRepository>()),
+  );
   // Controllers
   locator.registerFactory<AuthController>(
     () => AuthController(
@@ -71,5 +81,10 @@ void setupServiceLocator() {
   );
   locator.registerFactory<MerchantSettingsController>(
      () => MerchantSettingsController(locator<GetMerchantByOwnerUseCase>()),
+   );
+   locator.registerFactory<AddProductsController>(
+     () => AddProductsController(
+       addProductUseCase: locator<AddProductUseCase>(),
+     ),
    );
 }
