@@ -158,15 +158,14 @@ class SupabaseAuthDataSource implements AuthDataSource {
   }
 
   @override
-  Future<void> addRoleToUser(String userId, String roleSlug, Map<String, dynamic> roleData) async {
-    // First get the role_id from the role slug
+  Future<void> addRoleToUser(String userId, String roleSlug, Map<String, dynamic> roleData) async {    // First get the role_id from the role slug
     final roleResult = await _supabaseClient
         .from('role')
-        .select('id')
+        .select('role_id')
         .eq('slug', roleSlug)
         .single();
     
-    final roleId = roleResult['id'];
+    final roleId = roleResult['role_id'];
     
     // Insert into the user_role table
     await _supabaseClient.from('user_role').insert({

@@ -3,11 +3,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class RoleService {
   final SupabaseClient _supabase;
   RoleService(this._supabase);
+
   Future<bool> hasRole(String slug) async {
     try {
-      final userId = _supabase.auth.currentUser!.id;
-      
-      // First get the role ID from the slug
+      final userId = _supabase.auth.currentUser!.id;      // Obtener el role_id a partir del slug
       final roleResult = await _supabase
           .from('role')
           .select('role_id')
@@ -16,40 +15,37 @@ class RoleService {
 
       final roleId = roleResult['role_id'];
 
-      // Then check if user has this role
+      // Verificar si el usuario ya tiene ese rol
       final res = await _supabase
           .from('user_role')
           .select('role_id')
           .eq('user_id', userId)
           .eq('role_id', roleId)
           .maybeSingle();
-      
+
       return res != null;
     } on PostgrestException catch (e) {
       throw Exception('Error verificando rol: ${e.message}');
     }
   }
-  
+
   Future<void> addRoleIfNotExists(String slug) async {
     try {
-      // Sólo enviamos el parámetro obligatorio
-      await _supabase.rpc(
-        'add_role_if_not_exists',
-        params: {'_role_slug': slug},
-      );
+      final hasIt = await hasRole(slug);
+      if (!hasIt) {
+        await addRoleWithData(slug, {});
+      }
     } on PostgrestException catch (e) {
       throw Exception('Error añadiendo rol: ${e.message}');
     }
   }
-  
+
   Future<void> addRoleWithData(
-    String roleSlug, 
-    Map<String, dynamic> roleData
+    String roleSlug,
+    Map<String, dynamic> roleData,
   ) async {
     try {
-      // First get the current user ID
-      final userId = _supabase.auth.currentUser!.id;
-        // Get the role ID from the slug
+      final userId = _supabase.auth.currentUser!.id;      // Obtener role_id por slug
       final roleResult = await _supabase
           .from('role')
           .select('role_id')
@@ -58,33 +54,39 @@ class RoleService {
 
       final roleId = roleResult['role_id'];
 
-      // Check if the user already has this role
+      // Verificar si ya tiene ese rol
       final existingRole = await _supabase
           .from('user_role')
           .select()
           .eq('user_id', userId)
           .eq('role_id', roleId)
           .maybeSingle();
-          
+
       if (existingRole != null) {
         throw Exception('Ya tienes este rol asociado a tu cuenta');
       }
-      
-      // Insert into user_role table
+
+      // Insertar nuevo rol
       await _supabase.from('user_role').insert({
         'user_id': userId,
         'role_id': roleId,
         'is_default': false,
       });
-      
-      // Update role-specific tables with additional data
-      if (roleSlug == 'driver') {
-        await _supabase.from('driver').insert({
-          'driver_id': userId,
-          'id_number': roleData['id_number'],
-          'is_verified': false, // New drivers need verification
-        });
-      } else if (roleSlug == 'merchant') {
+
+      // Insertar datos específicos del rol
+     if (roleSlug == 'driver') {
+  await _supabase.from('driver').insert({
+    'driver_id': userId,
+    'license_number': roleData['license_number'],
+    'is_verified': false,
+  });
+  if (roleData['id_number'] != null) {
+    await _supabase
+        .from('profile')
+        .update({'id_number': roleData['id_number']})
+        .eq('user_id', userId);
+  }
+} else if (roleSlug == 'merchant') {
         await _supabase.from('merchant').upsert({
           'merchant_id': userId,
           'id_number': roleData['id_number'],
@@ -94,32 +96,25 @@ class RoleService {
       throw Exception('Error añadiendo rol: ${e.message}');
     }
   }
-  
+
   Future<List<String>> getUserRoles() async {
     try {
-      final userId = _supabase.auth.currentUser!.id;
-      
-      final rolesResult = await _supabase
+      final userId = _supabase.auth.currentUser!.id;      final rolesResult = await _supabase
           .from('user_role')
           .select('role:role_id(slug)')
-          .eq('user_id', userId);
-      
-      if (rolesResult.isEmpty) {
-        return ['customer']; // Default role
-      }
+          .eq('user_id', userId);      if (rolesResult.isEmpty) return ['customer'];
       
       return rolesResult
           .map<String>((role) => role['role']['slug'] as String)
           .toList();
     } catch (e) {
-      return ['customer']; // Default in case of error
+      return ['customer'];
     }
   }
-    Future<void> setDefaultRole(String roleSlug) async {
-    try {
-      final userId = _supabase.auth.currentUser!.id;
-      
-      // Get the role ID from the slug
+
+  Future<void> setDefaultRole(String roleSlug) async {
+    try {      final userId = _supabase.auth.currentUser!.id;
+
       final roleResult = await _supabase
           .from('role')
           .select('role_id')
@@ -128,13 +123,11 @@ class RoleService {
 
       final roleId = roleResult['role_id'];
 
-      // First, set all roles to non-default
       await _supabase
           .from('user_role')
           .update({'is_default': false})
           .eq('user_id', userId);
-      
-      // Then set the selected role as default
+
       await _supabase
           .from('user_role')
           .update({'is_default': true})

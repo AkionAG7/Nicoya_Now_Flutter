@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:nicoya_now/app/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:nicoya_now/app/core/services/role_service.dart';
+import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SelectUserRolePage extends StatelessWidget {
   const SelectUserRolePage({Key? key}) : super(key: key);
@@ -121,13 +124,46 @@ class SelectUserRolePage extends StatelessWidget {
       ),
     );
   }
-  
-  void _selectRole(BuildContext context, String role) {
-    // In a real app, you would navigate to the appropriate home page
-    // or dashboard based on the selected role
-    Navigator.of(context).pushReplacementNamed('/home');
-    
-    // You could also store the selected role in preferences or
-    // update the default role in the database
+    void _selectRole(BuildContext context, String role) async {
+    try {
+      // Mostrar indicador de carga
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => const Center(child: CircularProgressIndicator()),
+      );
+      
+      // Establecer el rol seleccionado como predeterminado
+      final roleService = RoleService(Supabase.instance.client);
+      await roleService.setDefaultRole(role);
+      
+      // Navegar a la página apropiada según el rol
+      if (context.mounted) {
+        Navigator.of(context).pop(); // Cerrar diálogo de carga
+        
+        switch (role) {
+          case 'customer':
+            Navigator.of(context).pushReplacementNamed(Routes.home_food);
+            break;
+          case 'driver':
+            // TODO: Implementar navegación a página de repartidor
+            Navigator.of(context).pushReplacementNamed(Routes.home_food);
+            break;
+          case 'merchant':
+            Navigator.of(context).pushReplacementNamed(Routes.home_merchant);
+            break;
+          default:
+            Navigator.of(context).pushReplacementNamed(Routes.home_food);
+        }
+      }
+    } catch (e) {
+      // Cerrar diálogo de carga y mostrar error
+      if (context.mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al cambiar de rol: ${e.toString()}')),
+        );
+      }
+    }
   }
 }
