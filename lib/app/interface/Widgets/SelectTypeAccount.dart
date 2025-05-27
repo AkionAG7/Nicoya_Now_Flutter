@@ -56,18 +56,52 @@ class _SelectTypeAccountState extends State<SelectTypeAccount> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        scrolledUnderElevation: 0,
-        automaticallyImplyLeading: false,
-      ),
-
-      body: Padding(
-        padding: const EdgeInsets.only(left: 30, right: 30),
-        child: SafeArea(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [              // App Bar with logo
+              Wrap(
+                spacing: 8,
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Image.asset(
+                        'lib/app/interface/Public/LogoApp.png',
+                        height: 45,
+                      ),
+                      const SizedBox(width: 10),
+                      const Text(
+                        'Nicoya\nNow',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xffd72a23),
+                        ),
+                      ),
+                    ],
+                  ),
+                  OutlinedButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, Routes.addRolePage);
+                    },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xffd72a23),
+                      side: const BorderSide(color: Color(0xffd72a23)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    child: const Text('Ya tengo cuenta'),
+                  ),
+                ],
+              ),
+
               Center(
                 child: Icon(
                   NicoyaNowIcons.nicoyanow,
@@ -75,10 +109,10 @@ class _SelectTypeAccountState extends State<SelectTypeAccount> {
                   color: const Color(0xffd72a23),
                 ),
               ),
-              SizedBox(height: 40),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              SizedBox(height: 40),              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 20,
+                runSpacing: 20,
                 children: [
                   SizedBox(
                     width: 140,
@@ -93,15 +127,17 @@ class _SelectTypeAccountState extends State<SelectTypeAccount> {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         backgroundColor: const Color(0xffffffff),
-                      ),                      onPressed: () {
+                      ),
+                      onPressed: () {
                         Navigator.pushNamed(context, Routes.deliver_Form1);
                       },
                       child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Image.asset(
-                            'lib/app/interface/public/Repartidor.png',
-                            width: 120,
-                            height: 120,
+                            'lib/app/interface/Public/Repartidor.png',
+                            width: 100,
+                            height: 100,
                           ),
                           Text(
                             'Repartidor',
@@ -111,9 +147,6 @@ class _SelectTypeAccountState extends State<SelectTypeAccount> {
                       ),
                     ),
                   ),
-
-                  SizedBox(width: 40),
-
                   SizedBox(
                     width: 140,
                     height: 140,
@@ -127,15 +160,17 @@ class _SelectTypeAccountState extends State<SelectTypeAccount> {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         backgroundColor: const Color(0xffffffff),
-                      ),                      onPressed: () {
+                      ),
+                      onPressed: () {
                         Navigator.pushNamed(context, Routes.merchantStepBusiness);
                       },
                       child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Image.asset(
-                            'lib/app/interface/public/Comercio.png',
-                            width: 120,
-                            height: 120,
+                            'lib/app/interface/Public/Comercio.png',
+                            width: 100,
+                            height: 100,
                           ),
                           Text(
                             'Comercio',
@@ -146,34 +181,36 @@ class _SelectTypeAccountState extends State<SelectTypeAccount> {
                     ),
                   ),
                 ],
-              ),
-
-              SizedBox(height: 40),
-              SizedBox(
-                width: 140,
-                height: 140,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    side: BorderSide(color: const Color(0xffd72a23), width: 2),
-                    shape: ContinuousRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+              ),              SizedBox(height: 20),
+              Center(
+                child: SizedBox(
+                  width: 140,
+                  height: 140,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      side: BorderSide(color: const Color(0xffd72a23), width: 2),
+                      shape: ContinuousRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      backgroundColor: const Color(0xffffffff),
                     ),
-                    backgroundColor: const Color(0xffffffff),
-                  ),                  onPressed: () {
-                    _showLoginPrompt('customer');
-                  },
-                  child: Column(
-                    children: [
-                      Image.asset(
-                        'lib/app/interface/public/SplashFT2.png',
-                        width: 120,
-                        height: 120,
-                      ),
-                      Text(
-                        'Cliente',
-                        style: TextStyle(color: const Color(0xffd72a23)),
-                      ),
-                    ],
+                    onPressed: () {
+                      _showLoginPrompt('customer');
+                    },
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Image.asset(
+                          'lib/app/interface/Public/SplashFT2.png',
+                          width: 100,
+                          height: 100,
+                        ),
+                        Text(
+                          'Cliente',
+                          style: TextStyle(color: const Color(0xffd72a23)),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

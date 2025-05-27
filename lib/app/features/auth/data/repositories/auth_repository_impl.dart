@@ -82,10 +82,19 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<void> resetPassword(String email) async {
     throw UnimplementedError();
   }
-  
-  @override
+    @override
   Future<void> updateProfile(String userId, Map<String, dynamic> data) async {
     await dataSource.updateProfile(userId, data);
+  }
+  
+  @override
+  Future<List<String>> getUserRoles(String userId) async {
+    return await dataSource.getRolesForUser(userId);
+  }
+  
+  @override
+  Future<void> assignRoleToUser(String userId, String roleId, Map<String, dynamic> roleData) async {
+    await dataSource.addRoleToUser(userId, roleId, roleData);
   }
   
   User _mapToUser(Map<String, dynamic> userData) {

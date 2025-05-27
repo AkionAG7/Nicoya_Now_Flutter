@@ -22,11 +22,66 @@ abstract class MerchantDataSource {
   });
 
   Future<List<Merchant>> fetchAllMerchants();
+  Future<Merchant> getMerchantByOwner(String ownerId);
+  Future<List<Merchant>> fetchMerchantSearch(String query);
+  
 }
 
 class SupabaseMerchantDataSource implements MerchantDataSource {
   SupabaseMerchantDataSource(this._supa);
   final SupabaseClient _supa;
+  @override
+  Future<List<Merchant>> fetchMerchantSearch(String query) async {
+    final response = await _supa
+        .from('merchant')
+        .select()
+        .or('business_name.ilike.%$query%,corporate_name.ilike.%$query%');
+
+    if (response is List) {
+      return response.map((item) {
+        return Merchant(
+          merchantId: item['merchant_id'] as String,
+          ownerId: item['owner_id'] as String,
+          legalId: item['legal_id'] as String,
+          businessName: item['business_name'] as String,
+          corporateName: item['corporate_name'] as String?,
+          logoUrl: item['logo_url'] as String? ?? '',
+          mainAddressId: item['main_address_id'] as String,
+          isActive: item['is_active'] as bool? ?? false,
+          createdAt: DateTime.parse(item['created_at'] as String),
+        );
+      }).toList();
+    } else {
+      throw Exception('La respuesta no es una lista');
+    }
+  }
+
+  @override
+  Future<Merchant> getMerchantByOwner(String ownerId) async {
+    final resp =
+        await _supa
+            .from('merchant')
+            .select(
+              'merchant_id, owner_id, legal_id, business_name, corporate_name, main_address_id, logo_url, is_active, created_at',
+            )
+            .eq('owner_id', ownerId)
+            .maybeSingle();
+
+    if (resp == null) throw Exception('Comercio no encontrado');
+
+    return Merchant(
+      merchantId: resp['merchant_id'],
+      ownerId: resp['owner_id'],
+      legalId: resp['legal_id'],
+      businessName: resp['business_name'],
+      corporateName: resp['corporate_name'],
+      mainAddressId: resp['main_address_id'],
+      logoUrl: resp['logo_url'] ?? '',
+      isActive: resp['is_active'] ?? false,
+      createdAt: DateTime.parse(resp['created_at'] as String),
+    );
+  }
+
   @override
   Future<List<Merchant>> fetchAllMerchants() async {
     try {
@@ -75,19 +130,20 @@ class SupabaseMerchantDataSource implements MerchantDataSource {
       phone: phone,
       idNumber: cedula,
     );
-    
+
     if (!success) {
       throw AuthException('No se pudo crear la cuenta de comerciante');
     }
-    
+
     final uid = authController.user!.id;
 
     try {
-      final addr = await _supa.from('address').insert({
-        'user_id': uid,
-        'street' : address,
-        'district': '',
-      }).select('address_id').single();
+      final addr =
+          await _supa
+              .from('address')
+              .insert({'user_id': uid, 'street': address, 'district': ''})
+              .select('address_id')
+              .single();
       final addressId = addr['address_id'] as String;
 
       final ext = logoPath.split('.').last;

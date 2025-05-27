@@ -64,7 +64,7 @@ class _LoginPageState extends State<LoginPage> {
                       width: double.infinity,
                       height: 270,
                       child: Image.asset(
-                        'lib/app/interface/public/LoginImage.png',
+                        'lib/app/interface/Public/LoginImage.png',
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -214,75 +214,11 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
-  // Construye un diálogo para seleccionar el rol cuando el usuario tiene múltiples roles
-  Widget _buildRoleSelectionDialog(BuildContext context, AuthController authController) {
-    // Lista de roles disponibles para mostrar (usando el nuevo método del controlador)
-    final roles = authController.userRoles;
-    
-    return AlertDialog(
-      title: Text('Selecciona tu rol'),
-      content: SingleChildScrollView(
-        child: ListBody(
-          children: roles.map((role) {
-            String title;
-            IconData icon;
-              // Configurar título e icono según el rol
-            switch (role) {
-              case 'customer': // Updated to match database role name
-                title = 'Cliente';
-                icon = Icons.person;
-                break;
-              case 'driver':
-                title = 'Repartidor';
-                icon = Icons.delivery_dining;
-                break;              case 'merchant':
-                title = 'Comerciante';
-                icon = Icons.store;
-                break;
-              case 'admin':
-                title = 'Administrador';
-                icon = Icons.admin_panel_settings;
-                break;
-              default:
-                title = 'Usuario';
-                icon = Icons.person;
-            }
-            
-            return ListTile(
-              leading: Icon(icon, color: Color(0xffd72a23)),
-              title: Text(title),
-              onTap: () {                // Manejar selección del rol
-                switch (role) {
-                  case 'customer': // Updated to match database role name
-                    Navigator.pushNamedAndRemoveUntil(
-                      context, Routes.home_food, (route) => false);
-                    break;
-                  case 'driver':
-                    Navigator.pushNamedAndRemoveUntil(
-                      context, Routes.home_food, (route) => false); // Cambiar a pantalla de repartidores
-                    break;                  case 'merchant':
-                    Navigator.pushNamedAndRemoveUntil(
-                      context, Routes.home_merchant, (route) => false); // Cambiar a pantalla de comercios
-                    break;
-                  case 'admin':
-                    Navigator.pushNamedAndRemoveUntil(
-                      context, Routes.home_admin, (route) => false); // Pantalla para administradores
-                    break;
-                  default:
-                    Navigator.pushNamedAndRemoveUntil(
-                      context, Routes.home_food, (route) => false);
-                }
-              },
-            );
-          }).toList(),
-        ),
-      ),
-    );
-  }
+  
   Future<void> _login() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Por favor, ingresa email y contraseña')),
+        const SnackBar(content: Text('Por favor, ingresa email y contraseña')),
       );
       return;
     }
@@ -298,9 +234,10 @@ class _LoginPageState extends State<LoginPage> {
         listen: false,
       );
       
-      print('Intentando iniciar sesión con: ${_emailController.text.trim()}');
-        print('📧 Intentando login con email: ${_emailController.text.trim()}');
-      final success = await authController.signIn(
+      print('📧 Intentando login con email: ${_emailController.text.trim()}');
+      
+      // Usar el método de la rama main para login con selección de rol
+      final success = await authController.handleLoginWithRoleSelection(
         _emailController.text.trim(),
         _passwordController.text,
       );
@@ -309,13 +246,9 @@ class _LoginPageState extends State<LoginPage> {
       
       if (success) {
         print('✅ Login exitoso');
-        // Obtener los roles del usuario usando el nuevo método del controlador
-        final roles = authController.userRoles;
-        print('👤 Roles del usuario: $roles');
         
-        print('Inicio de sesión exitoso. Roles del usuario: $roles');
-          // Verificar explícitamente si hay rol de administrador
-        if (roles.contains('admin')) {
+        // Verificar si el usuario tiene rol de administrador
+        if (authController.userRoles.contains('admin')) {
           print('👑 Usuario tiene rol de administrador');
           print('⚡ Redirigiendo a pantalla de admin: ${Routes.home_admin}');
           Navigator.pushNamedAndRemoveUntil(
@@ -326,46 +259,33 @@ class _LoginPageState extends State<LoginPage> {
           return;
         }
         
-        // Si hay múltiples roles, mostrar diálogo de selección
-        if (roles.length > 1) {
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (context) => _buildRoleSelectionDialog(context, authController),
-          );
+        // Continuar con el flujo normal de la rama main
+        if (authController.availableRoles.length > 1) {
+          // Navegar a la página de selección de rol
+          Navigator.pushReplacementNamed(context, Routes.selectUserRole);
         } else {
-          // Si solo hay un rol, redirigir directamente
-          final userRole = roles.isNotEmpty ? roles.first : 'customer'; // Updated default role
-          
-          print('Redirigiendo según rol: $userRole');
+          // Solo hay un rol, navegar directamente según el rol
+          final userRole = authController.userRole ?? 'customer';
           
           switch (userRole) {
-            case 'customer': // Updated to match database role name
+            case 'customer':
               Navigator.pushNamedAndRemoveUntil(
                 context, 
-                Routes.home_food,
+                Routes.clientNav,
                 (route) => false
               );
               break;
             case 'driver':
               Navigator.pushNamedAndRemoveUntil(
                 context, 
-                Routes.home_food, // Cambiar a la pantalla para repartidores
+                Routes.home_food, // Cambiar a la pantalla para repartidores cuando esté disponible
                 (route) => false
               );
               break;
             case 'merchant':
               Navigator.pushNamedAndRemoveUntil(
                 context, 
-                Routes.home_merchant, // Cambiar a pantalla de comercios
-                (route) => false
-              );
-              break;            case 'admin':
-              print('🚀 Redirigiendo a pantalla de administrador desde switch');
-              print('📱 Ruta de admin: ${Routes.home_admin}');
-              Navigator.pushNamedAndRemoveUntil(
-                context, 
-                Routes.home_admin, // Pantalla para administradores
+                Routes.home_merchant,
                 (route) => false
               );
               break;
@@ -373,7 +293,7 @@ class _LoginPageState extends State<LoginPage> {
               // Si no hay rol definido, ir a la pantalla principal
               Navigator.pushNamedAndRemoveUntil(
                 context, 
-                Routes.home_food,
+                Routes.clientNav,
                 (route) => false
               );
           }

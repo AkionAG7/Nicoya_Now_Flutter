@@ -3,12 +3,15 @@ import 'package:nicoya_now/app/core/services/role_service.dart';
 import 'package:nicoya_now/app/features/auth/data/datasources/auth_data_source.dart';
 import 'package:nicoya_now/app/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:nicoya_now/app/features/auth/domain/repositories/auth_repository.dart';
+import 'package:nicoya_now/app/features/auth/domain/usecases/add_user_role_usecase.dart';
+import 'package:nicoya_now/app/features/auth/domain/usecases/get_user_roles_usecase.dart';
 import 'package:nicoya_now/app/features/auth/domain/usecases/sign_in_usecase.dart';
 import 'package:nicoya_now/app/features/auth/domain/usecases/sign_up_usecase.dart';
 import 'package:nicoya_now/app/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:nicoya_now/app/features/merchant/data/datasources/merchant_data_source.dart';
 import 'package:nicoya_now/app/features/merchant/data/repositories/merchant_repository_impl.dart';
 import 'package:nicoya_now/app/features/merchant/domain/repositories/merchant_repository.dart';
+import 'package:nicoya_now/app/features/merchant/domain/usecases/get_merchant_byowner_usecase.dart';
 import 'package:nicoya_now/app/features/merchant/domain/usecases/register_merchant_usecase.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/controllers/merchant_registration_controller.dart';
 // Admin imports
@@ -19,6 +22,15 @@ import 'package:nicoya_now/app/features/admin/domain/repositories/merchant/merch
     as AdminMerchantRepo;
 import 'package:nicoya_now/app/features/admin/domain/usecases/merchant/merchant_usecases.dart';
 import 'package:nicoya_now/app/features/admin/presentation/controllers/admin_merchant_controller.dart';
+import 'package:nicoya_now/app/features/merchant/presentation/controllers/merchant_settings_controller.dart';
+import 'package:nicoya_now/app/features/products/data/datasources/products_data_source.dart';
+import 'package:nicoya_now/app/features/products/data/repositories/products_repository_impl.dart';
+import 'package:nicoya_now/app/features/products/domain/repositories/products_repository.dart';
+import 'package:nicoya_now/app/features/products/domain/usecases/add_product_usecase.dart';
+import 'package:nicoya_now/app/features/products/domain/usecases/delete_product_usecase.dart';
+import 'package:nicoya_now/app/features/products/domain/usecases/update_product_usecase.dart';
+import 'package:nicoya_now/app/features/products/presentation/controllers/add_product_controller.dart';
+import 'package:nicoya_now/app/features/products/presentation/controllers/update_product_controller.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final GetIt locator = GetIt.instance;
@@ -40,6 +52,18 @@ void setupServiceLocator() {
   locator.registerLazySingleton<MerchantDataSource>(
     () => SupabaseMerchantDataSource(locator<SupabaseClient>()),
   );
+  locator.registerLazySingleton<ProductsDataSource>(
+    () => ProductsDataSourceImpl(supabaseClient: locator<SupabaseClient>()),
+  );
+
+  // Admin data sources
+  locator.registerLazySingleton<NetworkInfo>(
+        () => const NetworkInfoImpl(),
+  );
+  
+  locator.registerLazySingleton<MerchantRemoteDataSource>(
+        () => MerchantRemoteDataSourceImpl(supabase: locator<SupabaseClient>()),
+  );
 
   // Repositories
   locator.registerLazySingleton<AuthRepository>(
@@ -48,52 +72,85 @@ void setupServiceLocator() {
   locator.registerLazySingleton<MerchantRepository>(
     () => MerchantRepositoryImpl(locator<MerchantDataSource>()),
   );
-
-  // Use cases
-  locator.registerLazySingleton<SignInUseCase>(
-    () => SignInUseCase(locator<AuthRepository>()),
-  );
-  locator.registerLazySingleton<SignUpUseCase>(
-    () => SignUpUseCase(locator<AuthRepository>()),
-  );
-  locator.registerLazySingleton<RegisterMerchantUseCase>(
-    () => RegisterMerchantUseCase(locator<MerchantRepository>()),
-  );
-  // Controllers
-  locator.registerFactory<AuthController>(
-    () => AuthController(
-      signInUseCase: locator<SignInUseCase>(),
-      signUpUseCase: locator<SignUpUseCase>(),
-      roleService: locator<RoleService>(),
-    ),
-  );
-  locator.registerFactory<MerchantRegistrationController>(
-    () => MerchantRegistrationController(
-      registerMerchantUseCase: locator<RegisterMerchantUseCase>(),
-    ),
-  );  // Admin dependencies
-  locator.registerLazySingleton<NetworkInfo>(
-        () => const NetworkInfoImpl(),
+  locator.registerLazySingleton<ProductsRepository>(
+    () => ProductsRepositoryImpl(dataSource: locator<ProductsDataSource>()),
   );
   
-  locator.registerLazySingleton<MerchantRemoteDataSource>(
-        () => MerchantRemoteDataSourceImpl(supabase: locator<SupabaseClient>()),
-  );
-  
+  // Admin repositories
   locator.registerLazySingleton<AdminMerchantRepo.MerchantRepository>(
         () => AdminMerchantRepositoryImpl(
           remoteDataSource: locator<MerchantRemoteDataSource>(),
           networkInfo: locator<NetworkInfo>(),
         ),
   );
+
+  // Use cases
+  locator.registerLazySingleton<SignInUseCase>(
+    () => SignInUseCase(locator<AuthRepository>()),
+  );  
+  locator.registerLazySingleton<SignUpUseCase>(
+    () => SignUpUseCase(locator<AuthRepository>()),
+  );
+  locator.registerLazySingleton<GetUserRolesUseCase>(
+    () => GetUserRolesUseCase(locator<AuthRepository>()),
+  );
+  locator.registerLazySingleton<AddUserRoleUseCase>(
+    () => AddUserRoleUseCase(locator<AuthRepository>()),
+  );
+  locator.registerLazySingleton<RegisterMerchantUseCase>(
+    () => RegisterMerchantUseCase(locator<MerchantRepository>()),
+  );
+  locator.registerLazySingleton<GetMerchantByOwnerUseCase>(
+    () => GetMerchantByOwnerUseCase(locator<MerchantRepository>()),
+  );
+  locator.registerLazySingleton<AddProductUseCase>(
+    () => AddProductUseCase(locator<ProductsRepository>()),
+  );
+  locator.registerLazySingleton<UpdateProductUseCase>(
+    () => UpdateProductUseCase(locator<ProductsRepository>()),
+  );
+  locator.registerLazySingleton<DeleteProductUseCase>(
+    () => DeleteProductUseCase(locator<ProductsRepository>()),
+  );
   
+  // Admin use cases
   locator.registerLazySingleton<GetAllMerchantsUseCase>(
         () => GetAllMerchantsUseCase(locator<AdminMerchantRepo.MerchantRepository>()),
   );
   
+  // Controllers
+  locator.registerFactory<AuthController>(
+    () => AuthController(
+      signInUseCase: locator<SignInUseCase>(),
+      signUpUseCase: locator<SignUpUseCase>(),
+      roleService: locator<RoleService>(),
+      getUserRolesUseCase: locator<GetUserRolesUseCase>(),
+      addUserRoleUseCase: locator<AddUserRoleUseCase>(),
+    ),
+  );
+  locator.registerFactory<MerchantRegistrationController>(
+    () => MerchantRegistrationController(
+      registerMerchantUseCase: locator<RegisterMerchantUseCase>(),
+    ),
+  );  
+  
+  // Admin controllers
   locator.registerFactory<AdminMerchantController>(
         () => AdminMerchantController(
           getAllMerchantsUseCase: locator<GetAllMerchantsUseCase>(),
         ),
+  );
+  
+  // Merchant and Products controllers
+  locator.registerFactory<MerchantSettingsController>(
+     () => MerchantSettingsController(locator<GetMerchantByOwnerUseCase>()),
+   );
+   locator.registerFactory<AddProductsController>(
+     () => AddProductsController(
+       addProductUseCase: locator<AddProductUseCase>(),
+     ),
+   );
+   locator.registerFactory<EditProductController>(
+    () => EditProductController(updateProductUseCase: locator<UpdateProductUseCase>()),
   );
 }

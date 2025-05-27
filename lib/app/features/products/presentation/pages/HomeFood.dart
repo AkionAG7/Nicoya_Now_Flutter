@@ -17,7 +17,14 @@ import 'package:nicoya_now/app/features/products/domain/usecases/get_products_us
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-enum valorVerMas { postres, platosFuertes, comidaRapida, bebidas, todos, merchant }
+enum valorVerMas {
+  postres,
+  platosFuertes,
+  comidaRapida,
+  bebidas,
+  todos,
+  merchant,
+}
 
 class HomeFood extends StatefulWidget {
   const HomeFood({super.key});
@@ -33,6 +40,7 @@ class _HomeFoodState extends State<HomeFood> {
   late Future<List<Product>> _comidaRapida;
   late Future<List<Product>> _bebidasFuture;
   late Future<List<Merchant>> _merchantsFuture;
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -60,6 +68,7 @@ class _HomeFoodState extends State<HomeFood> {
 
   @override
   void dispose() {
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -91,6 +100,7 @@ class _HomeFoodState extends State<HomeFood> {
                     children: [
                       Expanded(
                         child: TextField(
+                          controller: _searchController,
                           decoration: InputDecoration(
                             hintText: '¿Que quieres comer hoy?',
                             prefixIcon: const Icon(Icons.storefront_outlined),
@@ -106,7 +116,11 @@ class _HomeFoodState extends State<HomeFood> {
                       IconButton(
                         icon: const Icon(Icons.search),
                         onPressed: () {
-                          // Acción al presionar el botón de búsqueda
+                          Navigator.pushNamed(
+                            context,
+                            Routes.searchFilter,
+                            arguments: _searchController.text.trim(),
+                          );
                         },
                       ),
                     ],
@@ -167,7 +181,7 @@ class _HomeFoodState extends State<HomeFood> {
                         return GridView.builder(
                           shrinkWrap: true,
                           scrollDirection: Axis.horizontal,
-                          padding: const EdgeInsets.all(8),
+                          padding: EdgeInsets.zero,
                           gridDelegate:
                               const SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 2,
@@ -180,7 +194,11 @@ class _HomeFoodState extends State<HomeFood> {
                             final mercader = mercaderes[index];
 
                             return Card(
-                              margin: const EdgeInsets.all(8),
+                              margin: EdgeInsets.only(
+                                left: index % 2 == 0 ? 0 : 8,
+                                right: 8,
+                                bottom: 8,
+                              ),
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(8),
                                 child: SizedBox(
@@ -189,13 +207,13 @@ class _HomeFoodState extends State<HomeFood> {
                                   child:
                                       mercader.logoUrl != null
                                           ? GestureDetector(
-                                            onTap: () {
-                                              Navigator.pushNamed(
-                                                context,
-                                                Routes.product_Detail,
-                                                arguments: mercader,
-                                              );
-                                            },
+                                           onTap: () {
+  Navigator.pushNamed(
+    context,
+    Routes.merchantPublicProducts,
+    arguments: mercader,
+  );
+},
                                             child: Image.network(
                                               mercader.logoUrl,
                                               fit: BoxFit.cover,
@@ -266,7 +284,7 @@ class _HomeFoodState extends State<HomeFood> {
                         return GridView.builder(
                           shrinkWrap: true,
                           scrollDirection: Axis.horizontal,
-                          padding: const EdgeInsets.all(8),
+                          padding: EdgeInsets.zero,
                           gridDelegate:
                               const SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 2,
@@ -279,7 +297,11 @@ class _HomeFoodState extends State<HomeFood> {
                             final product = products[index];
 
                             return Card(
-                              margin: const EdgeInsets.all(8),
+                              margin: EdgeInsets.only(
+                                left: index % 2 == 0 ? 0 : 8,
+                                right: 8,
+                                bottom: 8,
+                              ),
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(8),
                                 child: SizedBox(
@@ -367,7 +389,7 @@ class _HomeFoodState extends State<HomeFood> {
                         return GridView.builder(
                           shrinkWrap: true,
                           scrollDirection: Axis.horizontal,
-                          padding: const EdgeInsets.all(8),
+                          padding: EdgeInsets.zero,
                           gridDelegate:
                               const SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 2,
@@ -380,7 +402,11 @@ class _HomeFoodState extends State<HomeFood> {
                             final postre = postres[index];
 
                             return Card(
-                              margin: const EdgeInsets.all(8),
+                              margin: EdgeInsets.only(
+                                left: index % 2 == 0 ? 0 : 8,
+                                right: 8,
+                                bottom: 8,
+                              ),
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(8),
                                 child: SizedBox(
@@ -468,7 +494,7 @@ class _HomeFoodState extends State<HomeFood> {
                         return GridView.builder(
                           shrinkWrap: true,
                           scrollDirection: Axis.horizontal,
-                          padding: const EdgeInsets.all(8),
+                          padding: EdgeInsets.zero,
                           gridDelegate:
                               const SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 2,
@@ -481,7 +507,11 @@ class _HomeFoodState extends State<HomeFood> {
                             final platosFuerte = platosFuertes[index];
 
                             return Card(
-                              margin: const EdgeInsets.all(8),
+                              margin: EdgeInsets.only(
+                                left: index % 2 == 0 ? 0 : 8,
+                                right: 8,
+                                bottom: 8,
+                              ),
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(8),
                                 child: SizedBox(
@@ -569,7 +599,7 @@ class _HomeFoodState extends State<HomeFood> {
                         return GridView.builder(
                           shrinkWrap: true,
                           scrollDirection: Axis.horizontal,
-                          padding: const EdgeInsets.all(8),
+                          padding: EdgeInsets.zero,
                           gridDelegate:
                               const SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 2,
@@ -582,7 +612,11 @@ class _HomeFoodState extends State<HomeFood> {
                             final comidaRapida = comidaRapidas[index];
 
                             return Card(
-                              margin: const EdgeInsets.all(8),
+                              margin: EdgeInsets.only(
+                                left: index % 2 == 0 ? 0 : 8,
+                                right: 8,
+                                bottom: 8,
+                              ),
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(8),
                                 child: SizedBox(
@@ -670,7 +704,7 @@ class _HomeFoodState extends State<HomeFood> {
                         return GridView.builder(
                           shrinkWrap: true,
                           scrollDirection: Axis.horizontal,
-                          padding: const EdgeInsets.all(8),
+                          padding: EdgeInsets.zero,
                           gridDelegate:
                               const SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 2,
@@ -683,7 +717,11 @@ class _HomeFoodState extends State<HomeFood> {
                             final bebida = bebidas[index];
 
                             return Card(
-                              margin: const EdgeInsets.all(8),
+                              margin: EdgeInsets.only(
+                                left: index % 2 == 0 ? 0 : 8,
+                                right: 8,
+                                bottom: 8,
+                              ),
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(8),
                                 child: SizedBox(
@@ -717,28 +755,6 @@ class _HomeFoodState extends State<HomeFood> {
               ),
             ),
           ),
-        ),
-
-        bottomNavigationBar: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(NicoyaNowIcons.basurero),
-              label: 'Inicio',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(NicoyaNowIcons.campana),
-              label: 'Notificaciones',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(NicoyaNowIcons.maletatrabajo),
-              label: 'Carrito',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(NicoyaNowIcons.plato),
-              label: 'Perfil',
-            ),
-          ],
         ),
       ),
     );

@@ -22,7 +22,7 @@ class _OrderSuccesState extends State<OrderSucces> {
                   height: screenHeight * 0.5,
                   width: double.infinity,
                   child: Image.asset(
-                    'lib/app/interface/public/WallpaperOrderSucces.png',
+                    'lib/app/interface/Public/WallpaperOrderSucces.png',
                     fit: BoxFit.cover,
                   ),
                 ),

@@ -7,6 +7,9 @@ class ProductsRepositoryImpl implements ProductsRepository {
   ProductsRepositoryImpl({required this.dataSource});
 
   @override
+  Future<List<Product>> getproductSearch(String query) => dataSource.fetchBySearch(query);
+
+  @override
   Future<List<Product>> getAllProducts() => dataSource.fetchAllProducts();
 
   @override
@@ -20,4 +23,21 @@ class ProductsRepositoryImpl implements ProductsRepository {
 
     @override
   Future<List<Product>> getComidaRapida() => dataSource.fetchComidaRapidaProduct();
+
+  @override
+  Future<List<Product>> addProduct(Product product) async {
+    await dataSource.addProduct(product);
+    return getAllProducts(); // Retorna la lista actualizada de productos
+  }
+
+  @override
+  Future<List<Product>> updateProduct(Product product) async {
+    await dataSource.updateProduct(product);
+    return getAllProducts(); // Retorna la lista actualizada de productos
+  }
+
+  @override
+  Future<void> deleteProduct(String productId) async {
+    await dataSource.deleteProduct(productId);
+  }
 }

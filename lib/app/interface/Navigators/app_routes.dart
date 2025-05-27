@@ -1,10 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:nicoya_now/app/features/admin/presentation/pages/home_admin_page.dart';
+import 'package:nicoya_now/app/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:nicoya_now/app/features/auth/presentation/pages/driver_register_done.dart';
+import 'package:nicoya_now/app/features/auth/presentation/pages/select_user_role_page.dart';
+import 'package:nicoya_now/app/features/auth/presentation/pages/role_form_page.dart';
+import 'package:nicoya_now/app/features/auth/presentation/pages/add_role_page.dart';
+import 'package:nicoya_now/app/features/merchant/presentation/pages/add_product_merchant.dart';
+import 'package:nicoya_now/app/features/merchant/presentation/pages/edit_product_merchant.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/pages/home_merchant_page.dart';
+import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_settings_page.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_step_business.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_step_owner.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_step_password.dart';
+import 'package:nicoya_now/app/features/products/domain/entities/products.dart';
+import 'package:nicoya_now/app/features/products/presentation/pages/MerchantPublicProductsPage.dart';
+import 'package:nicoya_now/app/features/products/presentation/pages/SearchFilter.dart';
 import 'package:nicoya_now/app/interface/Forms/ClientForm.dart';
 import 'package:nicoya_now/app/interface/Forms/DeliverForm1.dart';
 import 'package:nicoya_now/app/interface/Forms/DeliverForm2.dart';
@@ -12,6 +22,9 @@ import 'package:nicoya_now/app/interface/SplashWidgets/SplashFT1.dart';
 import 'package:nicoya_now/app/interface/SplashWidgets/SplashFT2.dart';
 import 'package:nicoya_now/app/interface/SplashWidgets/SplashFT3.dart';
 import 'package:nicoya_now/app/features/products/presentation/pages/FoodFilter.dart';
+import 'package:nicoya_now/app/interface/Widgets/AppStartNavigation.dart';
+import 'package:nicoya_now/app/interface/Widgets/BottomNavigator.dart';
+import 'package:nicoya_now/app/interface/Widgets/FirstTimeIn.dart';
 import 'package:nicoya_now/app/interface/Widgets/Home.dart';
 import 'package:nicoya_now/app/features/products/presentation/pages/HomeFood.dart';
 import 'package:nicoya_now/app/interface/Widgets/LoginPage.dart';
@@ -44,16 +57,43 @@ Map<String, Widget Function(BuildContext)> get appRoutes {
     Routes.splashFT2: (context) => const SplashFT2(),
     Routes.splashFT3: (context) => const SplashFT3(),
     Routes.order_Success: (context) => const OrderSucces(),
-    Routes.client_Form: (context) => const ClientForm(),
+    Routes.client_Form: (context) => const ClientForm(),    
     Routes.deliver_Form1: (context) => const DeliverForm1(),
     Routes.deliver_Form2: (context) => const DeliverForm2(),
     Routes.driverPending: (context) => const DriverPendingPage(),
     Routes.home_food: (context) => const HomeFood(),
     Routes.home_merchant: (context) => const HomeMerchantPage(),
     Routes.merchantStepBusiness: (context) => const MerchantStepBusiness(),
-    Routes.merchantStepOwner: (context) => const MerchantStepOwner(),    Routes.merchantStepPassword: (context) => const MerchantStepPassword(),
+    Routes.merchantStepOwner: (context) => const MerchantStepOwner(),    
+    Routes.merchantStepPassword: (context) => const MerchantStepPassword(),
+    Routes.merchantSettings: (context) => const MerchantSettingsPage(),
+    Routes.merchantPublicProducts: (context) => const MerchantPublicProductsPage(),
+    Routes.addProduct: (context) {
+      final args = ModalRoute.of(context)!.settings.arguments as String;
+      return AddProductPage(merchantId: args);
+    },
+    Routes.editProduct: (context) {
+      final product = ModalRoute.of(context)!.settings.arguments as Product;
+      return EditProductPage(product: product);
+    },
     Routes.product_Detail: (context) => const ProductDetail(),
     Routes.food_filter: (context) => const FoodFilter(),
     Routes.home_admin: (context) => const HomeAdminPage(),
+    Routes.searchFilter: (context) => const SearchFilter(),    
+    Routes.clientNav: (context) => const BottomNavigator(),    
+    Routes.isFirstTime: (context) => const FirstTimeIn(),
+    Routes.appStartNavigation: (context) => const AppStartNavigation(),
+    Routes.selectUserRole: (context) => const SelectUserRolePage(),
+    Routes.roleFormPage: (context) {
+      final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+      final roleType = args['roleType'] as RoleType;
+      final isAddingRole = args['isAddingRole'] as bool? ?? false;
+      
+      return RoleFormPage(
+        roleType: roleType,
+        isAddingRole: isAddingRole,
+      );
+    },
+    Routes.addRolePage: (context) => const AddRolePage(),
   };
 }
