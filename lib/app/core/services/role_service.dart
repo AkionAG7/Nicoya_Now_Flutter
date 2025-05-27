@@ -6,7 +6,8 @@ class RoleService {
 
   Future<bool> hasRole(String slug) async {
     try {
-      final userId = _supabase.auth.currentUser!.id;      // Obtener el role_id a partir del slug
+      final userId = _supabase.auth.currentUser!.id;
+
       final roleResult = await _supabase
           .from('role')
           .select('role_id')
@@ -15,7 +16,6 @@ class RoleService {
 
       final roleId = roleResult['role_id'];
 
-      // Verificar si el usuario ya tiene ese rol
       final res = await _supabase
           .from('user_role')
           .select('role_id')
@@ -45,7 +45,8 @@ class RoleService {
     Map<String, dynamic> roleData,
   ) async {
     try {
-      final userId = _supabase.auth.currentUser!.id;      // Obtener role_id por slug
+      final userId = _supabase.auth.currentUser!.id;
+
       final roleResult = await _supabase
           .from('role')
           .select('role_id')
@@ -54,7 +55,6 @@ class RoleService {
 
       final roleId = roleResult['role_id'];
 
-      // Verificar si ya tiene ese rol
       final existingRole = await _supabase
           .from('user_role')
           .select()
@@ -66,27 +66,26 @@ class RoleService {
         throw Exception('Ya tienes este rol asociado a tu cuenta');
       }
 
-      // Insertar nuevo rol
       await _supabase.from('user_role').insert({
         'user_id': userId,
         'role_id': roleId,
         'is_default': false,
       });
 
-      // Insertar datos específicos del rol
-     if (roleSlug == 'driver') {
-  await _supabase.from('driver').insert({
-    'driver_id': userId,
-    'license_number': roleData['license_number'],
-    'is_verified': false,
-  });
-  if (roleData['id_number'] != null) {
-    await _supabase
-        .from('profile')
-        .update({'id_number': roleData['id_number']})
-        .eq('user_id', userId);
-  }
-} else if (roleSlug == 'merchant') {
+      if (roleSlug == 'driver') {
+        await _supabase.from('driver').insert({
+          'driver_id': userId,
+          'license_number': roleData['license_number'],
+          'is_verified': false,
+        });
+
+        if (roleData['id_number'] != null) {
+          await _supabase
+              .from('profile')
+              .update({'id_number': roleData['id_number']})
+              .eq('user_id', userId);
+        }
+      } else if (roleSlug == 'merchant') {
         await _supabase.from('merchant').upsert({
           'merchant_id': userId,
           'id_number': roleData['id_number'],
@@ -99,11 +98,15 @@ class RoleService {
 
   Future<List<String>> getUserRoles() async {
     try {
-      final userId = _supabase.auth.currentUser!.id;      final rolesResult = await _supabase
+      final userId = _supabase.auth.currentUser!.id;
+
+      final rolesResult = await _supabase
           .from('user_role')
           .select('role:role_id(slug)')
-          .eq('user_id', userId);      if (rolesResult.isEmpty) return ['customer'];
-      
+          .eq('user_id', userId);
+
+      if (rolesResult.isEmpty) return ['customer'];
+
       return rolesResult
           .map<String>((role) => role['role']['slug'] as String)
           .toList();
@@ -113,7 +116,8 @@ class RoleService {
   }
 
   Future<void> setDefaultRole(String roleSlug) async {
-    try {      final userId = _supabase.auth.currentUser!.id;
+    try {
+      final userId = _supabase.auth.currentUser!.id;
 
       final roleResult = await _supabase
           .from('role')
