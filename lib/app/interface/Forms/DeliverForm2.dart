@@ -10,10 +10,10 @@ class DeliverForm2 extends StatefulWidget {
   @override State<DeliverForm2> createState() => _DeliverForm2State();
 }
 
-class _DeliverForm2State extends State<DeliverForm2> {
-  // args de la pantalla 1
+class _DeliverForm2State extends State<DeliverForm2> {  // args de la pantalla 1
   late String _driverId;
   late String _licenseNumber;
+  bool _isAddingRole = false; // Flag to detect if adding role vs new registration
   bool _initDone = false;
 
   // estado
@@ -72,11 +72,24 @@ class _DeliverForm2State extends State<DeliverForm2> {
         'license_number' : _licenseNumber,
         'docs_url'       : folder,
         'is_verified'    : false,
-      });
-
-      if (!mounted) return;
-      Navigator.pushNamedAndRemoveUntil(
-        context, Routes.driverPending, (_) => false);
+      });      if (!mounted) return;
+      
+      if (_isAddingRole) {
+        // Show success message for role addition
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('¡Rol de repartidor agregado exitosamente! Tu cuenta está pendiente de verificación.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        // Navigate to home or appropriate screen
+        Navigator.pushNamedAndRemoveUntil(
+          context, Routes.home_food, (_) => false);
+      } else {
+        // New user registration - go to pending screen
+        Navigator.pushNamedAndRemoveUntil(
+          context, Routes.driverPending, (_) => false);
+      }
     } catch (e) {
       setState(() => _error = 'Error: $e');
     } finally {
@@ -84,25 +97,28 @@ class _DeliverForm2State extends State<DeliverForm2> {
     }
   }
 
-
   @override void didChangeDependencies() {
     super.didChangeDependencies();
     if (_initDone) return;
     final args = ModalRoute.of(context)!.settings.arguments as Map;
     _driverId      = args['uid'] as String;
     _licenseNumber = args['licenseNumber'] as String;
+    _isAddingRole  = args['isAddingRole'] as bool? ?? false;
     _initDone = true;
   }
 
  
   @override
   Widget build(BuildContext context) => Scaffold(
-    backgroundColor: Colors.white,
-    appBar: AppBar(
+    backgroundColor: Colors.white,    appBar: AppBar(
       backgroundColor: Colors.white, scrolledUnderElevation: 0,
       automaticallyImplyLeading: false,
-      title: const Text('Crea tu cuenta de repartidor',
-          style: TextStyle(fontSize:25,fontWeight:FontWeight.bold)),
+      title: Text(
+        _isAddingRole 
+          ? 'Completar registro de repartidor'
+          : 'Crea tu cuenta de repartidor',
+        style: const TextStyle(fontSize:25,fontWeight:FontWeight.bold)
+      ),
     ),
     body: SafeArea(
       child: SingleChildScrollView(

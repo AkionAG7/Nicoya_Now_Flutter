@@ -53,8 +53,7 @@ class _DeliverForm1State extends State<DeliverForm1> {
     try {
       final authController = Provider.of<AuthController>(context, listen: false);
       
-      bool success;
-      if (_isAddingRole) {
+      bool success;      if (_isAddingRole) {
         // User is adding driver role to existing account
         success = await authController.addRoleToCurrentUser(
           RoleType.driver, 
@@ -65,10 +64,15 @@ class _DeliverForm1State extends State<DeliverForm1> {
         );
         
         if (success && mounted) {
-          Navigator.pushNamedAndRemoveUntil(
+          // Continue to DeliverForm2 for vehicle/document upload
+          Navigator.pushReplacementNamed(
             context,
-            Routes.home_food, // Navigate to driver home or success page
-            (route) => false,
+            Routes.deliver_Form2,
+            arguments: {
+              'uid'          : authController.user!.id,
+              'licenseNumber': _license.text.trim(),
+              'isAddingRole' : true, // Pass this flag to DeliverForm2
+            },
           );
         }
       } else {

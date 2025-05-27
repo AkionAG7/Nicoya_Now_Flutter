@@ -236,17 +236,27 @@ class _AddRolePageState extends State<AddRolePage> {
       );
       
       if (!mounted) return;
-      
-      if (success) {
-        // If successful, navigate to the role form page to collect additional info
-        Navigator.pushNamed(
-          context, 
-          Routes.roleFormPage,
-          arguments: {
-            'roleType': _selectedRoleType!,
-            'isAddingRole': true,
-          },
-        );
+        if (success) {
+        // For driver role, go directly to DeliverForm1 to avoid duplicate data entry
+        if (_selectedRoleType == RoleType.driver) {
+          Navigator.pushNamed(
+            context, 
+            Routes.deliver_Form1,
+            arguments: {
+              'isAddingRole': true,
+            },
+          );
+        } else {
+          // For other roles, use the generic role form page
+          Navigator.pushNamed(
+            context, 
+            Routes.roleFormPage,
+            arguments: {
+              'roleType': _selectedRoleType!,
+              'isAddingRole': true,
+            },
+          );
+        }
       } else {
         // Show error message
         ScaffoldMessenger.of(context).showSnackBar(

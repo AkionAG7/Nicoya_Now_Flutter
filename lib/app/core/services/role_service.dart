@@ -3,13 +3,26 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class RoleService {
   final SupabaseClient _supabase;
   RoleService(this._supabase);
-
   Future<bool> hasRole(String slug) async {
+    final userId = _supabase.auth.currentUser!.id;
+    
+    // First get the role ID for the given slug
+    final roleResult = await _supabase
+        .from('role')
+        .select('id')
+        .eq('slug', slug)
+        .maybeSingle();
+    
+    if (roleResult == null) return false;
+    
+    final roleId = roleResult['id'];
+    
+    // Then check if user has this role
     final res = await _supabase
         .from('user_role')
         .select('role_id')
-        .eq('user_id', _supabase.auth.currentUser!.id)
-        .eq('role.slug', slug)
+        .eq('user_id', userId)
+        .eq('role_id', roleId)
         .maybeSingle();
     return res != null;
   }
