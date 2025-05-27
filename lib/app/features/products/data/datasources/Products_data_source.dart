@@ -13,12 +13,27 @@ abstract class ProductsDataSource {
   Future<List<Product>> fetchBySearch (String query);
   Future<void> addProduct(Product product);
   Future<void> updateProduct(Product product);
+  Future<void> deleteProduct(String productId);
 }
 
 class ProductsDataSourceImpl implements ProductsDataSource {
   final SupabaseClient supabaseClient;
 
   ProductsDataSourceImpl({required this.supabaseClient});
+
+  @override
+Future<void> deleteProduct(String productId) async {
+    final response = await supabaseClient
+        .from('product')
+        .delete()
+        .eq('product_id', productId)
+        .select();
+
+    // Optionally, you can check if the response is empty to determine if a row was deleted
+    if (response == null || (response is List && response.isEmpty)) {
+      throw Exception('Failed to delete product: No product found with the given ID.');
+    }
+  }
 
  @override
 Future<void> updateProduct(Product product) async {

@@ -9,4 +9,5 @@ abstract class ProductsRepository {
   Future<List<Product>> getComidaRapida();
   Future<List<Product>> addProduct(Product product);
   Future<List<Product>> updateProduct(Product product);
+  Future<void> deleteProduct(String productId);
 }

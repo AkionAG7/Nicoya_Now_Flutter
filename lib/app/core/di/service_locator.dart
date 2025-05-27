@@ -13,10 +13,11 @@ import 'package:nicoya_now/app/features/merchant/domain/usecases/get_merchant_by
 import 'package:nicoya_now/app/features/merchant/domain/usecases/register_merchant_usecase.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/controllers/merchant_registration_controller.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/controllers/merchant_settings_controller.dart';
-import 'package:nicoya_now/app/features/products/data/datasources/Products_data_source.dart';
+import 'package:nicoya_now/app/features/products/data/datasources/products_data_source.dart';
 import 'package:nicoya_now/app/features/products/data/repositories/products_repository_impl.dart';
 import 'package:nicoya_now/app/features/products/domain/repositories/products_repository.dart';
 import 'package:nicoya_now/app/features/products/domain/usecases/add_product_usecase.dart';
+import 'package:nicoya_now/app/features/products/domain/usecases/delete_product_usecase.dart';
 import 'package:nicoya_now/app/features/products/domain/usecases/update_product_usecase.dart';
 import 'package:nicoya_now/app/features/products/presentation/controllers/add_product_controller.dart';
 import 'package:nicoya_now/app/features/products/presentation/controllers/update_product_controller.dart';
@@ -74,6 +75,9 @@ locator.registerLazySingleton<ProductsDataSource>(
   );
   locator.registerLazySingleton<UpdateProductUseCase>(
   () => UpdateProductUseCase(locator<ProductsRepository>()),
+);
+locator.registerLazySingleton<DeleteProductUseCase>(
+  () => DeleteProductUseCase(locator<ProductsRepository>()),
 );
   // Controllers
   locator.registerFactory<AuthController>(

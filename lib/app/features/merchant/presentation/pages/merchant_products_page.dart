@@ -4,6 +4,8 @@ import 'package:nicoya_now/app/features/products/data/datasources/products_data_
 import 'package:nicoya_now/app/features/merchant/domain/usecases/fetch_merchant_products_usecase.dart';
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:nicoya_now/app/features/products/data/datasources/products_data_source.dart';
+
 
 class MerchantProductsPage extends StatefulWidget {
   final String merchantId;
@@ -103,7 +105,47 @@ void initState() {
     });
   });
 },
-                        onDelete: () { /* eliminar p */ },
+                       onDelete: () {
+  showDialog(
+    context: context,
+    builder: (_) => AlertDialog(
+      title: const Text('¿Eliminar producto?'),
+      content: Text('¿Estás seguro de que deseas eliminar "${p.name}"?'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancelar'),
+        ),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFFE60023),
+          ),
+          onPressed: () async {
+            Navigator.pop(context); // Cierra el modal
+
+            // Eliminar producto aquí
+            final supa = Supabase.instance.client;
+            final ds = ProductsDataSourceImpl(supabaseClient: supa);
+            await ds.deleteProduct(p.product_id); // 👈 Método que debes tener implementado
+
+            // Recargar productos
+            final uc = FetchMerchantProductsUseCase(ds);
+            setState(() {
+              _productsFuture = uc.call(widget.merchantId);
+            });
+
+            // Notificación
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Producto "${p.name}" eliminado')),
+            );
+          },
+          child: const Text('Eliminar', style: TextStyle(color: Colors.white)),
+        ),
+      ],
+    ),
+  );
+},
+
                       );
                     },
                   ),

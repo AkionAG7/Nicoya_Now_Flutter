@@ -1,4 +1,4 @@
-import 'package:nicoya_now/app/features/products/data/datasources/Products_data_source.dart';
+import 'package:nicoya_now/app/features/products/data/datasources/products_data_source.dart';
 import 'package:nicoya_now/app/features/products/domain/entities/products.dart';
 import 'package:nicoya_now/app/features/products/domain/repositories/products_repository.dart';
 
@@ -34,5 +34,10 @@ class ProductsRepositoryImpl implements ProductsRepository {
   Future<List<Product>> updateProduct(Product product) async {
     await dataSource.updateProduct(product);
     return getAllProducts(); // Retorna la lista actualizada de productos
+  }
+
+  @override
+  Future<void> deleteProduct(String productId) async {
+    await dataSource.deleteProduct(productId);
   }
 }

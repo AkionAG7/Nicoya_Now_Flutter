@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:get_it/get_it.dart';
-import 'package:nicoya_now/app/features/products/data/datasources/Products_data_source.dart';
+import 'package:nicoya_now/app/features/products/data/datasources/products_data_source.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:nicoya_now/app/features/products/domain/entities/products.dart';
 
