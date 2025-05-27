@@ -3,6 +3,8 @@ import 'package:nicoya_now/app/core/services/role_service.dart';
 import 'package:nicoya_now/app/features/auth/data/datasources/auth_data_source.dart';
 import 'package:nicoya_now/app/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:nicoya_now/app/features/auth/domain/repositories/auth_repository.dart';
+import 'package:nicoya_now/app/features/auth/domain/usecases/add_user_role_usecase.dart';
+import 'package:nicoya_now/app/features/auth/domain/usecases/get_user_roles_usecase.dart';
 import 'package:nicoya_now/app/features/auth/domain/usecases/sign_in_usecase.dart';
 import 'package:nicoya_now/app/features/auth/domain/usecases/sign_up_usecase.dart';
 import 'package:nicoya_now/app/features/auth/presentation/controllers/auth_controller.dart';
@@ -60,9 +62,14 @@ locator.registerLazySingleton<ProductsDataSource>(
   // Use cases
   locator.registerLazySingleton<SignInUseCase>(
     () => SignInUseCase(locator<AuthRepository>()),
-  );
-  locator.registerLazySingleton<SignUpUseCase>(
+  );  locator.registerLazySingleton<SignUpUseCase>(
     () => SignUpUseCase(locator<AuthRepository>()),
+  );
+  locator.registerLazySingleton<GetUserRolesUseCase>(
+    () => GetUserRolesUseCase(locator<AuthRepository>()),
+  );
+  locator.registerLazySingleton<AddUserRoleUseCase>(
+    () => AddUserRoleUseCase(locator<AuthRepository>()),
   );
   locator.registerLazySingleton<RegisterMerchantUseCase>(
     () => RegisterMerchantUseCase(locator<MerchantRepository>()),
@@ -85,6 +92,8 @@ locator.registerLazySingleton<DeleteProductUseCase>(
       signInUseCase: locator<SignInUseCase>(),
       signUpUseCase: locator<SignUpUseCase>(),
       roleService: locator<RoleService>(),
+      getUserRolesUseCase: locator<GetUserRolesUseCase>(),
+      addUserRoleUseCase: locator<AddUserRoleUseCase>(),
     ),
   );
   locator.registerFactory<MerchantRegistrationController>(

@@ -63,7 +63,7 @@ class _SplashFT2State extends State<SplashFT2> {
                     width: double.infinity,
                     height: 270,
                     child: Image.asset(
-                      'lib/app/interface/public/SplashFT2.png',
+                      'lib/app/interface/Public/SplashFT2.png',
                       fit: BoxFit.cover,
                     ),
                   ),

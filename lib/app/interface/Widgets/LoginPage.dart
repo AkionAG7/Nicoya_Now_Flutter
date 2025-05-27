@@ -59,7 +59,7 @@ class _LoginPageState extends State<LoginPage> {
                       width: double.infinity,
                       height: 270,
                       child: Image.asset(
-                        'lib/app/interface/public/LoginImage.png',
+                        'lib/app/interface/Public/LoginImage.png',
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -268,11 +268,10 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
-
   Future<void> _login() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Por favor, ingresa email y contraseña')),
+        const SnackBar(content: Text('Por favor, ingresa email y contraseña')),
       );
       return;
     }
@@ -285,26 +284,27 @@ class _LoginPageState extends State<LoginPage> {
       final authController = Provider.of<AuthController>(
         context,
         listen: false,
-      );      final success = await authController.signIn(
+      );
+      
+      // Usar el nuevo método para login con selección de rol
+      final success = await authController.handleLoginWithRoleSelection(
         _emailController.text.trim(),
         _passwordController.text,
       );
       
-      if (!mounted) return;      if (success) {
-        // Obtener los roles del usuario usando el nuevo método del controlador
-        final roles = authController.userRoles;
-        
-        // Si hay múltiples roles, mostrar diálogo de selección
-        if (roles.length > 1) {
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (context) => _buildRoleSelectionDialog(context, authController),
-          );        } else {
-          // Si solo hay un rol, redirigir directamente
-          final userRole = roles.isNotEmpty ? roles.first : 'customer'; // Updated default role
+      if (!mounted) return;
+      
+      if (success) {
+        // Verificar si hay múltiples roles disponibles
+        if (authController.availableRoles.length > 1) {
+          // Navegar a la página de selección de rol
+          Navigator.pushReplacementNamed(context, Routes.selectUserRole);
+        } else {
+          // Solo hay un rol, navegar directamente según el rol
+          final userRole = authController.userRole ?? 'customer';
+          
           switch (userRole) {
-            case 'customer': // Updated to match database role name
+            case 'customer':
               Navigator.pushNamedAndRemoveUntil(
                 context, 
                 Routes.clientNav,
@@ -314,14 +314,14 @@ class _LoginPageState extends State<LoginPage> {
             case 'driver':
               Navigator.pushNamedAndRemoveUntil(
                 context, 
-                Routes.home_food, // Cambiar a la pantalla para repartidores
+                Routes.home_food, // Cambiar a la pantalla para repartidores cuando esté disponible
                 (route) => false
               );
               break;
             case 'merchant':
               Navigator.pushNamedAndRemoveUntil(
                 context, 
-                Routes.home_merchant, // Cambiar a la pantalla para comercios
+                Routes.home_merchant,
                 (route) => false
               );
               break;
@@ -334,7 +334,7 @@ class _LoginPageState extends State<LoginPage> {
               );
           }
         }
-      }else {
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(authController.errorMessage ?? 'Error desconocido'),

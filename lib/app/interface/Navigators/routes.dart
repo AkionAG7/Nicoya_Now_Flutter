@@ -30,8 +30,14 @@ class Routes {
  static const editProduct = '/editProduct';
  static const product_Detail = '/productDetail';
  static const food_filter = '/foodFilter';
- static const searchFilter = '/searchFilter';
- static const clientNav = '/clientNav';
+ static const searchFilter = '/searchFilter'; static const clientNav = '/clientNav';
  static const isFirstTime = '/isFirstTime';
+ static const appStartNavigation = '/appStartNavigation';
+ static const selectUserRole = '/selectUserRole';
+ static const roleFormPage = '/roleFormPage';
+ static const addRolePage = '/addRolePage';
+ 
+ // Test route
+ static const testImages = '/testImages';
 }
 
