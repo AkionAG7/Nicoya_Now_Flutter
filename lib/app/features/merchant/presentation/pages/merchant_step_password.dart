@@ -60,20 +60,30 @@ class _MerchantStepPasswordState extends State<MerchantStepPassword> {
                               password: _pw.text,
                               authController: authController,
                             );
-                            if (!mounted) return;
-                            if (ok) {
+                            if (!mounted) return;                            if (ok) {
+                              // Show success message
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Cuenta creada exitosamente'),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                              
+                              // Navigate to the merchant home page
                               Navigator.pushNamedAndRemoveUntil(
                                 context,
-                                Routes.driverPending,
+                                Routes.home_merchant,
                                 (_) => false,
                               );
                             } else {
+                              // Show error message
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(
                                     ctrl.errorMessage ??
                                         'Ocurrió un error inesperado',
                                   ),
+                                  backgroundColor: Colors.red,
                                 ),
                               );
                             }
