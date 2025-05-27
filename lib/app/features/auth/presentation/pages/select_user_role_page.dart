@@ -7,7 +7,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SelectUserRolePage extends StatelessWidget {
   const SelectUserRolePage({Key? key}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     final authController = Provider.of<AuthController>(context);
@@ -17,7 +16,9 @@ class SelectUserRolePage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Seleccionar Rol'),
         centerTitle: true,
+        backgroundColor: Colors.white,
       ),
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -27,20 +28,20 @@ class SelectUserRolePage extends StatelessWidget {
               const Text(
                 'Selecciona el rol con el que deseas ingresar:',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
+                  color: Color(0xffd72a23),
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 20),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: availableRoles.length,
-                  itemBuilder: (context, index) {
-                    final role = availableRoles[index];
-                    return _buildRoleCard(context, role);
-                  },
-                ),
+              const SizedBox(height: 40),
+              
+              // Usamos Wrap para organizar los roles en una cuadrícula flexible
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 20,
+                runSpacing: 20,
+                children: availableRoles.map((role) => _buildRoleCard(context, role)).toList(),
               ),
             ],
           ),
@@ -48,76 +49,58 @@ class SelectUserRolePage extends StatelessWidget {
       ),
     );
   }
-  
-  Widget _buildRoleCard(BuildContext context, String role) {
+    Widget _buildRoleCard(BuildContext context, String role) {
     String roleTitle;
-    String roleDescription;
-    IconData roleIcon;
+    String imageAsset;
     
     switch (role) {
       case 'customer':
         roleTitle = 'Cliente';
-        roleDescription = 'Accede como cliente para realizar pedidos';
-        roleIcon = Icons.person;
+        imageAsset = 'lib/app/interface/Public/SplashFT2.png';
         break;
       case 'driver':
-        roleTitle = 'Conductor';
-        roleDescription = 'Accede como repartidor para gestionar entregas';
-        roleIcon = Icons.delivery_dining;
+        roleTitle = 'Repartidor';
+        imageAsset = 'lib/app/interface/Public/Repartidor.png';
         break;
       case 'merchant':
         roleTitle = 'Comercio';
-        roleDescription = 'Accede como comercio para gestionar tus productos';
-        roleIcon = Icons.store;
+        imageAsset = 'lib/app/interface/Public/Comercio.png';
         break;
       default:
         roleTitle = role.toUpperCase();
-        roleDescription = 'Accede con este rol';
-        roleIcon = Icons.account_circle;
+        imageAsset = 'lib/app/interface/Public/SplashFT2.png';
     }
     
-    return Card(
-      elevation: 4,
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
-      child: InkWell(
-        onTap: () => _selectRole(context, role),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
+    return Padding(
+      padding: const EdgeInsets.all(10.0),
+      child: SizedBox(
+        width: 140,
+        height: 140,
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            side: BorderSide(
+              color: const Color(0xffd72a23),
+              width: 2,
+            ),
+            shape: ContinuousRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            backgroundColor: const Color(0xffffffff),
+          ),
+          onPressed: () => _selectRole(context, role),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CircleAvatar(
-                backgroundColor: Theme.of(context).primaryColor.withOpacity(0.2),
-                radius: 30,
-                child: Icon(
-                  roleIcon,
-                  size: 30,
-                  color: Theme.of(context).primaryColor,
-                ),
+              Image.asset(
+                imageAsset,
+                width: 80,
+                height: 80,
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      roleTitle,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      roleDescription,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
-                ),
+              const SizedBox(height: 8),
+              Text(
+                roleTitle,
+                style: TextStyle(color: const Color(0xffd72a23)),
               ),
-              const Icon(Icons.arrow_forward_ios),
             ],
           ),
         ),
