@@ -37,12 +37,12 @@ class RoleService {
       // Get the role ID from the slug
       final roleResult = await _supabase
           .from('role')
-          .select('id')
+          .select('role_id')
           .eq('slug', roleSlug)
           .single();
-      
-      final roleId = roleResult['id'];
-      
+
+      final roleId = roleResult['role_id'];
+
       // Check if the user already has this role
       final existingRole = await _supabase
           .from('user_role')
