@@ -29,4 +29,10 @@ class ProductsRepositoryImpl implements ProductsRepository {
     await dataSource.addProduct(product);
     return getAllProducts(); // Retorna la lista actualizada de productos
   }
+
+  @override
+  Future<List<Product>> updateProduct(Product product) async {
+    await dataSource.updateProduct(product);
+    return getAllProducts(); // Retorna la lista actualizada de productos
+  }
 }

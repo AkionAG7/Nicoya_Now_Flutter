@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:nicoya_now/app/features/merchant/presentation/pages/add_product_merchant.dart';
 import 'package:nicoya_now/app/features/products/domain/entities/products.dart';
 import 'package:nicoya_now/app/features/products/data/datasources/products_data_source.dart';
 import 'package:nicoya_now/app/features/merchant/domain/usecases/fetch_merchant_products_usecase.dart';
-import 'package:nicoya_now/Icons/nicoya_now_icons_icons.dart';
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -90,7 +88,21 @@ void initState() {
                           .toList()[i];
                       return _ProductRow(
                         product: p,
-                        onEdit:   () { /* editar p */ },
+ onEdit: () {
+  Navigator.pushNamed(
+    context,
+    Routes.editProduct,
+    arguments: p, // 👈 p es el producto actual que se está editando
+  ).then((_) {
+    // Recargar productos después de editar
+    setState(() {
+      final supa = Supabase.instance.client;
+      final ds = ProductsDataSourceImpl(supabaseClient: supa);
+      final uc = FetchMerchantProductsUseCase(ds);
+      _productsFuture = uc.call(widget.merchantId);
+    });
+  });
+},
                         onDelete: () { /* eliminar p */ },
                       );
                     },
