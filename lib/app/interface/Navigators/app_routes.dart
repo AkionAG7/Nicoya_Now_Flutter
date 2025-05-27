@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:nicoya_now/app/features/auth/presentation/pages/driver_register_done.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/pages/add_product_merchant.dart';
+import 'package:nicoya_now/app/features/merchant/presentation/pages/edit_product_merchant.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/pages/home_merchant_page.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_settings_page.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_step_business.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_step_owner.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_step_password.dart';
+import 'package:nicoya_now/app/features/products/domain/entities/products.dart';
 import 'package:nicoya_now/app/features/products/presentation/pages/SearchFilter.dart';
 import 'package:nicoya_now/app/interface/Forms/ClientForm.dart';
 import 'package:nicoya_now/app/interface/Forms/DeliverForm1.dart';
@@ -60,6 +62,10 @@ Map<String, Widget Function(BuildContext)> get appRoutes {
    Routes.addProduct: (context) {
   final args = ModalRoute.of(context)!.settings.arguments as String;
   return AddProductPage(merchantId: args);
+},
+Routes.editProduct: (context) {
+  final product = ModalRoute.of(context)!.settings.arguments as Product;
+  return EditProductPage(product: product);
 },
     Routes.product_Detail: (context) => const ProductDetail(),
     Routes.food_filter: (context) => const FoodFilter(),

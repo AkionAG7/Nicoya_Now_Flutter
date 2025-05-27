@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:nicoya_now/app/features/merchant/presentation/pages/add_product_merchant.dart';
 import 'package:nicoya_now/app/features/products/domain/entities/products.dart';
 import 'package:nicoya_now/app/features/products/data/datasources/products_data_source.dart';
 import 'package:nicoya_now/app/features/merchant/domain/usecases/fetch_merchant_products_usecase.dart';
-import 'package:nicoya_now/Icons/nicoya_now_icons_icons.dart';
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:nicoya_now/app/features/products/data/datasources/products_data_source.dart';
+
 
 class MerchantProductsPage extends StatefulWidget {
   final String merchantId;
@@ -90,8 +90,62 @@ void initState() {
                           .toList()[i];
                       return _ProductRow(
                         product: p,
-                        onEdit:   () { /* editar p */ },
-                        onDelete: () { /* eliminar p */ },
+ onEdit: () {
+  Navigator.pushNamed(
+    context,
+    Routes.editProduct,
+    arguments: p, // 👈 p es el producto actual que se está editando
+  ).then((_) {
+    // Recargar productos después de editar
+    setState(() {
+      final supa = Supabase.instance.client;
+      final ds = ProductsDataSourceImpl(supabaseClient: supa);
+      final uc = FetchMerchantProductsUseCase(ds);
+      _productsFuture = uc.call(widget.merchantId);
+    });
+  });
+},
+                       onDelete: () {
+  showDialog(
+    context: context,
+    builder: (_) => AlertDialog(
+      title: const Text('¿Eliminar producto?'),
+      content: Text('¿Estás seguro de que deseas eliminar "${p.name}"?'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancelar'),
+        ),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFFE60023),
+          ),
+          onPressed: () async {
+            Navigator.pop(context); // Cierra el modal
+
+            // Eliminar producto aquí
+            final supa = Supabase.instance.client;
+            final ds = ProductsDataSourceImpl(supabaseClient: supa);
+            await ds.deleteProduct(p.product_id); // 👈 Método que debes tener implementado
+
+            // Recargar productos
+            final uc = FetchMerchantProductsUseCase(ds);
+            setState(() {
+              _productsFuture = uc.call(widget.merchantId);
+            });
+
+            // Notificación
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Producto "${p.name}" eliminado')),
+            );
+          },
+          child: const Text('Eliminar', style: TextStyle(color: Colors.white)),
+        ),
+      ],
+    ),
+  );
+},
+
                       );
                     },
                   ),

@@ -24,6 +24,7 @@ abstract class MerchantDataSource {
   Future<List<Merchant>> fetchAllMerchants();
   Future<Merchant> getMerchantByOwner(String ownerId);
   Future<List<Merchant>> fetchMerchantSearch(String query);
+  
 }
 
 class SupabaseMerchantDataSource implements MerchantDataSource {
