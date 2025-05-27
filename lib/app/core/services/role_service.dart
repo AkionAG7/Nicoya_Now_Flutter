@@ -70,26 +70,25 @@ class RoleService {
         'user_id': userId,
         'role_id': roleId,
         'is_default': false,
-      });
-
-      if (roleSlug == 'driver') {
-        await _supabase.from('driver').insert({
-          'driver_id': userId,
-          'license_number': roleData['license_number'],
-          'is_verified': false,
+      });      if (roleSlug == 'driver') {
+        // Solo actualizamos id_number en profile, no license_number
+        // (license_number debe incluirse en los args para DeliverForm2)
+        if (roleData['id_number'] != null) {
+          await _supabase
+              .from('profile')
+              .update({'id_number': roleData['id_number']})
+              .eq('user_id', userId);
+        }} else if (roleSlug == 'merchant') {
+        await _supabase.from('merchant').upsert({
+          'merchant_id': userId,
         });
-
+        
         if (roleData['id_number'] != null) {
           await _supabase
               .from('profile')
               .update({'id_number': roleData['id_number']})
               .eq('user_id', userId);
         }
-      } else if (roleSlug == 'merchant') {
-        await _supabase.from('merchant').upsert({
-          'merchant_id': userId,
-          'id_number': roleData['id_number'],
-        });
       }
     } on PostgrestException catch (e) {
       throw Exception('Error añadiendo rol: ${e.message}');

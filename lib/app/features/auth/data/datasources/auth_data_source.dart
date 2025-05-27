@@ -172,26 +172,27 @@ class SupabaseAuthDataSource implements AuthDataSource {
       'user_id': userId,
       'role_id': roleId,
       'is_default': false, // Not setting as default unless specified
-    });
-    
-    // If additional role data is provided, store it based on role type
+    });      // If additional role data is provided, store it based on role type
     if (roleData.isNotEmpty) {
-      if (roleSlug == 'driver') {
-        await _supabaseClient.from('driver').insert({
-          'driver_id': userId,
-          'id_number': roleData['id_number'],
-          'is_verified': false, // Drivers need verification
-        });
-      } else if (roleSlug == 'merchant') {
-        await _supabaseClient.from('merchant').upsert({
-          'merchant_id': userId,
-          'id_number': roleData['id_number'],
-        });
+      // Handle id_number in the profile table for all roles
+      if (roleData['id_number'] != null) {
+        await _supabaseClient
+            .from('profile')
+            .update({'id_number': roleData['id_number']})
+            .eq('user_id', userId);
       }
       
-      // Update the profile with any remaining role data
+      // Para el rol de driver, NO creamos el registro en la tabla driver aquí
+      // Se creará cuando se complete el segundo formulario con vehicle_type
+      if (roleSlug == 'merchant') {
+        await _supabaseClient.from('merchant').upsert({
+          'merchant_id': userId,
+        });
+      }
+        // Update the profile with any remaining role data
       final profileData = Map<String, dynamic>.from(roleData);
-      profileData.remove('id_number'); // Already handled in role-specific tables
+      profileData.remove('id_number'); // Already handled above
+      profileData.remove('license_number'); // license_number solo pertenece a la tabla driver
       
       if (profileData.isNotEmpty) {
         await _supabaseClient

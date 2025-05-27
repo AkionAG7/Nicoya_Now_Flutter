@@ -12,7 +12,7 @@ class DeliverForm2 extends StatefulWidget {
 
 class _DeliverForm2State extends State<DeliverForm2> {  // args de la pantalla 1
   late String _driverId;
-  late String _licenseNumber;
+  String _licenseNumber = ''; // Inicializado como cadena vacía
   bool _isAddingRole = false; // Flag to detect if adding role vs new registration
   bool _initDone = false;
 
@@ -63,16 +63,21 @@ class _DeliverForm2State extends State<DeliverForm2> {  // args de la pantalla 1
         .upload(path, File(f.path!),
             fileOptions: const FileOptions(upsert: true));
   }
-}
+}      // Usamos el license_number que fue pasado en los argumentos
+      // Si _licenseNumber está vacío, debería haber sido un error antes de llegar aquí
+      if (_licenseNumber.isEmpty) {
+        setState(() => _error = 'Falta el número de licencia. Regrese y complete el formulario anterior.');
+        throw Exception('Falta número de licencia');
+      }
 
-
+      // Crear o actualizar el registro en la tabla driver con TODOS los datos necesarios
       await supa.from('driver').upsert({
         'driver_id'      : _driverId,
         'vehicle_type'   : _selectedOption,
         'license_number' : _licenseNumber,
         'docs_url'       : folder,
         'is_verified'    : false,
-      });      if (!mounted) return;
+      });if (!mounted) return;
       
       if (_isAddingRole) {
         // Show success message for role addition
@@ -96,13 +101,17 @@ class _DeliverForm2State extends State<DeliverForm2> {  // args de la pantalla 1
       if (mounted) setState(() => _loading = false);
     }
   }
-
   @override void didChangeDependencies() {
     super.didChangeDependencies();
     if (_initDone) return;
     final args = ModalRoute.of(context)!.settings.arguments as Map;
     _driverId      = args['uid'] as String;
-    _licenseNumber = args['licenseNumber'] as String;
+    
+    // Asignar licenseNumber solo si está presente en los argumentos
+    if (args.containsKey('licenseNumber') && args['licenseNumber'] != null) {
+      _licenseNumber = args['licenseNumber'] as String;
+    }
+    
     _isAddingRole  = args['isAddingRole'] as bool? ?? false;
     _initDone = true;
   }
