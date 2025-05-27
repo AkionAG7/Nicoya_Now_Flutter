@@ -12,6 +12,7 @@ import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_ste
 import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_step_owner.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_step_password.dart';
 import 'package:nicoya_now/app/features/products/domain/entities/products.dart';
+import 'package:nicoya_now/app/features/products/presentation/pages/MerchantPublicProductsPage.dart';
 import 'package:nicoya_now/app/features/products/presentation/pages/SearchFilter.dart';
 import 'package:nicoya_now/app/interface/Forms/ClientForm.dart';
 import 'package:nicoya_now/app/interface/Forms/DeliverForm1.dart';
@@ -64,6 +65,7 @@ Map<String, Widget Function(BuildContext)> get appRoutes {
     Routes.merchantStepOwner: (context) => const MerchantStepOwner(),
     Routes.merchantStepPassword: (context) => const MerchantStepPassword(),
     Routes.merchantSettings: (context) => const MerchantSettingsPage(),
+    Routes.merchantPublicProducts: (context) => const MerchantPublicProductsPage(),
     Routes.addProduct: (context) {
       final args = ModalRoute.of(context)!.settings.arguments as String;
       return AddProductPage(merchantId: args);
