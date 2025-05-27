@@ -45,7 +45,7 @@ class MyApp extends StatelessWidget {
         },        child: MaterialApp(
           title: 'Nicoya Now',
           theme: AppTheme.lightTheme,
-          initialRoute: Routes.preLogin,
+          initialRoute: Routes.appStartNavigation,
           routes: appRoutes,
         ),
       ),

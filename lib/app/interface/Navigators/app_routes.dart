@@ -20,6 +20,7 @@ import 'package:nicoya_now/app/interface/SplashWidgets/SplashFT1.dart';
 import 'package:nicoya_now/app/interface/SplashWidgets/SplashFT2.dart';
 import 'package:nicoya_now/app/interface/SplashWidgets/SplashFT3.dart';
 import 'package:nicoya_now/app/features/products/presentation/pages/FoodFilter.dart';
+import 'package:nicoya_now/app/interface/Widgets/AppStartNavigation.dart';
 import 'package:nicoya_now/app/interface/Widgets/BottomNavigator.dart';
 import 'package:nicoya_now/app/interface/Widgets/FirstTimeIn.dart';
 import 'package:nicoya_now/app/interface/Widgets/Home.dart';
@@ -72,10 +73,8 @@ Map<String, Widget Function(BuildContext)> get appRoutes {
       return EditProductPage(product: product);
     },
     Routes.product_Detail: (context) => const ProductDetail(),
-    Routes.food_filter: (context) => const FoodFilter(),    Routes.searchFilter: (context) => const SearchFilter(),
-    Routes.clientNav: (context) => const BottomNavigator(),
-    Routes.isFirstTime: (context) => const FirstTimeIn(),
-      // New routes for role management
+    Routes.food_filter: (context) => const FoodFilter(),    Routes.searchFilter: (context) => const SearchFilter(),    Routes.clientNav: (context) => const BottomNavigator(),    Routes.isFirstTime: (context) => const FirstTimeIn(),
+    Routes.appStartNavigation: (context) => const AppStartNavigation(),
     Routes.selectUserRole: (context) => const SelectUserRolePage(),
     Routes.roleFormPage: (context) {
       final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;

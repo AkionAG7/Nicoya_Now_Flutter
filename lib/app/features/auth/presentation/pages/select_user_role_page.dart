@@ -36,7 +36,6 @@ class SelectUserRolePage extends StatelessWidget {
               ),
               const SizedBox(height: 40),
               
-              // Usamos Wrap para organizar los roles en una cuadrícula flexible
               Wrap(
                 alignment: WrapAlignment.center,
                 spacing: 20,
