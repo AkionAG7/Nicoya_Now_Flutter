@@ -111,9 +111,9 @@ class RoleService {
           .select('role_id')
           .eq('slug', roleSlug)
           .single();
-      
-      final roleId = roleResult['id'];
-      
+
+      final roleId = roleResult['role_id'];
+
       // First, set all roles to non-default
       await _supabase
           .from('user_role')
