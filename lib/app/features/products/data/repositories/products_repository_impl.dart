@@ -23,4 +23,10 @@ class ProductsRepositoryImpl implements ProductsRepository {
 
     @override
   Future<List<Product>> getComidaRapida() => dataSource.fetchComidaRapidaProduct();
+
+  @override
+  Future<List<Product>> addProduct(Product product) async {
+    await dataSource.addProduct(product);
+    return getAllProducts(); // Retorna la lista actualizada de productos
+  }
 }

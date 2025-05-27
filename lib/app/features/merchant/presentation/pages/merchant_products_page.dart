@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:nicoya_now/app/features/merchant/presentation/pages/add_product_merchant.dart';
 import 'package:nicoya_now/app/features/products/domain/entities/products.dart';
 import 'package:nicoya_now/app/features/products/data/datasources/products_data_source.dart';
 import 'package:nicoya_now/app/features/merchant/domain/usecases/fetch_merchant_products_usecase.dart';
 import 'package:nicoya_now/Icons/nicoya_now_icons_icons.dart';
+import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class MerchantProductsPage extends StatefulWidget {
@@ -98,7 +100,10 @@ void initState() {
               ],
               Center(
                 child: ElevatedButton(
-                  onPressed: () { /* agregar producto */ },
+             onPressed: () {
+  Navigator.pushNamed(context, Routes.addProduct, arguments: widget.merchantId);
+},
+
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFE60023),
                     padding: const EdgeInsets.symmetric(
@@ -163,7 +168,7 @@ class _ProductRow extends StatelessWidget {
             ],
           ),
         ),
-        Text('\$${product.price.toStringAsFixed(2)}',
+        Text('\₡${product.price.toStringAsFixed(2)}',
             style: const TextStyle(
                 fontSize: 14, fontWeight: FontWeight.bold)),
         const SizedBox(width: 12),
