@@ -77,11 +77,48 @@ class RoleService {
           await _supabase
               .from('profile')
               .update({'id_number': roleData['id_number']})
-              .eq('user_id', userId);
-        }} else if (roleSlug == 'merchant') {
-        await _supabase.from('merchant').upsert({
-          'merchant_id': userId,
-        });
+              .eq('user_id', userId);      }      } else if (roleSlug == 'merchant') {
+        try {
+          // Verificamos si ya existe un comerciante con ese merchant_id para evitar duplicados
+          final existingMerchant = await _supabase
+              .from('merchant')
+              .select()
+              .eq('merchant_id', userId)
+              .maybeSingle();
+              
+          if (existingMerchant == null) {
+            // Si no existe, usamos upsert con onConflict para manejar posibles conflictos
+            await _supabase.from('merchant').upsert(
+              {
+                'merchant_id': userId,
+                'owner_id': userId, 
+                'legal_id': roleData['id_number'] ?? '',
+                'business_name': roleData['business_name'] ?? '',
+                'corporate_name': roleData['corporate_name'] ?? '',
+                'is_active': false,
+                // Si no tenemos main_address_id o logo_url, simplemente no los incluimos
+                // para evitar errores de null en columnas que no lo permiten
+              },
+              onConflict: 'merchant_id' // Específica qué columna usar para resolver conflictos
+            );
+          } else {
+            // Si existe, solo actualizamos los campos proporcionados
+            final updateData = <String, dynamic>{};
+            
+            if (roleData['id_number'] != null) updateData['legal_id'] = roleData['id_number'];
+            if (roleData['business_name'] != null) updateData['business_name'] = roleData['business_name'];
+            if (roleData['corporate_name'] != null) updateData['corporate_name'] = roleData['corporate_name'];
+            
+            if (updateData.isNotEmpty) {
+              await _supabase.from('merchant')
+                  .update(updateData)
+                  .eq('merchant_id', userId);
+            }
+          }
+        } catch (e) {
+          print('Error al actualizar datos de comerciante: $e');
+          rethrow;
+        }
         
         if (roleData['id_number'] != null) {
           await _supabase

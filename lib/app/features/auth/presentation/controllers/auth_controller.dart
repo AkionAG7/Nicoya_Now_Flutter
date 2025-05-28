@@ -163,8 +163,7 @@ class AuthController extends ChangeNotifier {
       notifyListeners();
       return false;
     }
-  }
-  /// Specialized method for merchant registration
+  }  /// Specialized method for merchant registration
   Future<bool> signUpMerchant({
     required String email,
     required String password,
@@ -173,30 +172,65 @@ class AuthController extends ChangeNotifier {
     required String lastName2,
     required String phone,
     String? idNumber,
+    String? businessName,
+    String? corporateName,
   }) async {
     _state = AuthState.loading;
     _errorMessage = null;
     notifyListeners();
 
-    try {
-      _user = await _signUpUseCase.execute(
-        email,
-        password,
-        firstName: firstName,
-        lastName1: lastName1,
-        lastName2: lastName2,
-        phone: phone,
-      );
+    try {      // Intentamos primero con signIn para ver si el usuario existe
+      bool userExists = false;
+      try {
+        // Solo intentamos iniciar sesión para comprobar si el usuario existe
+        await _signInUseCase.execute(email, password);
+        // Si llegamos aquí, el inicio de sesión fue exitoso
+        userExists = true;
+        _user = await _signInUseCase.repository.getCurrentUser();
+      } catch (e) {
+        // Si hay error al iniciar sesión, el usuario no existe o la contraseña es incorrecta
+        // Vamos a crear un nuevo usuario
+        userExists = false;
+      }
       
-      // Add merchant role to the user
-      await _roleService.addRoleIfNotExists('merchant');
-        // Update profile with merchant-specific data if needed
+      if (!userExists) {
+        // Si el usuario no existe, lo creamos
+        _user = await _signUpUseCase.execute(
+          email,
+          password,
+          firstName: firstName,
+          lastName1: lastName1,
+          lastName2: lastName2,
+          phone: phone,
+        );
+      }
+      
+      // Esperamos un momento para garantizar que el usuario esté completamente autenticado
+      await Future.delayed(Duration(milliseconds: 500));
+      
+      // Forzamos autenticación válida obteniendo usuario actual si _user es nulo
+      _user ??= await _signInUseCase.repository.getCurrentUser();
+      
+      // Validación explícita del estado de autenticación
+      if (_user == null || _user!.id.isEmpty) {
+        throw Exception('Usuario no autenticado correctamente');
+      }
+        // Creamos datos completos para el merchant
+      Map<String, dynamic> merchantData = {
+        'id_number': idNumber,
+        'business_name': businessName ?? firstName, // Usar el nombre del negocio si está disponible
+        'corporate_name': corporateName ?? '${lastName1} ${lastName2}', // Usar nombre corporativo si está disponible
+      };
+      
+      // Usamos addRoleWithData para asegurar que el rol y los datos del comerciante se añadan
+      await _roleService.addRoleWithData('merchant', merchantData);
+      
+      // Actualizar perfil con datos básicos si es necesario
       if (idNumber != null && idNumber.isNotEmpty) {
         await _signInUseCase.repository.updateProfile(_user!.id, {
           'id_number': idNumber,
         });
-      }
-      
+      }// Refrescamos los datos del usuario para reflejar el nuevo rol
       await _refreshUserData();
       
       _state = AuthState.authenticated;
@@ -245,8 +279,7 @@ class AuthController extends ChangeNotifier {
       return false;
     }
   }
-  
-  /// Method to add a new role to the current authenticated user
+    /// Method to add a new role to the current authenticated user
   Future<bool> addRoleToCurrentUser(RoleType roleType, Map<String, dynamic> roleData) async {
     if (_user == null) {
       _errorMessage = 'No hay un usuario autenticado';
@@ -260,8 +293,20 @@ class AuthController extends ChangeNotifier {
     try {
       final roleSlug = _getRoleSlugFromType(roleType);
       
-      // Add the new role using the repository
-      await _addUserRoleUseCase.execute(_user!.id, roleSlug, roleData);
+      // Verificar si el usuario ya tiene el rol
+      final userRoles = await _getUserRolesUseCase.execute(_user!.id);
+      if (userRoles.contains(roleSlug)) {
+        // Si ya tiene el rol, actualizamos datos en lugar de añadirlo
+        if (roleType == RoleType.merchant) {
+          await _roleService.addRoleWithData(roleSlug, roleData);
+        } else {
+          // Para otros roles, simplemente actualizamos los datos necesarios
+          await _addUserRoleUseCase.execute(_user!.id, roleSlug, roleData);
+        }
+      } else {
+        // Si no tiene el rol, lo añadimos con los datos correspondientes
+        await _addUserRoleUseCase.execute(_user!.id, roleSlug, roleData);
+      }
       
       // Refresh user data to get updated roles
       await _refreshUserData();
@@ -309,8 +354,7 @@ class AuthController extends ChangeNotifier {
       return false;
     }
   }
-  
-  // Helper method to convert role type enum to string slug
+    // Helper method to convert role type enum to string slug
   String _getRoleSlugFromType(RoleType roleType) {
     switch (roleType) {
       case RoleType.customer:
@@ -319,8 +363,6 @@ class AuthController extends ChangeNotifier {
         return 'driver';
       case RoleType.merchant:
         return 'merchant';
-      default:
-        return 'customer';
     }
   }
 }
