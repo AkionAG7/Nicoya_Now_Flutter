@@ -222,7 +222,7 @@ class _LoginPageState extends State<LoginPage> {
             String title;
             IconData icon;
               // Configurar título e icono según el rol
-            switch (role) {
+            switch (role) {       
               case 'customer': // Updated to match database role name
                 title = 'Cliente';
                 icon = Icons.person;
@@ -235,6 +235,10 @@ class _LoginPageState extends State<LoginPage> {
                 title = 'Comerciante';
                 icon = Icons.store;
                 break;
+              case 'admin':
+                title = 'Administrador';
+                icon = Icons.admin_panel_settings;
+                break;
               default:
                 title = 'Usuario';
                 icon = Icons.person;
@@ -244,8 +248,7 @@ class _LoginPageState extends State<LoginPage> {
               leading: Icon(icon, color: Color(0xffd72a23)),
               title: Text(title),
               onTap: () {                // Manejar selección del rol
-                switch (role) {
-                  case 'customer': // Updated to match database role name
+                switch (role) {                  case 'customer': // Updated to match database role name
                     Navigator.pushNamedAndRemoveUntil(
                       context, Routes.home_food, (route) => false);
                     break;
@@ -256,6 +259,10 @@ class _LoginPageState extends State<LoginPage> {
                   case 'merchant':
                     Navigator.pushNamedAndRemoveUntil(
                       context, Routes.home_merchant, (route) => false); // Cambiar a pantalla de comercios
+                    break;
+                  case 'admin':
+                    Navigator.pushNamedAndRemoveUntil(
+                      context, Routes.home_admin, (route) => false); // Pantalla de administración
                     break;
                   default:
                     Navigator.pushNamedAndRemoveUntil(
@@ -302,8 +309,15 @@ class _LoginPageState extends State<LoginPage> {
         } else {
           // Solo hay un rol, navegar directamente según el rol
           final userRole = authController.userRole ?? 'customer';
-          
-          switch (userRole) {
+            switch (userRole) {
+            case 'admin':
+              // Redirección para administradores
+              Navigator.pushNamedAndRemoveUntil(
+                context, 
+                Routes.home_admin,
+                (route) => false
+              );
+              break;
             case 'customer':
               Navigator.pushNamedAndRemoveUntil(
                 context, 

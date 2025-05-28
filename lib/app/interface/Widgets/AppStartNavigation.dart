@@ -77,8 +77,42 @@ class _AppStartNavigationState extends State<AppStartNavigation> {
         _isLoading = false;
       });
     }
+  }  // Este método maneja la navegación inicial basado en el estado de la app
+  Future<void> _navigateBasedOnRole() async {
+    if (_isAuthenticated && !_hasMultipleRoles) {
+      try {
+        // Obtener el rol del usuario actual
+        final userId = Supabase.instance.client.auth.currentUser!.id;
+        final roles = await Supabase.instance.client
+            .from('user_role')
+            .select('role:role_id(slug)')
+            .eq('user_id', userId);
+        
+        if (roles.isNotEmpty) {
+          final userRole = roles.first['role']['slug'];
+          
+          if (userRole == 'admin') {
+            // Si es admin, ir a la pantalla de administración
+            if (mounted) {
+              Navigator.pushReplacementNamed(context, Routes.home_admin);
+            }
+            return;
+          }
+        }
+        
+        // Para otros roles o si no se encontró rol específico
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, Routes.home_food);
+        }
+      } catch (_) {
+        // En caso de error, usar la ruta por defecto
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, Routes.home_food);
+        }
+      }
+    }
   }
-
+  
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -108,9 +142,10 @@ class _AppStartNavigationState extends State<AppStartNavigation> {
         // Si está autenticado y tiene múltiples roles, mostrar selector de roles
         Navigator.pushReplacementNamed(context, Routes.selectUserRole);
       } else if (_isAuthenticated) {
-        // Si está autenticado pero solo tiene un rol, ir directo a la página principal
-        Navigator.pushReplacementNamed(context, Routes.home_food);      } else {
-        // Si no está autenticado, redirigir a la página Home en lugar de SelectTypeAccount
+        // Si está autenticado con un solo rol, verificar si es admin
+        _navigateBasedOnRole();
+      } else {
+        // Si no está autenticado, redirigir a la página de login
         Navigator.pushReplacementNamed(context, Routes.preLogin);
       }
     });

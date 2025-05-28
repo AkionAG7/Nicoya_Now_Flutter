@@ -25,10 +25,10 @@ class Routes {
  static const merchantStepBusiness  = '/merchant/step1';
  static const merchantStepOwner     = '/merchant/step2';
  static const merchantStepPassword  = '/merchant/step3';
- static const merchantSettings   = '/merchantSettings';
- static const addProduct = '/addProduct';
+ static const merchantSettings   = '/merchantSettings'; static const addProduct = '/addProduct';
  static const editProduct = '/editProduct';
  static const product_Detail = '/productDetail';
+ static const home_admin = '/adminHome';
  static const food_filter = '/foodFilter';
  static const merchantPublicProducts = '/merchantPublicProducts';
  static const searchFilter = '/searchFilter'; static const clientNav = '/clientNav';
