@@ -58,7 +58,7 @@ class MerchantRegistrationController extends ChangeNotifier {
     _email     = email;
     _phone     = phone;
   }
-    Future<bool> finishRegistration({
+  Future<bool> finishRegistration({
     required String password,
     required AuthController authController,
   }) async {
@@ -67,6 +67,19 @@ class MerchantRegistrationController extends ChangeNotifier {
     notifyListeners();
 
     try {
+      // Verificaciones previas para evitar errores de validación
+      if (_email == null || _email!.isEmpty) {
+        throw Exception("El correo electrónico es obligatorio");
+      }
+      
+      if (_businessName == null || _businessName!.isEmpty) {
+        throw Exception("El nombre del negocio es obligatorio");
+      }
+      
+      if (_logoPath == null || _logoPath!.isEmpty) {
+        throw Exception("Es necesario subir el logo del negocio");
+      }
+      
       _merchant = await _registerMerchantUseCase.execute(
         email        : _email!,
         password     : password,

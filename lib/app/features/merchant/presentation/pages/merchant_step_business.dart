@@ -129,8 +129,8 @@ class _MerchantStepBusinessState extends State<MerchantStepBusiness> {
                               }                              // Prepare role data with all necessary information
                               final roleData = {
                                 'id_number': _legalId.text.trim(),
-                                'businessName': _name.text.trim(),
-                                'corporateName': _corpName.text.trim(),
+                                'business_name': _name.text.trim(),
+                                'corporate_name': _corpName.text.trim(),
                                 'address': _address.text.trim(),
                                 'logoPath': _logo!.path,
                                 'owner_id': userId,
