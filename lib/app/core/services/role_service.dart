@@ -77,10 +77,13 @@ class RoleService {
           await _supabase
               .from('profile')
               .update({'id_number': roleData['id_number']})
-              .eq('user_id', userId);
-        }} else if (roleSlug == 'merchant') {
-        await _supabase.from('merchant').upsert({
+              .eq('user_id', userId);      }} else if (roleSlug == 'merchant') {
+        await _supabase.from('merchant').insert({
           'merchant_id': userId,
+          'owner_id': userId, // Campo necesario para evitar error NULL
+          'legal_id': roleData['id_number'],
+          'business_name': roleData['business_name'],
+          'corporate_name': roleData['corporate_name'], // opcional
         });
         
         if (roleData['id_number'] != null) {

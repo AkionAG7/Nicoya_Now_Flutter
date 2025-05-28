@@ -67,7 +67,6 @@ class SupabaseAuthDataSource implements AuthDataSource {
       ...profileResponse,
     };
   }
-
   @override
   Future<Map<String, dynamic>> signUp(String email, String password) async {
     final response = await _supabaseClient.auth.signUp(
@@ -79,8 +78,17 @@ class SupabaseAuthDataSource implements AuthDataSource {
       throw AuthException('No se pudo crear la cuenta');
     }
 
+    // Espera breve para asegurarse de que el usuario esté disponible
+    await Future.delayed(Duration(seconds: 1));
+    
+    // Validar que el usuario esté realmente autenticado
+    final userId = _supabaseClient.auth.currentUser?.id;
+    if (userId == null) {
+      throw AuthException('Usuario no autenticado aún después del registro');
+    }
+
     return {
-      'id': response.user!.id,
+      'id': userId,
       'email': response.user!.email,
     };
   }

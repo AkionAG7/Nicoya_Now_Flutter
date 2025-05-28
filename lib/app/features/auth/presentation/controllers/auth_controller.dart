@@ -163,8 +163,7 @@ class AuthController extends ChangeNotifier {
       notifyListeners();
       return false;
     }
-  }
-  /// Specialized method for merchant registration
+  }  /// Specialized method for merchant registration
   Future<bool> signUpMerchant({
     required String email,
     required String password,
@@ -188,9 +187,29 @@ class AuthController extends ChangeNotifier {
         phone: phone,
       );
       
-      // Add merchant role to the user
-      await _roleService.addRoleIfNotExists('merchant');
-        // Update profile with merchant-specific data if needed
+      // Validamos que el usuario fue creado correctamente
+      if (_user == null) {
+        throw Exception('No se pudo crear el usuario');
+      }
+      
+      // Esperamos un momento para garantizar que el usuario esté completamente autenticado
+      await Future.delayed(Duration(seconds: 1));
+
+      // Validamos que tenemos un ID válido antes de continuar
+      if (_user!.id.isEmpty) {
+        throw Exception('Usuario creado sin ID válido');
+      }
+      
+      // Añadir rol de merchant al usuario con los datos del negocio
+      Map<String, dynamic> merchantData = {
+        'id_number': idNumber,
+        'business_name': firstName, // Esto debería venir de otro parámetro idealmente
+        'corporate_name': lastName1 + ' ' + lastName2, // Esto debería venir de otro parámetro idealmente
+      };
+      
+      await _roleService.addRoleWithData('merchant', merchantData);
+      
+      // Actualizar perfil con datos específicos del comerciante si es necesario
       if (idNumber != null && idNumber.isNotEmpty) {
         await _signInUseCase.repository.updateProfile(_user!.id, {
           'id_number': idNumber,
