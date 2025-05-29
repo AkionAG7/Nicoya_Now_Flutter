@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 
@@ -191,23 +193,121 @@ class SupabaseAuthDataSource implements AuthDataSource {
       }
       
       // Para el rol de driver, NO creamos el registro en la tabla driver aquí
-      // Se creará cuando se complete el segundo formulario con vehicle_type
-      if (roleSlug == 'merchant') {
-        await _supabaseClient.from('merchant').upsert({
+      // Se creará cuando se complete el segundo formulario con vehicle_type      if (roleSlug == 'merchant') {
+        // Always ensure both merchant_id and owner_id are set to prevent not-null constraint violations
+        final merchantData = {
           'merchant_id': userId,
-        });
+          'owner_id': userId,  // Set owner_id to prevent not-null constraint violation
+        };
+        
+        // Add additional merchant-specific fields if available
+        if (roleData['business_name'] != null) merchantData['business_name'] = roleData['business_name'];
+        if (roleData['corporate_name'] != null) merchantData['corporate_name'] = roleData['corporate_name'];
+        if (roleData['id_number'] != null) merchantData['legal_id'] = roleData['id_number'];
+        
+        await _supabaseClient.from('merchant').upsert(
+          merchantData,
+          onConflict: 'merchant_id'
+        );
+      }      // Handle address data if provided
+      if (roleData['address'] != null && roleData['address'].toString().trim().isNotEmpty) {
+        try {
+          // Create a new address entry with more error checking
+          final addrResult = await _supabaseClient
+              .from('address')
+              .insert({
+                'user_id': userId,
+                'street': roleData['address'],
+                'district': roleData['district'] ?? '' // Default empty district
+              })
+              .select('address_id')
+              .single(); // Use single instead of maybeSingle to ensure we get a result
+              
+          if (roleSlug == 'merchant') {
+            final addressId = addrResult['address_id'] as String;
+            // Update merchant with the address ID - with error handling
+            await _supabaseClient
+                .from('merchant')
+                .update({'main_address_id': addressId})
+                .eq('merchant_id', userId);
+          }
+        } catch (e) {
+          print("Error creating address: $e");
+          // We should not throw here, but continue the process even if address creation fails
+          // This avoids breaking the entire role addition flow
+        }
       }
-        // Update the profile with any remaining role data
+          // Handle logo if provided for merchants
+      if (roleSlug == 'merchant' && roleData['logoPath'] != null) {
+        try {
+          final logoPath = roleData['logoPath'].toString();
+          final ext = logoPath.split('.').last;
+          final path = 'merchant/$userId/logo.$ext';
+          
+          // Check if bucket exists first to avoid errors
+          try {
+            // Ensure the bucket exists or create it
+            final buckets = await _supabaseClient.storage.listBuckets();
+            bool bucketExists = buckets.any((bucket) => bucket.name == 'merchant-assets');
+            
+            if (!bucketExists) {
+              print("Merchant assets bucket does not exist, creating...");
+              try {
+                await _supabaseClient.storage.createBucket(
+                  'merchant-assets', 
+                  const BucketOptions(public: true)
+                );
+              } catch (bucketError) {
+                // Bucket might have been created by another process
+                print("Error creating bucket: $bucketError");
+              }
+            }
+            
+            // Upload file based on platform
+            if (kIsWeb) {
+              final bytes = await File(logoPath).readAsBytes();
+              await _supabaseClient.storage
+                  .from('merchant-assets')
+                  .uploadBinary(
+                    path,
+                    bytes,
+                    fileOptions: const FileOptions(upsert: true),
+                  );
+            } else {
+              await _supabaseClient.storage
+                  .from('merchant-assets')
+                  .upload(
+                    path,
+                    File(logoPath),
+                    fileOptions: const FileOptions(upsert: true),
+                  );
+            }
+            
+            // Get the public URL
+            final publicUrl = _supabaseClient.storage
+                .from('merchant-assets')
+                .getPublicUrl(path);
+                
+            // Update the merchant with the logo URL
+            await _supabaseClient
+                .from('merchant')
+                .update({'logo_url': publicUrl})
+                .eq('merchant_id', userId);
+                
+          } catch (storageError) {
+            print("Storage operation failed: $storageError");
+          }
+        } catch (e) {
+          print("Error in logo upload process: $e");
+          // Continue with the process even if logo upload fails
+        }
+      }
+      
+      // Update the profile with any remaining role data
       final profileData = Map<String, dynamic>.from(roleData);
       profileData.remove('id_number'); // Already handled above
       profileData.remove('license_number'); // license_number solo pertenece a la tabla driver
-      
-      if (profileData.isNotEmpty) {
-        await _supabaseClient
-            .from('profile')
-            .update(profileData)
-            .eq('user_id', userId);
-      }
-    }
+      profileData.remove('address'); // Address is handled separately above
+      profileData.remove('logoPath'); // Logo is handled separ
   }
 }

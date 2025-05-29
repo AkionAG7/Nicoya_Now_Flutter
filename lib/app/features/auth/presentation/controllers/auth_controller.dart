@@ -279,7 +279,7 @@ class AuthController extends ChangeNotifier {
       return false;
     }
   }
-    /// Method to add a new role to the current authenticated user
+  /// Method to add a new role to the current authenticated user
   Future<bool> addRoleToCurrentUser(RoleType roleType, Map<String, dynamic> roleData) async {
     if (_user == null) {
       _errorMessage = 'No hay un usuario autenticado';
@@ -293,18 +293,26 @@ class AuthController extends ChangeNotifier {
     try {
       final roleSlug = _getRoleSlugFromType(roleType);
       
-      // Verificar si el usuario ya tiene el rol
+      // Always set owner_id for merchant roles to prevent null constraint violations
+      if (roleType == RoleType.merchant) {
+        roleData['owner_id'] = _user!.id;
+        print("Setting owner_id to ${_user!.id} for merchant role");
+      }
+      
+      // Check if the user already has this role
       final userRoles = await _getUserRolesUseCase.execute(_user!.id);
+      
       if (userRoles.contains(roleSlug)) {
-        // Si ya tiene el rol, actualizamos datos en lugar de añadirlo
+        // If user already has the role, update the data instead of adding it
         if (roleType == RoleType.merchant) {
+          // For merchants, ensure we have all required data
           await _roleService.addRoleWithData(roleSlug, roleData);
         } else {
-          // Para otros roles, simplemente actualizamos los datos necesarios
+          // For other roles, simply update the necessary data
           await _addUserRoleUseCase.execute(_user!.id, roleSlug, roleData);
         }
       } else {
-        // Si no tiene el rol, lo añadimos con los datos correspondientes
+        // If user doesn't have the role yet, add it with the corresponding data
         await _addUserRoleUseCase.execute(_user!.id, roleSlug, roleData);
       }
       
