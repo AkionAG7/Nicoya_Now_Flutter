@@ -59,7 +59,7 @@ class _LoginPageState extends State<LoginPage> {
                       width: double.infinity,
                       height: 270,
                       child: Image.asset(
-                        'lib/app/interface/public/LoginImage.png',
+                        'lib/app/interface/Public/LoginImage.png',
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -222,7 +222,7 @@ class _LoginPageState extends State<LoginPage> {
             String title;
             IconData icon;
               // Configurar título e icono según el rol
-            switch (role) {
+            switch (role) {       
               case 'customer': // Updated to match database role name
                 title = 'Cliente';
                 icon = Icons.person;
@@ -235,6 +235,10 @@ class _LoginPageState extends State<LoginPage> {
                 title = 'Comerciante';
                 icon = Icons.store;
                 break;
+              case 'admin':
+                title = 'Administrador';
+                icon = Icons.admin_panel_settings;
+                break;
               default:
                 title = 'Usuario';
                 icon = Icons.person;
@@ -244,8 +248,7 @@ class _LoginPageState extends State<LoginPage> {
               leading: Icon(icon, color: Color(0xffd72a23)),
               title: Text(title),
               onTap: () {                // Manejar selección del rol
-                switch (role) {
-                  case 'customer': // Updated to match database role name
+                switch (role) {                  case 'customer': // Updated to match database role name
                     Navigator.pushNamedAndRemoveUntil(
                       context, Routes.home_food, (route) => false);
                     break;
@@ -256,6 +259,10 @@ class _LoginPageState extends State<LoginPage> {
                   case 'merchant':
                     Navigator.pushNamedAndRemoveUntil(
                       context, Routes.home_merchant, (route) => false); // Cambiar a pantalla de comercios
+                    break;
+                  case 'admin':
+                    Navigator.pushNamedAndRemoveUntil(
+                      context, Routes.home_admin, (route) => false); // Pantalla de administración
                     break;
                   default:
                     Navigator.pushNamedAndRemoveUntil(
@@ -268,11 +275,10 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
-
   Future<void> _login() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Por favor, ingresa email y contraseña')),
+        const SnackBar(content: Text('Por favor, ingresa email y contraseña')),
       );
       return;
     }
@@ -285,26 +291,34 @@ class _LoginPageState extends State<LoginPage> {
       final authController = Provider.of<AuthController>(
         context,
         listen: false,
-      );      final success = await authController.signIn(
+      );
+      
+      // Usar el método actualizado para login con selección de rol y verificación
+      final result = await authController.handleLoginWithRoleSelection(
         _emailController.text.trim(),
         _passwordController.text,
       );
       
-      if (!mounted) return;      if (success) {
-        // Obtener los roles del usuario usando el nuevo método del controlador
-        final roles = authController.userRoles;
-        
-        // Si hay múltiples roles, mostrar diálogo de selección
-        if (roles.length > 1) {
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (context) => _buildRoleSelectionDialog(context, authController),
-          );        } else {
-          // Si solo hay un rol, redirigir directamente
-          final userRole = roles.isNotEmpty ? roles.first : 'customer'; // Updated default role
+      if (!mounted) return;
+      
+      if (result['success'] == true) {
+        // Verificar si hay múltiples roles disponibles
+        if (result['hasMultipleRoles'] == true) {
+          // Navegar a la página de selección de rol
+          Navigator.pushReplacementNamed(context, Routes.selectUserRole);
+        } else {
+          // Solo hay un rol, navegar directamente según el rol
+          final userRole = authController.userRole ?? 'customer';
           switch (userRole) {
-            case 'customer': // Updated to match database role name
+            case 'admin':
+              // Redirección para administradores
+              Navigator.pushNamedAndRemoveUntil(
+                context, 
+                Routes.home_admin,
+                (route) => false
+              );
+              break;
+            case 'customer':
               Navigator.pushNamedAndRemoveUntil(
                 context, 
                 Routes.clientNav,
@@ -314,14 +328,14 @@ class _LoginPageState extends State<LoginPage> {
             case 'driver':
               Navigator.pushNamedAndRemoveUntil(
                 context, 
-                Routes.home_food, // Cambiar a la pantalla para repartidores
+                Routes.home_food, // Cambiar a la pantalla para repartidores cuando esté disponible
                 (route) => false
               );
               break;
             case 'merchant':
               Navigator.pushNamedAndRemoveUntil(
                 context, 
-                Routes.home_merchant, // Cambiar a la pantalla para comercios
+                Routes.home_merchant,
                 (route) => false
               );
               break;
@@ -334,12 +348,31 @@ class _LoginPageState extends State<LoginPage> {
               );
           }
         }
-      }else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(authController.errorMessage ?? 'Error desconocido'),
-          ),
-        );
+      } else {
+        // Verificar si necesitamos redirigir a una página de verificación pendiente
+        if (result['redirectToPage'] != null) {
+          String redirectPage = result['redirectToPage'];
+          if (redirectPage == 'merchantPending') {
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              Routes.merchantPending,
+              (route) => false
+            );
+          } else if (redirectPage == 'driverPending') {
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              Routes.driverPending,
+              (route) => false
+            );
+          }
+        } else {
+          // Mostrar mensaje de error genérico
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message'] ?? 'Error desconocido'),
+            ),
+          );
+        }
       }
     } catch (e) {
       if (!mounted) return;

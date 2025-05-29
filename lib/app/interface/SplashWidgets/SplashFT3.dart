@@ -40,7 +40,7 @@ class SplashFT3 extends StatelessWidget {
                     width: double.infinity,
                     height: 270,
                     child: Image.asset(
-                      'lib/app/interface/public/SplashFT3.png',
+                      'lib/app/interface/Public/SplashFT3.png',
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -86,7 +86,7 @@ class SplashFT3 extends StatelessWidget {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.pushNamed(context, Routes.selecctTypeAccount);
+                      Navigator.pushNamed(context, Routes.preLogin);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Color(0xffd72a23),

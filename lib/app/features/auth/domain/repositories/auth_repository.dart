@@ -15,4 +15,11 @@ abstract class AuthRepository {
   Future<bool> isSignedIn();
   Future<void> resetPassword(String email);
   Future<void> updateProfile(String userId, Map<String, dynamic> data);
+    // New methods for role management
+  Future<List<String>> getUserRoles(String userId);
+  Future<void> assignRoleToUser(String userId, String roleId, Map<String, dynamic> roleData);
+  
+  // Methods for verification status
+  Future<bool> getMerchantVerificationStatus(String userId);
+  Future<bool> getDriverVerificationStatus(String userId);
 }

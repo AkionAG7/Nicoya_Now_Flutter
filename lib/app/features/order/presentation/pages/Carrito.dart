@@ -1,0 +1,228 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:nicoya_now/Icons/nicoya_now_icons_icons.dart';
+import 'package:nicoya_now/app/features/order/data/datasources/order_datasource.dart';
+import 'package:nicoya_now/app/features/products/domain/entities/products.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+class Carrito extends StatefulWidget {
+  const Carrito({Key? key}) : super(key: key);
+
+  @override
+  _CarritoState createState() => _CarritoState();
+}
+
+class _CarritoState extends State<Carrito> {
+  List<Map<String, dynamic>> _items = [];
+
+  void incrementarCantidad(int index) {
+    setState(() {
+      _items[index]['quantity']++;
+    });
+  }
+
+  void decrementarCantidad(int index) {
+    setState(() {
+      if (_items[index]['quantity'] > 1) {
+        _items[index]['quantity']--;
+      }
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    final supa = Supabase.instance.client;
+    final userId = supa.auth.currentUser?.id;
+
+    if (userId != null) {
+      final orderDatasource = OrderDatasourceImpl(supabaseClient: supa);
+      orderDatasource.getOrderByUserId(userId).then((data) {
+        setState(() {
+          _items = data;
+        });
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFFFFFFF),
+        title: const Text(
+          'Tu carrito',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(NicoyaNowIcons.campana),
+            onPressed: () {},
+          ),
+        ],
+      ),
+
+      body: Column(
+        children: [
+          Expanded(
+            child:
+                _items.isEmpty
+                    ? const Center(
+                      child: Text('No hay productos en el carrito'),
+                    )
+                    : ListView.builder(
+                      itemCount: _items.length,
+                      itemBuilder: (context, index) {
+                        final item = _items[index];
+                        Product product = item['product'];
+                        int quantity = item['quantity'];
+                        return Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(
+                              vertical: 8,
+                              horizontal: 16,
+                            ),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(30),
+                              color: Colors.white,
+                              border: Border.all(color: Colors.grey.shade300),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 10),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Container(
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(30),
+                                      child: Image.network(
+                                        product.image_url!,
+                                        width: 70,
+                                        height: 70,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  ),
+
+                                  Column(
+                                    children: [
+                                      Text(
+                                        product.name,
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        textAlign: TextAlign.justify,
+                                      ),
+
+                                      Text(
+                                        'Precio : ${product.price * quantity} CRC',
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF9B9B9B),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+
+                                  Row(
+                                    children: [
+                                      SizedBox(
+                                        width: 30,
+                                        height: 30,
+                                        child: Container(
+                                          padding: const EdgeInsets.all(2),
+                                          decoration: BoxDecoration(
+                                            color: Color(0xFFfee6e9),
+                                            shape: BoxShape.rectangle,
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
+                                          ),
+                                          child: IconButton(
+                                            onPressed:
+                                                () =>
+                                                    decrementarCantidad(index),
+                                            icon: Icon(
+                                              NicoyaNowIcons.menos,
+                                              size: 10,
+                                              color: Color(0xFFf10027),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+
+                                      const SizedBox(width: 10),
+
+                                      Text(quantity.toString()),
+
+                                      const SizedBox(width: 10),
+
+                                      SizedBox(
+                                        width: 30,
+                                        height: 30,
+                                        child: Container(
+                                          padding: const EdgeInsets.all(2),
+                                          decoration: BoxDecoration(
+                                            color: Color(0xFFfee6e9),
+                                            shape: BoxShape.rectangle,
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
+                                          ),
+                                          child: IconButton(
+                                            onPressed:
+                                                () =>
+                                                    incrementarCantidad(index),
+                                            icon: Icon(
+                                              NicoyaNowIcons.mas,
+                                              size: 10,
+                                              color: Color(0xFFf10027),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+          ),
+          const SizedBox(height: 20),
+          Center(
+            child: SizedBox(
+              width: 250,
+              height: 70,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color(0xFFf10027),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                onPressed: () => print('funcion y cambio de pagina'),
+                child: Text(
+                  'Confirmar orden',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 40),
+        ],
+      ),
+    );
+  }
+}

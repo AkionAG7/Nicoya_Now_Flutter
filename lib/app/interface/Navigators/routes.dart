@@ -20,15 +20,28 @@ class Routes {
   static const deliver_Form2 = '/deliverForm2';
   static const comerse_Form = '/comerseForm';
   static const driverPending = '/driverPending';
+  static const merchantPending = '/merchantPending';
   static const home_food = '/homeFood';
   static const home_merchant = '/homeMerchant';
- static const merchantStepBusiness  = '/merchant/step1';
- static const merchantStepOwner     = '/merchant/step2';
- static const merchantStepPassword  = '/merchant/step3';
- static const merchantSettings   = '/merchantSettings';
- static const product_Detail = '/productDetail';
- static const food_filter = '/foodFilter';
- static const searchFilter = '/searchFilter';
- static const clientNav = '/clientNav';
-}
+  static const merchantStepBusiness = '/merchant/step1';
+  static const merchantStepOwner = '/merchant/step2';
+  static const merchantStepPassword = '/merchant/step3';
+  static const merchantSettings = '/merchantSettings';
+  static const addProduct = '/addProduct';
+  static const editProduct = '/editProduct';
+  static const product_Detail = '/productDetail';
+  static const home_admin = '/adminHome';
+  static const food_filter = '/foodFilter';
+  static const merchantPublicProducts = '/merchantPublicProducts';
+  static const searchFilter = '/searchFilter';
+  static const clientNav = '/clientNav';
+  static const isFirstTime = '/isFirstTime';
+  static const appStartNavigation = '/appStartNavigation';
+  static const selectUserRole = '/selectUserRole';
+  static const roleFormPage = '/roleFormPage';
+  static const addRolePage = '/addRolePage';
+  static const carrito = '/carrito';
 
+  // Test route
+  static const testImages = '/testImages';
+}

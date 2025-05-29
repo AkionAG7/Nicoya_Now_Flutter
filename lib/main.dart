@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:nicoya_now/app/core/di/service_locator.dart';
 import 'package:nicoya_now/app/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/controllers/merchant_registration_controller.dart';
+import 'package:nicoya_now/app/features/admin/presentation/controllers/admin_merchant_controller.dart';
 import 'package:nicoya_now/app/interface/Navigators/app_routes.dart';
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 import 'package:nicoya_now/app/interface/app_theme.dart';
@@ -31,22 +32,23 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MultiProvider(
+  Widget build(BuildContext context) {    return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => locator<AuthController>()),
         ChangeNotifierProvider(
           create: (_) => locator<MerchantRegistrationController>(),
         ),
+        ChangeNotifierProvider(
+          create: (_) => locator<AdminMerchantController>(),
+        ),
       ],
       child: GestureDetector(
         onTap: () {
           FocusScope.of(context).unfocus();
-        },
-        child: MaterialApp(
+        },        child: MaterialApp(
           title: 'Nicoya Now',
           theme: AppTheme.lightTheme,
-          initialRoute: Routes.preLogin,
+          initialRoute: Routes.appStartNavigation,
           routes: appRoutes,
         ),
       ),

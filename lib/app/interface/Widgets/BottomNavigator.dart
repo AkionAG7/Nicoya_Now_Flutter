@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:nicoya_now/Icons/nicoya_now_icons_icons.dart';
+import 'package:nicoya_now/app/features/order/presentation/pages/Carrito.dart';
 import 'package:nicoya_now/app/features/products/presentation/pages/HomeFood.dart';
 
 class BottomNavigator extends StatefulWidget {
@@ -13,28 +14,38 @@ class BottomNavigator extends StatefulWidget {
 class _BottomNavigatorState extends State<BottomNavigator> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = const [HomeFood()];
+  final List<Widget> _pages = const [
+    HomeFood(),
+    Carrito(),
+    Carrito(),
+    HomeFood(),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: IndexedStack(index: _currentIndex, children: _pages),
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: const Color(0xFFf10027),
+
         currentIndex: _currentIndex,
         onTap: (i) => setState(() => _currentIndex = i),
         type: BottomNavigationBarType.fixed,
+        selectedItemColor: Colors.grey[400],
+        unselectedItemColor: Colors.white,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home),
-            label: 'Inicio',
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.favorite),
+          BottomNavigationBarItem(icon: Icon(Icons.home, color: Colors.white,), label: 'Inicio'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite , color: Colors.white,),
             label: 'Favoritos',
           ),
-          BottomNavigationBarItem(icon: Icon(NicoyaNowIcons.carritocompras),
+          BottomNavigationBarItem(
+            icon: Icon(NicoyaNowIcons.carritocompras , color: Colors.white,),
             label: 'Carrito',
           ),
-          BottomNavigationBarItem(icon: Icon(NicoyaNowIcons.usuario),
-            label: 'Notificaciones',
+          BottomNavigationBarItem(
+            icon: Icon(NicoyaNowIcons.usuario , color: Colors.white,),
+            label: 'Usuario',
           ),
         ],
       ),

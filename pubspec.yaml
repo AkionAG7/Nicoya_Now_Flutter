@@ -24,6 +24,9 @@ dependencies:
   flutter_polyline_points: ^2.1.0
   google_maps_flutter: ^2.12.1
   intl: ^0.18.1
+  uuid: ^4.5.1
+  dartz: ^0.10.1
+  internet_connection_checker: ^3.0.1
 
 
 dev_dependencies:
@@ -35,7 +38,7 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: false
-  image_path: "lib/app/interface/public/LogoApp.png"
+  image_path: "lib/app/interface/Public/LogoApp.png"
 
 flutter:
   # The following line ensures that the Material Icons font is
@@ -53,16 +56,16 @@ flutter:
 
   # For details regarding adding assets from package dependencies, see
   # https://flutter.dev/to/asset-from-package
-
   assets:
     - .env
-    - lib/app/interface/public/LoginImage.png
-    - lib/app/interface/public/SplashFT1.png
-    - lib/app/interface/public/SplashFT2.png
-    - lib/app/interface/public/SplashFT3.png
-    - lib/app/interface/public/WallpaperOrderSucces.png
-    - lib/app/interface/public/Comercio.png
-    - lib/app/interface/public/Repartidor.png
+    - lib/app/interface/Public/LoginImage.png
+    - lib/app/interface/Public/SplashFT1.png
+    - lib/app/interface/Public/SplashFT2.png
+    - lib/app/interface/Public/SplashFT3.png
+    - lib/app/interface/Public/WallpaperOrderSucces.png
+    - lib/app/interface/Public/Comercio.png
+    - lib/app/interface/Public/Repartidor.png
+    - lib/app/interface/Public/LogoApp.png
 
   fonts:
     - family: NicoyaNowIcons
