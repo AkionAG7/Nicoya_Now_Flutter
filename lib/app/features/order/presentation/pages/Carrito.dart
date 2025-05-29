@@ -13,7 +13,21 @@ class Carrito extends StatefulWidget {
 }
 
 class _CarritoState extends State<Carrito> {
-  late Future<List<Product>> _productsFuture;
+  List<Map<String, dynamic>> _items = [];
+
+  void incrementarCantidad(int index) {
+    setState(() {
+      _items[index]['quantity']++;
+    });
+  }
+
+  void decrementarCantidad(int index) {
+    setState(() {
+      if (_items[index]['quantity'] > 1) {
+        _items[index]['quantity']--;
+      }
+    });
+  }
 
   @override
   void initState() {
@@ -23,9 +37,11 @@ class _CarritoState extends State<Carrito> {
 
     if (userId != null) {
       final orderDatasource = OrderDatasourceImpl(supabaseClient: supa);
-      _productsFuture = orderDatasource.getOrderByUserId(userId);
-    } else {
-      _productsFuture = Future.value([]);
+      orderDatasource.getOrderByUserId(userId).then((data) {
+        setState(() {
+          _items = data;
+        });
+      });
     }
   }
 
@@ -46,34 +62,166 @@ class _CarritoState extends State<Carrito> {
         ],
       ),
 
-      body: FutureBuilder<List<Product>>(
-        future: _productsFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No hay productos en el carrito'));
-          }
+      body: Column(
+        children: [
+          Expanded(
+            child:
+                _items.isEmpty
+                    ? const Center(
+                      child: Text('No hay productos en el carrito'),
+                    )
+                    : ListView.builder(
+                      itemCount: _items.length,
+                      itemBuilder: (context, index) {
+                        final item = _items[index];
+                        Product product = item['product'];
+                        int quantity = item['quantity'];
+                        return Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(
+                              vertical: 8,
+                              horizontal: 16,
+                            ),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(30),
+                              color: Colors.white,
+                              border: Border.all(color: Colors.grey.shade300),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 10),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Container(
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(30),
+                                      child: Image.network(
+                                        product.image_url!,
+                                        width: 70,
+                                        height: 70,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  ),
 
-          final productos = snapshot.data!;
+                                  Column(
+                                    children: [
+                                      Text(
+                                        product.name,
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        textAlign: TextAlign.justify,
+                                      ),
 
-          return ListView.builder(
-            itemCount: productos.length,
-            itemBuilder: (context, index) {
-              final producto = productos[index];
-              return ListTile(
-                leading:
-                    producto.image_url != null
-                        ? Image.network(producto.image_url!)
-                        : const Icon(Icons.image),
-                title: Text(producto.name),
-                subtitle: Text('₡${producto.price.toStringAsFixed(2)}'),
-              );
-            },
-          );
-        },
+                                      Text(
+                                        'Precio : ${product.price * quantity} CRC',
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF9B9B9B),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+
+                                  Row(
+                                    children: [
+                                      SizedBox(
+                                        width: 30,
+                                        height: 30,
+                                        child: Container(
+                                          padding: const EdgeInsets.all(2),
+                                          decoration: BoxDecoration(
+                                            color: Color(0xFFfee6e9),
+                                            shape: BoxShape.rectangle,
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
+                                          ),
+                                          child: IconButton(
+                                            onPressed:
+                                                () =>
+                                                    decrementarCantidad(index),
+                                            icon: Icon(
+                                              NicoyaNowIcons.menos,
+                                              size: 10,
+                                              color: Color(0xFFf10027),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+
+                                      const SizedBox(width: 10),
+
+                                      Text(quantity.toString()),
+
+                                      const SizedBox(width: 10),
+
+                                      SizedBox(
+                                        width: 30,
+                                        height: 30,
+                                        child: Container(
+                                          padding: const EdgeInsets.all(2),
+                                          decoration: BoxDecoration(
+                                            color: Color(0xFFfee6e9),
+                                            shape: BoxShape.rectangle,
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
+                                          ),
+                                          child: IconButton(
+                                            onPressed:
+                                                () =>
+                                                    incrementarCantidad(index),
+                                            icon: Icon(
+                                              NicoyaNowIcons.mas,
+                                              size: 10,
+                                              color: Color(0xFFf10027),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+          ),
+          const SizedBox(height: 20),
+          Center(
+            child: SizedBox(
+              width: 250,
+              height: 70,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color(0xFFf10027),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                onPressed: () => print('funcion y cambio de pagina'),
+                child: Text(
+                  'Confirmar orden',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 40),
+        ],
       ),
     );
   }
