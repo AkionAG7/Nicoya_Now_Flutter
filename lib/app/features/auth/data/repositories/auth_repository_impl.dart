@@ -53,7 +53,7 @@ class AuthRepositoryImpl implements AuthRepository {
         lastName1: lastName1,
         lastName2: lastName2,
         phone: phone,
-        role: 'customer', // Consistent with database role name 
+        role: '', // No asignamos rol automáticamente, se hará explícitamente según el flujo de registro
       );
     } catch (e) {
       rethrow;
@@ -96,6 +96,15 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<void> assignRoleToUser(String userId, String roleId, Map<String, dynamic> roleData) async {
     await dataSource.addRoleToUser(userId, roleId, roleData);
   }
+    @override
+  Future<bool> getMerchantVerificationStatus(String userId) async {
+    return await dataSource.getMerchantVerificationStatus(userId);
+  }
+  
+  @override
+  Future<bool> getDriverVerificationStatus(String userId) async {
+    return await dataSource.getDriverVerificationStatus(userId);
+  }
   
   User _mapToUser(Map<String, dynamic> userData) {
     return User(
@@ -105,7 +114,7 @@ class AuthRepositoryImpl implements AuthRepository {
       lastName1: userData['last_name1'],
       lastName2: userData['last_name2'],
       phone: userData['phone'],
-      role: userData['role'] ?? 'customer', 
+      role: userData['role'] ?? '', // No asignamos un rol por defecto
     );
   }
 }

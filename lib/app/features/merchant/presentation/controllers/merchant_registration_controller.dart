@@ -79,8 +79,7 @@ class MerchantRegistrationController extends ChangeNotifier {
       if (_logoPath == null || _logoPath!.isEmpty) {
         throw Exception("Es necesario subir el logo del negocio");
       }
-      
-      _merchant = await _registerMerchantUseCase.execute(
+        _merchant = await _registerMerchantUseCase.execute(
         email        : _email!,
         password     : password,
         legalId      : _isCedulaJuridica ? _legalId! : '',
@@ -95,7 +94,9 @@ class MerchantRegistrationController extends ChangeNotifier {
         authController: authController,
         cedula       : _isCedulaJuridica ? null : _legalId,
       );
-
+        // Verificar el estado del registro
+      print('MERCHANT REGISTRATION: Registration successful, merchant should be pending verification');
+      
       _state = MerchantRegistrationState.success;
       notifyListeners();
       return true;

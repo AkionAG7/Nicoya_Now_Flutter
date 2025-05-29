@@ -293,23 +293,23 @@ class _LoginPageState extends State<LoginPage> {
         listen: false,
       );
       
-      // Usar el nuevo método para login con selección de rol
-      final success = await authController.handleLoginWithRoleSelection(
+      // Usar el método actualizado para login con selección de rol y verificación
+      final result = await authController.handleLoginWithRoleSelection(
         _emailController.text.trim(),
         _passwordController.text,
       );
       
       if (!mounted) return;
       
-      if (success) {
+      if (result['success'] == true) {
         // Verificar si hay múltiples roles disponibles
-        if (authController.availableRoles.length > 1) {
+        if (result['hasMultipleRoles'] == true) {
           // Navegar a la página de selección de rol
           Navigator.pushReplacementNamed(context, Routes.selectUserRole);
         } else {
           // Solo hay un rol, navegar directamente según el rol
           final userRole = authController.userRole ?? 'customer';
-            switch (userRole) {
+          switch (userRole) {
             case 'admin':
               // Redirección para administradores
               Navigator.pushNamedAndRemoveUntil(
@@ -349,11 +349,30 @@ class _LoginPageState extends State<LoginPage> {
           }
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(authController.errorMessage ?? 'Error desconocido'),
-          ),
-        );
+        // Verificar si necesitamos redirigir a una página de verificación pendiente
+        if (result['redirectToPage'] != null) {
+          String redirectPage = result['redirectToPage'];
+          if (redirectPage == 'merchantPending') {
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              Routes.merchantPending,
+              (route) => false
+            );
+          } else if (redirectPage == 'driverPending') {
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              Routes.driverPending,
+              (route) => false
+            );
+          }
+        } else {
+          // Mostrar mensaje de error genérico
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message'] ?? 'Error desconocido'),
+            ),
+          );
+        }
       }
     } catch (e) {
       if (!mounted) return;
