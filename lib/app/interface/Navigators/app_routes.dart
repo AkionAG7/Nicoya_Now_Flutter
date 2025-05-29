@@ -12,6 +12,7 @@ import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_set
 import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_step_business.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_step_owner.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_step_password.dart';
+import 'package:nicoya_now/app/features/order/presentation/pages/Carrito.dart';
 import 'package:nicoya_now/app/features/products/domain/entities/products.dart';
 import 'package:nicoya_now/app/features/products/presentation/pages/MerchantPublicProductsPage.dart';
 import 'package:nicoya_now/app/features/products/presentation/pages/SearchFilter.dart';
@@ -58,7 +59,8 @@ Map<String, Widget Function(BuildContext)> get appRoutes {
     Routes.splashFT2: (context) => const SplashFT2(),
     Routes.splashFT3: (context) => const SplashFT3(),
     Routes.order_Success: (context) => const OrderSucces(),
-    Routes.client_Form: (context) => const ClientForm(),    Routes.deliver_Form1: (context) => const DeliverForm1(),
+    Routes.client_Form: (context) => const ClientForm(),
+    Routes.deliver_Form1: (context) => const DeliverForm1(),
     Routes.deliver_Form2: (context) => const DeliverForm2(),
     Routes.driverPending: (context) => const DriverPendingPage(),
     Routes.merchantPending: (context) => const MerchantPendingPage(),
@@ -68,7 +70,8 @@ Map<String, Widget Function(BuildContext)> get appRoutes {
     Routes.merchantStepOwner: (context) => const MerchantStepOwner(),
     Routes.merchantStepPassword: (context) => const MerchantStepPassword(),
     Routes.merchantSettings: (context) => const MerchantSettingsPage(),
-    Routes.merchantPublicProducts: (context) => const MerchantPublicProductsPage(),
+    Routes.merchantPublicProducts:
+        (context) => const MerchantPublicProductsPage(),
     Routes.addProduct: (context) {
       final args = ModalRoute.of(context)!.settings.arguments as String;
       return AddProductPage(merchantId: args);
@@ -76,21 +79,24 @@ Map<String, Widget Function(BuildContext)> get appRoutes {
     Routes.editProduct: (context) {
       final product = ModalRoute.of(context)!.settings.arguments as Product;
       return EditProductPage(product: product);
-    },    Routes.product_Detail: (context) => const ProductDetail(),
+    },
+    Routes.product_Detail: (context) => const ProductDetail(),
     Routes.home_admin: (context) => const HomeAdminPage(),
-    Routes.food_filter: (context) => const FoodFilter(),Routes.searchFilter: (context) => const SearchFilter(),    Routes.clientNav: (context) => const BottomNavigator(),    Routes.isFirstTime: (context) => const FirstTimeIn(),
+    Routes.food_filter: (context) => const FoodFilter(),
+    Routes.searchFilter: (context) => const SearchFilter(),
+    Routes.clientNav: (context) => const BottomNavigator(),
+    Routes.isFirstTime: (context) => const FirstTimeIn(),
     Routes.appStartNavigation: (context) => const AppStartNavigation(),
     Routes.selectUserRole: (context) => const SelectUserRolePage(),
     Routes.roleFormPage: (context) {
-      final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+      final args =
+          ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
       final roleType = args['roleType'] as RoleType;
       final isAddingRole = args['isAddingRole'] as bool? ?? false;
-      
-      return RoleFormPage(
-        roleType: roleType,
-        isAddingRole: isAddingRole,
-      );
+
+      return RoleFormPage(roleType: roleType, isAddingRole: isAddingRole);
     },
     Routes.addRolePage: (context) => const AddRolePage(),
+    Routes.carrito: (context) => const Carrito(),
   };
 }
