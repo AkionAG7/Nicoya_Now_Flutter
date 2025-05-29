@@ -1,12 +1,11 @@
-import 'dart:ffi';
 
 class Address {
   final String address_id;
   final String user_id;
   final String street;
-  final district;
-  final Float lat;
-  final Float Ing;
+  final String district;
+  final double lat;
+  final double lng;
   final String note;
   final DateTime created_at;
 
@@ -16,7 +15,7 @@ class Address {
     required this.street,
     required this.district,
     required this.lat,
-    required this.Ing,
+    required this.lng,
     required this.note,
     required this.created_at,
   });

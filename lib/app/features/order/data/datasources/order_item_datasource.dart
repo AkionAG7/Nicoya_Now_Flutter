@@ -27,13 +27,19 @@ class OrderItemDatasourceImpl implements OrderItemDatasource {
             .from('order')
             .select()
             .eq('customer_id', customerId)
-            .eq('merchant_id', product.merchant_id)
             .eq('status', 'pending')
             .maybeSingle();
 
     String orderId;
 
     if (existingOrder != null) {
+      final existingMerchantId = existingOrder['merchant_id'];
+
+      if (existingMerchantId != product.merchant_id) {
+        throw Exception(
+          'El producto no pertenece al mismo comerciante del pedido existente, finaliza primero tu orden actual.',
+        );
+      }
       orderId = existingOrder['order_id'];
     } else {
       final insertResult =
@@ -56,7 +62,7 @@ class OrderItemDatasourceImpl implements OrderItemDatasource {
       'order_id': orderId,
       'product_id': product.product_id,
       'quantity': quantity,
-      'price': product.price,
+      'unit_price': product.price,
     });
   }
 }

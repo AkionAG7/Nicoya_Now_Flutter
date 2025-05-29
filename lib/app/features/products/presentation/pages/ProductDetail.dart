@@ -282,15 +282,23 @@ class _ProductDetailState extends State<ProductDetail> {
                           );
                           return;
                         }
+                        print('addressReponse: $addressReponse');
+                        print(
+                          'lat: ${addressReponse['lat']} (${addressReponse['lat']?.runtimeType})',
+                        );
+                        print(
+                          'lng: ${addressReponse['lng']} (${addressReponse['lng']?.runtimeType})',
+                        );
+
                         final address = Address(
                           address_id: addressReponse['address_id'],
                           user_id: addressReponse['user_id'],
                           street: addressReponse['street'],
                           district: addressReponse['district'],
                           lat: addressReponse['lat'],
-                          Ing: addressReponse['Ing'],
+                          lng: addressReponse['lng'],
                           note: addressReponse['note'],
-                          created_at: addressReponse['created_at'],
+                          created_at: DateTime.parse(addressReponse['created_at']),
                         );
                         await OrderItemDatasource.addProductToOrder(
                           costumerId,
