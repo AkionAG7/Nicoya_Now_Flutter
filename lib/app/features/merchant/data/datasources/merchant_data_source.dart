@@ -123,9 +123,8 @@ class SupabaseMerchantDataSource implements MerchantDataSource {
     required String password,
     required String phone,
     required AuthController authController,
-    String? cedula,
-  }) async {
-    // Use AuthController for merchant registration with proper role handling
+    String? cedula,  }) async {
+    // Primero creamos el usuario con su rol de merchant
     final success = await authController.signUpMerchant(
       email: email,
       password: password,
@@ -134,6 +133,8 @@ class SupabaseMerchantDataSource implements MerchantDataSource {
       lastName2: lastName2,
       phone: phone,
       idNumber: cedula,
+      businessName: businessName,  // Ahora pasamos explícitamente el nombre del negocio
+      corporateName: corporateName,  // Y el nombre corporativo
     );
 
     if (!success) {
@@ -141,8 +142,24 @@ class SupabaseMerchantDataSource implements MerchantDataSource {
     }
 
     final uid = authController.user!.id;
-
-    try {
+      try {
+      // Verificamos si ya existe un registro de merchant
+      final existingMerchant = await _supa
+          .from('merchant')
+          .select()
+          .eq('merchant_id', uid)
+          .maybeSingle();
+          
+      if (existingMerchant != null) {
+        // Si ya existe, actualizamos los datos y continuamos con el proceso
+        await _supa.from('merchant')
+          .update({
+            'legal_id': legalId,
+            'business_name': businessName,
+            'corporate_name': corporateName,
+          })
+          .eq('merchant_id', uid);
+      }
       final addr =
           await _supa
               .from('address')
@@ -171,29 +188,43 @@ class SupabaseMerchantDataSource implements MerchantDataSource {
               File(logoPath),
               fileOptions: const FileOptions(upsert: true),
             );
-      }
-
-      final publicUrl = _supa.storage
+      }      final publicUrl = _supa.storage
           .from('merchant-assets')
           .getPublicUrl(path);
 
-      final row =
-          await _supa
+      // Si ya habíamos verificado que existe, actualizamos la info faltante
+      if (existingMerchant != null) {
+        final row = await _supa
               .from('merchant')
-              .insert({
-                'merchant_id': uid,
-                'owner_id': uid,
-                'legal_id': legalId,
-                'business_name': businessName,
-                'corporate_name': corporateName,
+              .update({
                 'logo_url': publicUrl,
                 'main_address_id': addressId,
-                'is_active': false,
               })
+              .eq('merchant_id', uid)
               .select()
               .single();
+        return row;
+      } else {      // Si no existe, lo insertamos completo
+        final row = await _supa
+              .from('merchant')
+              .upsert(
+                {  // Usamos upsert para evitar errores de clave duplicada
+                  'merchant_id': uid,
+                  'owner_id': uid,
+                  'legal_id': legalId,
+                  'business_name': businessName,
+                  'corporate_name': corporateName,
+                  'logo_url': publicUrl,
+                  'main_address_id': addressId,
+                  'is_active': false,
+                },
+                onConflict: 'merchant_id' // Especificar la columna para resolver conflictos
+              )
+              .select()
+              .single();
+        return row;
+      }
 
-      return row;
     } catch (e) {
       // If merchant setup fails, we should handle cleanup appropriately
       // Note: AuthController has already created the user and assigned the role

@@ -51,31 +51,60 @@ class _MerchantStepPasswordState extends State<MerchantStepPassword> {
                     style: FilledButton.styleFrom(
                       backgroundColor: const Color(0xffd72a23),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8))),
-                    onPressed: ctrl.state == MerchantRegistrationState.loading
+                        borderRadius: BorderRadius.circular(8))),                    onPressed: ctrl.state == MerchantRegistrationState.loading
                         ? null
                         : () async {
                             if (!_fKey.currentState!.validate()) return;
-                            final ok = await ctrl.finishRegistration(
-                              password: _pw.text,
-                              authController: authController,
-                            );
-                            if (!mounted) return;
-                            if (ok) {
-                              Navigator.pushNamedAndRemoveUntil(
-                                context,
-                                Routes.driverPending,
-                                (_) => false,
+                            
+                            try {
+                              // Mostrar un indicador de carga
+                              setState(() {});
+                              
+                              final ok = await ctrl.finishRegistration(
+                                password: _pw.text,
+                                authController: authController,
                               );
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    ctrl.errorMessage ??
-                                        'Ocurrió un error inesperado',
+                              
+                              if (!mounted) return;
+                              
+                              if (ok) {
+                                // Show success message
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Cuenta creada exitosamente'),
+                                    backgroundColor: Colors.green,
                                   ),
-                                ),
-                              );
+                                );
+                                
+                                // Navigate to the merchant home page
+                                Navigator.pushNamedAndRemoveUntil(
+                                  context,
+                                  Routes.home_merchant,
+                                  (_) => false,
+                                );
+                              } else {
+                                // Show error message with more details
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      ctrl.errorMessage ??
+                                          'Ocurrió un error inesperado',
+                                    ),
+                                    backgroundColor: Colors.red,
+                                    duration: const Duration(seconds: 5),
+                                  ),
+                                );
+                              }
+                            } catch (e) {
+                              // Capturar y mostrar cualquier error inesperado
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Error: ${e.toString()}'),
+                                    backgroundColor: Colors.red,
+                                    duration: const Duration(seconds: 7),
+                                  ),
+                                );                              }
                             }
                           },
                     child: ctrl.state == MerchantRegistrationState.loading
