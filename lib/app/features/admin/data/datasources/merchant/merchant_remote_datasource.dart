@@ -34,14 +34,9 @@ class MerchantRemoteDataSourceImpl implements MerchantRemoteDataSource {
   Future<List<MerchantModel>> getAllMerchants() async {
     try {
       print('MerchantRemoteDataSourceImpl: Fetching merchants from Supabase');
-      final response = await supabase.from('merchant').select('*');
-      print('MerchantRemoteDataSourceImpl: Raw Supabase response: $response');
+      final response = await supabase.from('merchant').select('*');      print('MerchantRemoteDataSourceImpl: Raw Supabase response: $response');
         // Response cannot be null in modern Dart
-      
-      if (response is! List) {
-        print('MerchantRemoteDataSourceImpl: Response is not a List, type: ${response.runtimeType}');
-        return [];
-      }
+        
         final merchants = <MerchantModel>[];
       for (var item in response) {
         try {
@@ -52,9 +47,11 @@ class MerchantRemoteDataSourceImpl implements MerchantRemoteDataSource {
           print('business_name: ${item['business_name']}');
           print('business_category: ${item['business_category']}');
           print('created_at: ${item['created_at']}');
-          print('is_verified: ${item['is_verified']}');
+          print('is_active: ${item['is_active']}');
           
-          merchants.add(MerchantModel.fromJson(item));
+          final merchant = MerchantModel.fromJson(item);
+          print('MerchantModel created with ID: ${merchant.merchantId}');
+          merchants.add(merchant);
         } catch (e) {
           print('MerchantRemoteDataSourceImpl: Error converting JSON to model: $e');
           // Continue instead of throwing to process as many records as possible
@@ -82,34 +79,67 @@ class MerchantRemoteDataSourceImpl implements MerchantRemoteDataSource {
     } catch (e) {
       throw Exception('Failed to get merchant: $e');
     }
-  }
-  
-  @override
+  }  @override
   Future<MerchantModel> approveMerchant(String merchantId) async {
     try {
+      print('DataSource: Starting approval for merchant ID: $merchantId');
+      
+      // Direct table update - RLS policies will handle permissions
       final response = await supabase
           .from('merchant')
-          .update({'is_verified': true})
+          .update({'is_active': true})
           .eq('merchant_id', merchantId)
-          .select()
+          .select('*')
           .single();
-      return MerchantModel.fromJson(response);
+      
+      print('DataSource: Supabase response: $response');
+      
+      final approvedMerchant = MerchantModel.fromJson(response);
+      print('DataSource: Approval successful for merchant: ${approvedMerchant.businessName}');
+      print('DataSource: Merchant isVerified status: ${approvedMerchant.isVerified}');
+      
+      return approvedMerchant;
     } catch (e) {
+      print('DataSource: Error approving merchant: $e');
+      if (e is PostgrestException) {
+        print('DataSource: PostgrestException details:');
+        print('  Code: ${e.code}');
+        print('  Message: ${e.message}');
+        print('  Details: ${e.details}');
+        print('  Hint: ${e.hint}');
+      }
       throw Exception('Failed to approve merchant: $e');
     }
   }
-  
+
   @override
   Future<MerchantModel> rejectMerchant(String merchantId) async {
     try {
+      print('DataSource: Starting rejection for merchant ID: $merchantId');
+      
+      // Direct table update - RLS policies will handle permissions
       final response = await supabase
           .from('merchant')
-          .update({'is_verified': false})
+          .update({'is_active': false})
           .eq('merchant_id', merchantId)
-          .select()
+          .select('*')
           .single();
-      return MerchantModel.fromJson(response);
+      
+      print('DataSource: Supabase response for rejection: $response');
+      
+      final rejectedMerchant = MerchantModel.fromJson(response);
+      print('DataSource: Rejection successful for merchant: ${rejectedMerchant.businessName}');
+      
+      return rejectedMerchant;
     } catch (e) {
+      print('DataSource: Error rejecting merchant: $e');
+      if (e is PostgrestException) {
+        print('DataSource: PostgrestException details:');
+        print('  Code: ${e.code}');
+        print('  Message: ${e.message}');
+        print('  Details: ${e.details}');
+        print('  Hint: ${e.hint}');
+      }
       throw Exception('Failed to reject merchant: $e');
     }
   }

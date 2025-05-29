@@ -132,14 +132,17 @@ locator.registerLazySingleton<DeleteProductUseCase>(
       networkInfo: locator<NetworkInfo>(),
     ),
   );
-  
-  locator.registerLazySingleton<GetAllMerchantsUseCase>(
+    locator.registerLazySingleton<GetAllMerchantsUseCase>(
     () => GetAllMerchantsUseCase(locator<AdminMerchantRepo.MerchantRepository>()),
   );
   
-  locator.registerFactory<AdminMerchantController>(
+  locator.registerLazySingleton<ApproveMerchantUseCase>(
+    () => ApproveMerchantUseCase(locator<AdminMerchantRepo.MerchantRepository>()),
+  );
+    locator.registerFactory<AdminMerchantController>(
     () => AdminMerchantController(
       getAllMerchantsUseCase: locator<GetAllMerchantsUseCase>(),
+      approveMerchantUseCase: locator<ApproveMerchantUseCase>(),
     ),
   );
    

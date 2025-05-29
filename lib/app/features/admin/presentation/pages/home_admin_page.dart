@@ -5,7 +5,7 @@ import '../../../../core/di/service_locator.dart';
 import '../controllers/admin_merchant_controller.dart';
 
 class HomeAdminPage extends StatefulWidget {
-  const HomeAdminPage({Key? key}) : super(key: key);
+  const HomeAdminPage({super.key});
 
   @override
   State<HomeAdminPage> createState() => _HomeAdminPageState();
@@ -325,11 +325,10 @@ class _MerchantsManagementPageState extends State<_MerchantsManagementPage> with
                     child: ListView.builder(
                       itemCount: filteredMerchants.length,
                       itemBuilder: (context, index) {
-                        final merchant = filteredMerchants[index];
-                        return _MerchantListItem(
+                        final merchant = filteredMerchants[index];                        return _MerchantListItem(
                           name: merchant.businessName,
                           status: merchant.isVerified ? 'Aprobado' : 'Pendiente',
-                          onApprove: () => _showApprovalDialog(context, merchant.businessName),
+                          onApprove: () => _showApprovalDialog(context, merchant.businessName, merchant.merchantId),
                           isApproved: merchant.isVerified,
                         );
                       },
@@ -343,8 +342,9 @@ class _MerchantsManagementPageState extends State<_MerchantsManagementPage> with
       ),
     );
   }
-  
-  void _showApprovalDialog(BuildContext context, String merchantName) {
+    void _showApprovalDialog(BuildContext context, String merchantName, String merchantId) {
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -356,12 +356,26 @@ class _MerchantsManagementPageState extends State<_MerchantsManagementPage> with
             child: const Text('Cancelar'),
           ),
           ElevatedButton(
-            onPressed: () {
-              // Aquí iría la lógica para aprobar el comercio
+            onPressed: () async {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('$merchantName ha sido aprobado')),
-              );
+              
+              // Llamar al método de aprobación del controlador
+              try {
+                await _controller.approveMerchant(merchantId);
+                scaffoldMessenger.showSnackBar(
+                  SnackBar(
+                    content: Text('$merchantName ha sido aprobado'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              } catch (e) {
+                scaffoldMessenger.showSnackBar(
+                  SnackBar(
+                    content: Text('Error al aprobar $merchantName: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
             },
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE60023)),
             child: const Text('Aprobar'),
