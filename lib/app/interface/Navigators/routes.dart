@@ -18,14 +18,14 @@ class Routes {
   static const client_Form = '/clientForm';
   static const deliver_Form1 = '/deliverForm1';
   static const deliver_Form2 = '/deliverForm2';
-  static const comerse_Form = '/comerseForm';
-  static const driverPending = '/driverPending';
+  static const comerse_Form = '/comerseForm';  static const driverPending = '/driverPending';
+  static const merchantPending = '/merchantPending';
   static const home_food = '/homeFood';
   static const home_merchant = '/homeMerchant';
  static const merchantStepBusiness  = '/merchant/step1';
  static const merchantStepOwner     = '/merchant/step2';
  static const merchantStepPassword  = '/merchant/step3';
- static const merchantSettings   = '/merchantSettings'; static const addProduct = '/addProduct';
+ static const merchantSettings   = '/merchantSettings';static const addProduct = '/addProduct';
  static const editProduct = '/editProduct';
  static const product_Detail = '/productDetail';
  static const home_admin = '/adminHome';

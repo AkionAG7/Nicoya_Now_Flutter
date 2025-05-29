@@ -28,14 +28,18 @@ class RoleService {
       throw Exception('Error verificando rol: ${e.message}');
     }
   }
-
   Future<void> addRoleIfNotExists(String slug) async {
     try {
+      print('ROLE SERVICE: Checking if user already has role: $slug');
       final hasIt = await hasRole(slug);
       if (!hasIt) {
+        print('ROLE SERVICE: User does not have role $slug, adding it');
         await addRoleWithData(slug, {});
+      } else {
+        print('ROLE SERVICE: User already has role $slug, skipping');
       }
     } on PostgrestException catch (e) {
+      print('ROLE SERVICE: Error adding role: ${e.message}');
       throw Exception('Error añadiendo rol: ${e.message}');
     }
   }
@@ -143,9 +147,7 @@ class RoleService {
     } on PostgrestException catch (e) {
       throw Exception('Error añadiendo rol: ${e.message}');
     }
-  }
-
-  Future<List<String>> getUserRoles() async {
+  }  Future<List<String>> getUserRoles() async {
     try {
       final userId = _supabase.auth.currentUser!.id;
 
@@ -154,13 +156,21 @@ class RoleService {
           .select('role:role_id(slug)')
           .eq('user_id', userId);
 
-      if (rolesResult.isEmpty) return ['customer'];
+      print('ROLE SERVICE: Fetched roles for user $userId: $rolesResult');
+      if (rolesResult.isEmpty) {
+        print('ROLE SERVICE: No roles found for user $userId');
+        return []; // No asignamos rol por defecto
+      }
 
-      return rolesResult
+      final roles = rolesResult
           .map<String>((role) => role['role']['slug'] as String)
           .toList();
+          
+      print('ROLE SERVICE: Returning roles: $roles');
+      return roles;
     } catch (e) {
-      return ['customer'];
+      print('ROLE SERVICE: Error fetching roles: $e');
+      return []; // No asignamos rol por defecto si hay error
     }
   }
 

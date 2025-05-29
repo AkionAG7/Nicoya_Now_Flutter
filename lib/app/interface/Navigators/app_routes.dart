@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nicoya_now/app/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:nicoya_now/app/features/auth/presentation/pages/driver_register_done.dart';
+import 'package:nicoya_now/app/features/auth/presentation/pages/merchant_register_done.dart';
 import 'package:nicoya_now/app/features/auth/presentation/pages/select_user_role_page.dart';
 import 'package:nicoya_now/app/features/auth/presentation/pages/role_form_page.dart';
 import 'package:nicoya_now/app/features/auth/presentation/pages/add_role_page.dart';
@@ -60,6 +61,7 @@ Map<String, Widget Function(BuildContext)> get appRoutes {
     Routes.client_Form: (context) => const ClientForm(),    Routes.deliver_Form1: (context) => const DeliverForm1(),
     Routes.deliver_Form2: (context) => const DeliverForm2(),
     Routes.driverPending: (context) => const DriverPendingPage(),
+    Routes.merchantPending: (context) => const MerchantPendingPage(),
     Routes.home_food: (context) => const HomeFood(),
     Routes.home_merchant: (context) => const HomeMerchantPage(),
     Routes.merchantStepBusiness: (context) => const MerchantStepBusiness(),

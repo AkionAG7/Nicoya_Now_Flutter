@@ -124,6 +124,8 @@ class SupabaseMerchantDataSource implements MerchantDataSource {
     required String phone,
     required AuthController authController,
     String? cedula,  }) async {
+    print('MERCHANT REGISTER: Starting merchant registration process');
+    
     // Primero creamos el usuario con su rol de merchant
     final success = await authController.signUpMerchant(
       email: email,
@@ -138,8 +140,11 @@ class SupabaseMerchantDataSource implements MerchantDataSource {
     );
 
     if (!success) {
+      print('MERCHANT REGISTER: Failed to create merchant account');
       throw AuthException('No se pudo crear la cuenta de comerciante');
     }
+    
+    print('MERCHANT REGISTER: Successfully created merchant account and role');
 
     final uid = authController.user!.id;
       try {      // Check if a merchant record already exists
