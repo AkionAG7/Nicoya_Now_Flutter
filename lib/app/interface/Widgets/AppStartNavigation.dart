@@ -102,12 +102,12 @@ class _AppStartNavigationState extends State<AppStartNavigation> {
         
         // Para otros roles o si no se encontró rol específico
         if (mounted) {
-          Navigator.pushReplacementNamed(context, Routes.home_food);
+          Navigator.pushReplacementNamed(context, Routes.clientNav);
         }
       } catch (_) {
         // En caso de error, usar la ruta por defecto
         if (mounted) {
-          Navigator.pushReplacementNamed(context, Routes.home_food);
+          Navigator.pushReplacementNamed(context, Routes.clientNav);
         }
       }
     }
