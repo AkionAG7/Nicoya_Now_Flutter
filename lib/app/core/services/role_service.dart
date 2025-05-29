@@ -79,7 +79,12 @@ class RoleService {
               .update({'id_number': roleData['id_number']})
               .eq('user_id', userId);      }      } else if (roleSlug == 'merchant') {
         try {
-          // Verificamos si ya existe un comerciante con ese merchant_id para evitar duplicados
+          // Always ensure owner_id is set
+          if (!roleData.containsKey('owner_id')) {
+            roleData['owner_id'] = userId;
+          }
+          
+          // Verify if a merchant record already exists
           final existingMerchant = await _supabase
               .from('merchant')
               .select()
@@ -87,29 +92,37 @@ class RoleService {
               .maybeSingle();
               
           if (existingMerchant == null) {
-            // Si no existe, usamos upsert con onConflict para manejar posibles conflictos
+            // If it doesn't exist, use upsert with onConflict to handle potential conflicts
+            final merchantData = {
+              'merchant_id': userId,
+              'owner_id': roleData['owner_id'], // Make sure owner_id is explicitly set
+              'legal_id': roleData['id_number'] ?? '',
+              'business_name': roleData['business_name'] ?? '',
+              'corporate_name': roleData['corporate_name'] ?? '',
+              'is_active': false,
+              // We don't include main_address_id or logo_url to avoid null constraint errors
+            };
+            
+            print("Creating new merchant record: $merchantData");
+            
             await _supabase.from('merchant').upsert(
-              {
-                'merchant_id': userId,
-                'owner_id': userId, 
-                'legal_id': roleData['id_number'] ?? '',
-                'business_name': roleData['business_name'] ?? '',
-                'corporate_name': roleData['corporate_name'] ?? '',
-                'is_active': false,
-                // Si no tenemos main_address_id o logo_url, simplemente no los incluimos
-                // para evitar errores de null en columnas que no lo permiten
-              },
-              onConflict: 'merchant_id' // Específica qué columna usar para resolver conflictos
+              merchantData,
+              onConflict: 'merchant_id' // Specify which column to use for resolving conflicts
             );
           } else {
-            // Si existe, solo actualizamos los campos proporcionados
+            // If it exists, only update the provided fields
             final updateData = <String, dynamic>{};
+            
+            // Make sure owner_id is set and included in the update
+            updateData['owner_id'] = roleData['owner_id'];
             
             if (roleData['id_number'] != null) updateData['legal_id'] = roleData['id_number'];
             if (roleData['business_name'] != null) updateData['business_name'] = roleData['business_name'];
             if (roleData['corporate_name'] != null) updateData['corporate_name'] = roleData['corporate_name'];
             
             if (updateData.isNotEmpty) {
+              print("Updating existing merchant record: $updateData");
+              
               await _supabase.from('merchant')
                   .update(updateData)
                   .eq('merchant_id', userId);

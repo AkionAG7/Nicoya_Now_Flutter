@@ -133,6 +133,7 @@ class _MerchantStepBusinessState extends State<MerchantStepBusiness> {
                                 'corporate_name': _corpName.text.trim(),
                                 'address': _address.text.trim(),
                                 'logoPath': _logo!.path,
+                                // Make sure the owner_id is explicitly set and correctly passed
                                 'owner_id': userId,
                               };
                               
