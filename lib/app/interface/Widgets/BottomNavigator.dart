@@ -26,22 +26,26 @@ class _BottomNavigatorState extends State<BottomNavigator> {
     return Scaffold(
       body: IndexedStack(index: _currentIndex, children: _pages),
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: const Color(0xFFf10027),
+
         currentIndex: _currentIndex,
         onTap: (i) => setState(() => _currentIndex = i),
         type: BottomNavigationBarType.fixed,
+        selectedItemColor: Colors.grey[400],
+        unselectedItemColor: Colors.white,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
+          BottomNavigationBarItem(icon: Icon(Icons.home, color: Colors.white,), label: 'Inicio'),
           BottomNavigationBarItem(
-            icon: Icon(Icons.favorite),
+            icon: Icon(Icons.favorite , color: Colors.white,),
             label: 'Favoritos',
           ),
           BottomNavigationBarItem(
-            icon: Icon(NicoyaNowIcons.carritocompras),
+            icon: Icon(NicoyaNowIcons.carritocompras , color: Colors.white,),
             label: 'Carrito',
           ),
           BottomNavigationBarItem(
-            icon: Icon(NicoyaNowIcons.usuario),
-            label: 'Notificaciones',
+            icon: Icon(NicoyaNowIcons.usuario , color: Colors.white,),
+            label: 'Usuario',
           ),
         ],
       ),
