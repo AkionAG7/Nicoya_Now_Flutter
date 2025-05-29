@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:nicoya_now/Icons/nicoya_now_icons_icons.dart';
+import 'package:nicoya_now/app/features/address/domain/entities/address.dart';
+import 'package:nicoya_now/app/features/order/data/datasources/order_item_datasource.dart';
 import 'package:nicoya_now/app/features/products/domain/entities/products.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ProductDetail extends StatefulWidget {
   const ProductDetail({Key? key}) : super(key: key);
@@ -249,7 +252,53 @@ class _ProductDetailState extends State<ProductDetail> {
                     width: MediaQuery.of(context).size.width / 1.5,
                     height: 50,
                     child: ElevatedButton(
-                      onPressed: () => print('dad'),
+                      onPressed: () async {
+                        final supa = Supabase.instance.client;
+                        final OrderItemDatasource = OrderItemDatasourceImpl(
+                          supa: supa,
+                        );
+                        final costumerId = supa.auth.currentUser?.id;
+                        if (costumerId == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Por favor, inicia sesión')),
+                          );
+                          return;
+                        }
+
+                        final addressReponse =
+                            await supa
+                                .from('address')
+                                .select()
+                                .eq('user_id', costumerId)
+                                .limit(1)
+                                .maybeSingle();
+                        if (addressReponse == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'No tienes direcciones registradas',
+                              ),
+                            ),
+                          );
+                          return;
+                        }
+                        final address = Address(
+                          address_id: addressReponse['address_id'],
+                          user_id: addressReponse['user_id'],
+                          street: addressReponse['street'],
+                          district: addressReponse['district'],
+                          lat: addressReponse['lat'],
+                          Ing: addressReponse['Ing'],
+                          note: addressReponse['note'],
+                          created_at: addressReponse['created_at'],
+                        );
+                        await OrderItemDatasource.addProductToOrder(
+                          costumerId,
+                          product,
+                          cantidad,
+                          address,
+                        );
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color(0xFFf10027),
                         shape: RoundedRectangleBorder(

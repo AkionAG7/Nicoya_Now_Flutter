@@ -1,7 +1,62 @@
-abstract class OrderItemDatasource {
+import 'package:nicoya_now/app/features/address/domain/entities/address.dart';
+import 'package:nicoya_now/app/features/products/domain/entities/products.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
+abstract class OrderItemDatasource {
+  Future<void> addProductToOrder(
+    String merchant_id,
+    Product poduct,
+    int quantity,
+    Address address,
+  );
 }
 
 class OrderItemDatasourceImpl implements OrderItemDatasource {
-  
+  final SupabaseClient supa;
+  OrderItemDatasourceImpl({required this.supa});
+
+  @override
+  Future<void> addProductToOrder(
+    String customerId,
+    Product product,
+    int quantity,
+    Address address,
+  ) async {
+    final existingOrder =
+        await supa
+            .from('order')
+            .select()
+            .eq('customer_id', customerId)
+            .eq('merchant_id', product.merchant_id)
+            .eq('status', 'pending')
+            .maybeSingle();
+
+    String orderId;
+
+    if (existingOrder != null) {
+      orderId = existingOrder['order_id'];
+    } else {
+      final insertResult =
+          await supa
+              .from('order')
+              .insert({
+                'customer_id': customerId,
+                'merchant_id': product.merchant_id,
+                'delivery_address_id': address.address_id,
+                'total': 0,
+                'status': 'pending',
+                'placed_at': DateTime.now().toIso8601String(),
+              })
+              .select()
+              .single();
+      orderId = insertResult['order_id'];
+    }
+
+    await supa.from('order_item').insert({
+      'order_id': orderId,
+      'product_id': product.product_id,
+      'quantity': quantity,
+      'price': product.price,
+    });
+  }
 }
