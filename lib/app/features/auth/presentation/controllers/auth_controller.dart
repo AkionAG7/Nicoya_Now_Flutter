@@ -51,7 +51,7 @@ class AuthController extends ChangeNotifier {
   // Obtener el rol principal del usuario
   String? get userRole => _user?.role;
     // Obtener todos los roles del usuario como una lista
-  List<String> get userRoles => _user?.getRoles() ?? ['customer'];
+  List<String> get userRoles => _user?.getRoles() ?? [];
     // Verificar si el usuario tiene un rol específico
   bool hasRole(String roleName) => _user?.hasRole(roleName) ?? false;
 
