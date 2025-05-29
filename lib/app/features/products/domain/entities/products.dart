@@ -20,4 +20,18 @@ class Product {
     required this.created_at,
     required this.category_id,
   });
+
+  factory Product.fromJson(Map<String, dynamic> json) {
+    return Product(
+      product_id: json['product_id'] as String,
+      merchant_id: json['merchant_id'] as String,
+      name: json['name'] as String,
+      description: json['description'] as String,
+      price: (json['price'] as num).toDouble(),
+      image_url: json['image_url'] as String?,
+      is_activate: json['is_active'] as bool? ?? true,
+      created_at: DateTime.parse(json['created_at'] as String),
+      category_id: json['category_id'] as String,
+    );
+  }
 }
