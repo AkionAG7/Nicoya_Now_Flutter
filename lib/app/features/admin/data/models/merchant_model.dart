@@ -42,7 +42,6 @@ class MerchantModel extends Merchant {
       rethrow;
     }
   }
-
   /// Converts this model to a JSON map
   Map<String, dynamic> toJson() {
     return {
@@ -52,7 +51,7 @@ class MerchantModel extends Merchant {
       'phone_number': phoneNumber,
       'docs_url': docsUrl,
       'business_category': businessCategory,
-      'is_verified': isVerified,
+      'is_active': isVerified,
       'created_at': createdAt.toIso8601String(),
     };
   }
