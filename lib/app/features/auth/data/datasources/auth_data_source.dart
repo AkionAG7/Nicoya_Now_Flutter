@@ -12,6 +12,9 @@ abstract class AuthDataSource {
   Future<void> createAddress(String userId, Map<String, dynamic> data);
   Future<List<String>> getRolesForUser(String userId);
   Future<void> addRoleToUser(String userId, String roleId, Map<String, dynamic> roleData);
+  // Nuevos métodos para verificar el estado de merchant y driver
+  Future<bool> getMerchantVerificationStatus(String userId);
+  Future<bool> getDriverVerificationStatus(String userId);
 }
 
 class SupabaseAuthDataSource implements AuthDataSource {
@@ -32,14 +35,14 @@ class SupabaseAuthDataSource implements AuthDataSource {
         .select()
         .eq('user_id', response.user!.id)
         .single();
-        
-    // Obtener roles desde la tabla user_role en lugar de profile.role
+          // Obtener roles desde la tabla user_role en lugar de profile.role
     final roles = await _supabaseClient
         .from('user_role')
         .select('role:role_id(slug)')
         .eq('user_id', response.user!.id);
 
-    final primaryRole = roles.isNotEmpty ? roles.first['role']['slug'] : 'customer';
+    // Usamos exactamente los roles asignados, sin defaults
+    final primaryRole = roles.isNotEmpty ? roles.first['role']['slug'] : '';
     
     if (primaryRole == 'driver') {
       try {
@@ -111,15 +114,14 @@ class SupabaseAuthDataSource implements AuthDataSource {
           .from('profile')
           .select()
           .eq('user_id', currentUser.id)
-          .single();
-
-      // Obtener roles desde la tabla user_role
+          .single();      // Obtener roles desde la tabla user_role
       final roles = await _supabaseClient
           .from('user_role')
           .select('role:role_id(slug)')
           .eq('user_id', currentUser.id);
 
-      final primaryRole = roles.isNotEmpty ? roles.first['role']['slug'] : 'customer';
+      // Solo usamos el rol que realmente tenga asignado, sin defaults
+      final primaryRole = roles.isNotEmpty ? roles.first['role']['slug'] : '';
 
       return {
         'id': currentUser.id,
@@ -130,7 +132,7 @@ class SupabaseAuthDataSource implements AuthDataSource {
       return {
         'id': currentUser.id,
         'email': currentUser.email,
-        'role': 'customer', // Default role if profile/roles can't be fetched
+        'role': '', // No asignamos ningún rol por defecto
       };
     }
   }
@@ -152,16 +154,17 @@ class SupabaseAuthDataSource implements AuthDataSource {
       ...data,
     });
   }
-  
-  @override
+    @override
   Future<List<String>> getRolesForUser(String userId) async {
     final roles = await _supabaseClient
         .from('user_role')
         .select('role:role_id(slug)')
         .eq('user_id', userId);
     
+    // Retornamos solo los roles exactos que tenga el usuario en la base de datos
+    // Sin asignar automáticamente el rol 'customer'
     if (roles.isEmpty) {
-      return ['customer']; // Default role if no roles are found
+      return []; // No asignamos un rol por defecto
     }
     
     return roles.map<String>((role) => role['role']['slug'] as String).toList();
@@ -309,5 +312,37 @@ class SupabaseAuthDataSource implements AuthDataSource {
       profileData.remove('license_number'); // license_number solo pertenece a la tabla driver
       profileData.remove('address'); // Address is handled separately above
       profileData.remove('logoPath'); // Logo is handled separ
+  }
+
+  @override
+  Future<bool> getMerchantVerificationStatus(String userId) async {
+    try {
+      final result = await _supabaseClient
+          .from('merchant')
+          .select('is_active')
+          .eq('merchant_id', userId)
+          .single();
+          
+      return result['is_active'] as bool? ?? false;
+    } catch (e) {
+      print("Error checking merchant verification status: $e");
+      return false; // En caso de error, asumimos que no está verificado
+    }
+  }
+  
+  @override
+  Future<bool> getDriverVerificationStatus(String userId) async {
+    try {
+      final result = await _supabaseClient
+          .from('driver')
+          .select('is_verified')
+          .eq('driver_id', userId)
+          .single();
+          
+      return result['is_verified'] as bool? ?? false;
+    } catch (e) {
+      print("Error checking driver verification status: $e");
+      return false; // En caso de error, asumimos que no está verificado
+    }
   }
 }

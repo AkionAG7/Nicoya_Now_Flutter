@@ -148,10 +148,9 @@ class _MerchantStepBusinessState extends State<MerchantStepBusiness> {
                                     content: Text('Rol de comerciante agregado correctamente'),
                                     backgroundColor: Colors.green,
                                   ),
-                                );
-                                // Refresh the user data and navigate to the merchant home page
+                                );                                // Navigate to the merchant pending page since verification is required
                                 Navigator.of(context).pushNamedAndRemoveUntil(
-                                  Routes.home_merchant, 
+                                  Routes.merchantPending, 
                                   (route) => false
                                 );
                               } else {

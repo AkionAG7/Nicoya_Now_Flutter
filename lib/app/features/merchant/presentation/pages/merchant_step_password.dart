@@ -75,11 +75,10 @@ class _MerchantStepPasswordState extends State<MerchantStepPassword> {
                                     backgroundColor: Colors.green,
                                   ),
                                 );
-                                
-                                // Navigate to the merchant home page
+                                  // Navigate to the merchant pending page as verification is required
                                 Navigator.pushNamedAndRemoveUntil(
                                   context,
-                                  Routes.home_merchant,
+                                  Routes.merchantPending,
                                   (_) => false,
                                 );
                               } else {

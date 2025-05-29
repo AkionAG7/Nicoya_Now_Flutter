@@ -7,7 +7,6 @@ class User {
   final String? lastName2;
   final String? phone;
   final String role; // Puede contener múltiples roles separados por coma: "client,driver,merchant"
-
   User({
     required this.id,
     required this.email,
@@ -15,10 +14,9 @@ class User {
     this.lastName1,
     this.lastName2,
     this.phone,
-    this.role = 'customer', // Consistent with database role name 
+    this.role = '', // No asignamos un rol por defecto
   });
-  
-  // Método para verificar si el usuario tiene un rol específico
+    // Método para verificar si el usuario tiene un rol específico
   bool hasRole(String roleName) {
     if (role.isEmpty) return false;
     
@@ -32,9 +30,15 @@ class User {
     return role.trim() == roleName;
   }
   
+  // DEBUG: Añadir toString para depuración
+  @override
+  String toString() {
+    return 'User(id: $id, email: $email, role: "$role", roles: ${getRoles()})';
+  }
+  
   // Método para obtener la lista de roles del usuario
   List<String> getRoles() {
-    if (role.isEmpty) return ['customer']; // Default consistent with database
+    if (role.isEmpty) return []; // NO asignamos un rol por defecto
     
     if (role.contains(',')) {
       return role.split(',')
