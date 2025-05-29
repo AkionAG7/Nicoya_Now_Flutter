@@ -108,7 +108,6 @@ class SupabaseMerchantDataSource implements MerchantDataSource {
       throw Exception('Error al obtener los comerciantes: $e');
     }
   }
-
   @override
   Future<Map<String, dynamic>> registerMerchant({
     required String address,
@@ -126,27 +125,23 @@ class SupabaseMerchantDataSource implements MerchantDataSource {
     String? cedula,  }) async {
     print('MERCHANT REGISTER: Starting merchant registration process');
     
-    // Primero creamos el usuario con su rol de merchant
-    final success = await authController.signUpMerchant(
-      email: email,
-      password: password,
-      firstName: firstName,
-      lastName1: lastName1,
-      lastName2: lastName2,
-      phone: phone,
-      idNumber: cedula,
-      businessName: businessName,  // Ahora pasamos explícitamente el nombre del negocio
-      corporateName: corporateName,  // Y el nombre corporativo
-    );
-
-    if (!success) {
-      print('MERCHANT REGISTER: Failed to create merchant account');
-      throw AuthException('No se pudo crear la cuenta de comerciante');
-    }
+    // NOTA IMPORTANTE: El usuario y su rol ya se crearon en MerchantRegistrationController.finishRegistration
+    // Por lo que aquí solo completamos los datos del merchant sin volver a crear el usuario 
+    // ni asignar el rol nuevamente
     
-    print('MERCHANT REGISTER: Successfully created merchant account and role');
+    print('MERCHANT REGISTER: User and merchant role already created, continuing with data setup');
+    
+    // Verificamos que el usuario esté autenticado
+    if (authController.user == null) {
+      print('MERCHANT REGISTER: User is not authenticated');
+      throw AuthException('Usuario no autenticado correctamente');
+    }
 
     final uid = authController.user!.id;
+    
+    // Verificamos los roles asignados (solo para debug)
+    final currentRoles = await authController.roleService.getUserRoles();
+    print('MERCHANT REGISTER: Current roles for user $uid: $currentRoles');
       try {      // Check if a merchant record already exists
       final existingMerchant = await _supa
           .from('merchant')

@@ -142,7 +142,7 @@ class AuthController extends ChangeNotifier {
     String? lastName2,
     String? phone,
     String? address,
-    bool addCustomerRole = false, // Nueva bandera para controlar si se añade rol customer
+    bool addCustomerRole = false, 
   }) async {
     _state = AuthState.loading;
     _errorMessage = null;
@@ -255,18 +255,20 @@ class AuthController extends ChangeNotifier {
         // Si hay error al iniciar sesión, el usuario no existe o la contraseña es incorrecta
         // Vamos a crear un nuevo usuario
         userExists = false;
-      }
-      
-      if (!userExists) {
-        // Si el usuario no existe, lo creamos
-        _user = await _signUpUseCase.execute(
-          email,
-          password,
+      }      if (!userExists) {
+        // Si el usuario no existe, lo creamos utilizando signUp con addCustomerRole: false
+        // para evitar la asignación automática del rol de customer
+        print('SIGNUP_MERCHANT: Creating new merchant user with addCustomerRole: false');
+        final result = await signUp(
+          email: email,
+          password: password,
           firstName: firstName,
           lastName1: lastName1,
           lastName2: lastName2,
           phone: phone,
+          addCustomerRole: false, // Indicamos explícitamente que no queremos añadir el rol de customer
         );
+        print('SIGNUP_MERCHANT: User creation result: $result');
       }
       
       // Esperamos un momento para garantizar que el usuario esté completamente autenticado

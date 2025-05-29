@@ -57,8 +57,7 @@ class MerchantRegistrationController extends ChangeNotifier {
     _last2     = lastName2;
     _email     = email;
     _phone     = phone;
-  }
-  Future<bool> finishRegistration({
+  }  Future<bool> finishRegistration({
     required String password,
     required AuthController authController,
   }) async {
@@ -79,7 +78,32 @@ class MerchantRegistrationController extends ChangeNotifier {
       if (_logoPath == null || _logoPath!.isEmpty) {
         throw Exception("Es necesario subir el logo del negocio");
       }
-        _merchant = await _registerMerchantUseCase.execute(
+      
+      // Log para debug - inicio del proceso
+      print('MERCHANT REGISTRATION EXPLICIT DEBUG: Starting registration process');
+      
+      // IMPORTANTE: Usamos directamente signUpMerchant para asegurar que solo tenga rol de merchant
+      final userCreated = await authController.signUpMerchant(
+        email: _email!,
+        password: password,
+        firstName: _firstName!,
+        lastName1: _last1!,
+        lastName2: _last2!,
+        phone: _phone!,
+        idNumber: _isCedulaJuridica ? null : _legalId,
+        businessName: _businessName!,
+        corporateName: _corpName ?? '',
+      );
+      
+      if (!userCreated) {
+        throw Exception("No se pudo crear el usuario de comerciante");
+      }
+      
+      // Log para debug - después de crear el usuario
+      print('MERCHANT REGISTRATION EXPLICIT DEBUG: User created successfully');
+      
+      // Ahora completamos los datos del merchant
+      _merchant = await _registerMerchantUseCase.execute(
         email        : _email!,
         password     : password,
         legalId      : _isCedulaJuridica ? _legalId! : '',
@@ -94,7 +118,12 @@ class MerchantRegistrationController extends ChangeNotifier {
         authController: authController,
         cedula       : _isCedulaJuridica ? null : _legalId,
       );
-        // Verificar el estado del registro
+      
+      // Verificamos los roles después del registro completo
+      final currentRoles = await authController.roleService.getUserRoles();
+      print('MERCHANT REGISTRATION EXPLICIT DEBUG: User roles after registration: $currentRoles');
+      
+      // Verificar el estado del registro
       print('MERCHANT REGISTRATION: Registration successful, merchant should be pending verification');
       
       _state = MerchantRegistrationState.success;
