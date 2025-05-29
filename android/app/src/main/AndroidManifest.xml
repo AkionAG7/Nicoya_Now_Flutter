@@ -4,12 +4,15 @@
 <uses-permission android:name="android.permission.CAMERA"/>
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 <uses-permission android:name="android.permission.INTERNET"/>
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 
 
     <application
         android:label="Nicoya Now"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <uses-library android:name="org.apache.http.legacy" android:required="false"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -37,6 +40,9 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <meta-data android:name="com.google.android.geo.API_KEY"
+               android:value="AIzaSyAD20ckZ8rbbUoVambLipm5Ub8pN_qYi-8"
+               />
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
