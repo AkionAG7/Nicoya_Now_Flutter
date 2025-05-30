@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:nicoya_now/app/features/order/data/datasources/order_datasource.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 enum PaymentMethod { Efectivo, Sinpe }
 
@@ -11,14 +13,25 @@ class Pago extends StatefulWidget {
 
 class _PagoState extends State<Pago> {
   PaymentMethod _metodoSeleccionado = PaymentMethod.Efectivo;
+  final double _costoEnvio = 1500.0;
+  late double _iva;
+  late double _precioTotal;
 
   @override
   Widget build(BuildContext context) {
+    final total = ModalRoute.of(context)?.settings.arguments as double?;
+    _iva = total! * 0.13;
+    _precioTotal = total + _costoEnvio + _iva;
     return Scaffold(
       appBar: AppBar(title: const Text('Confirma tu orden')),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.only(left: 30, right: 30, top: 30,bottom: 30),
+          padding: const EdgeInsets.only(
+            left: 30,
+            right: 30,
+            top: 30,
+            bottom: 30,
+          ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -131,15 +144,97 @@ class _PagoState extends State<Pago> {
                   padding: const EdgeInsets.only(left: 20, right: 20, top: 20),
                   child: Column(
                     children: [
-                      Row(children: [Text('Sub total:'), Text('13123 CRC')]),
-                      SizedBox(height: 10),
-
                       Row(
-                        children: [Text('Cargo de envio:'), Text('13123 CRC')],
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Sub total:',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              fontSize: 15,
+                            ),
+                          ),
+                          Text(
+                            '$total CRC',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ],
                       ),
                       SizedBox(height: 10),
 
-                      Row(children: [Text('IVA:'), Text('13123 CRC')]),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Cargo de envio:',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              fontSize: 15,
+                            ),
+                          ),
+                          Text(
+                            '$_costoEnvio CRC',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 10),
+
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'IVA:',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              fontSize: 15,
+                            ),
+                          ),
+                          Text(
+                            '$_iva CRC',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      SizedBox(height: 10),
+
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Total:',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              fontSize: 15,
+                            ),
+                          ),
+                          Text(
+                            '$_precioTotal CRC',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ],
+                      ),
                       SizedBox(height: 20),
 
                       SizedBox(
@@ -151,13 +246,28 @@ class _PagoState extends State<Pago> {
                               borderRadius: BorderRadius.circular(20),
                             ),
                           ),
-                          onPressed: () => print('funcion'),
-                          child: Text('Realizar mi pedido',
-                          style: TextStyle(
-                            color: Color(0xFFf10027),
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),),
+                          onPressed: () async {
+                            final supa = Supabase.instance.client;
+                            final userId = supa.auth.currentUser?.id;
+
+                            if (userId != null) {
+                              final datasource = OrderDatasourceImpl(
+                                supabaseClient: supa,
+                              );
+                              await datasource.confirmOrder(
+                                userId,
+                              ); // Cambia el estado en la DB
+                            }
+                            Navigator.pushNamed(context, '/orderSuccess');
+                          },
+                          child: Text(
+                            'Realizar mi pedido',
+                            style: TextStyle(
+                              color: Color(0xFFf10027),
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ),
                       SizedBox(height: 10),

@@ -4,11 +4,23 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract class OrderDatasource {
   Future<List<Map<String, dynamic>>> getOrderByUserId(String userId);
+  Future<void> confirmOrder(String userId);
 }
 
 class OrderDatasourceImpl implements OrderDatasource {
   final SupabaseClient supabaseClient;
   OrderDatasourceImpl({required this.supabaseClient});
+
+  @override
+ Future<void> confirmOrder(String userId) async {
+   print('Confirmando orden para userId: $userId');
+  await supabaseClient
+      .from('order')
+      .update({'status': 'accepted'})
+      .eq('customer_id', userId)
+      .eq('status', 'pending'); 
+}
+
 
   @override
   Future<List<Map<String, dynamic>>> getOrderByUserId(String userId) async {
