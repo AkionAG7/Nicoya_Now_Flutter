@@ -13,10 +13,11 @@ class BottomNavigator extends StatefulWidget {
 
 class _BottomNavigatorState extends State<BottomNavigator> {
   int _currentIndex = 0;
+  Key _carritoKey = UniqueKey();
 
-  final List<Widget> _pages = const [
+  final List<Widget> _pages = [
     HomeFood(),
-    Carrito(),
+    const Placeholder(), 
     Carrito(),
     HomeFood(),
   ];
@@ -29,7 +30,18 @@ class _BottomNavigatorState extends State<BottomNavigator> {
         backgroundColor: const Color(0xFFf10027),
 
         currentIndex: _currentIndex,
-        onTap: (i) => setState(() => _currentIndex = i),
+        onTap: (i) {
+          if (i == 2) {
+            // Forzar que Carrito 
+            setState(() {
+              _carritoKey = UniqueKey();
+              _currentIndex = i;
+            });
+          } else {
+            setState(() => _currentIndex = i);
+          }
+        },
+
         type: BottomNavigationBarType.fixed,
         selectedItemColor: Colors.grey[400],
         unselectedItemColor: Colors.white,
@@ -46,11 +58,6 @@ class _BottomNavigatorState extends State<BottomNavigator> {
             icon: Icon(NicoyaNowIcons.carritocompras, color: Colors.white),
             label: 'Carrito',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(NicoyaNowIcons.usuario, color: Colors.white),
-            label: 'Usuario',
-          ),
-
           BottomNavigationBarItem(
             icon: Icon(NicoyaNowIcons.usuario, color: Colors.white),
             label: 'Usuario',

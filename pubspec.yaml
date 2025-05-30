@@ -66,6 +66,8 @@ flutter:
     - lib/app/interface/Public/Comercio.png
     - lib/app/interface/Public/Repartidor.png
     - lib/app/interface/Public/LogoApp.png
+    - lib/app/interface/Public/Sinpe.png
+    - lib/app/interface/Public/Efectivo.png
 
   fonts:
     - family: NicoyaNowIcons

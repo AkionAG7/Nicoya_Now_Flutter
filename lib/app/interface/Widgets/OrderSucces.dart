@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 
 class OrderSucces extends StatefulWidget {
   const OrderSucces({Key? key}) : super(key: key);
@@ -55,23 +56,25 @@ class _OrderSuccesState extends State<OrderSucces> {
 
             SizedBox(height: 150),
 
-            SizedBox(
-              height: 80,
-              width: 300,
-              child: ElevatedButton(
-                onPressed:
-                    () => print(
-                      'implentar navigate hacia la pantalla de inicio de comidas',
+            Padding(
+              padding: const EdgeInsets.only(left: 40, right: 40),
+              child: SizedBox(
+                height: 80,
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
                     ),
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
+                    backgroundColor: Color(0xffd72a23),
                   ),
-                  backgroundColor: Color(0xffd72a23),
-                ),
-                child: Text(
-                  'Ordenar de nuevo',
-                  style: TextStyle(fontSize: 25, color: Colors.white),
+                  onPressed: () async {
+                    Navigator.pushNamed(context, Routes.clientNav);
+                  },
+                  child: Text(
+                    'Ver mi pedido',
+                    style: TextStyle(fontSize: 20, color: Colors.white),
+                  ),
                 ),
               ),
             ),

@@ -298,7 +298,9 @@ class _ProductDetailState extends State<ProductDetail> {
                           lat: addressReponse['lat'],
                           lng: addressReponse['lng'],
                           note: addressReponse['note'],
-                          created_at: DateTime.parse(addressReponse['created_at']),
+                          created_at: DateTime.parse(
+                            addressReponse['created_at'],
+                          ),
                         );
                         await OrderItemDatasource.addProductToOrder(
                           costumerId,
@@ -306,6 +308,7 @@ class _ProductDetailState extends State<ProductDetail> {
                           cantidad,
                           address,
                         );
+                        Navigator.pop(context, true);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color(0xFFf10027),

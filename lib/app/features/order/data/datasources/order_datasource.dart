@@ -6,6 +6,7 @@ abstract class OrderDatasource {
   Future<List<Map<String, dynamic>>> getOrderByUserId(String userId);
   Future<List<Order>> getOrdersByMerchantId(String merchantId);
   Future<Order> getOrderById(String orderId);
+  Future<void> confirmOrder(String userId);
 }
 
 class OrderDatasourceImpl implements OrderDatasource {
@@ -122,4 +123,14 @@ Future<Order> getOrderById(String orderId) async {
 
     return items;
   }
+
+   @override
+ Future<void> confirmOrder(String userId) async {
+   print('Confirmando orden para userId: $userId');
+  await supabaseClient
+      .from('order')
+      .update({'status': 'accepted'})
+      .eq('customer_id', userId)
+      .eq('status', 'pending'); 
+}
 }

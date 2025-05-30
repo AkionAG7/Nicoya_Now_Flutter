@@ -16,6 +16,27 @@ class Carrito extends StatefulWidget {
 class _CarritoState extends State<Carrito> {
   List<Map<String, dynamic>> _items = [];
 
+  Future<void> cargarProductos() async {
+    final supa = Supabase.instance.client;
+    final userId = supa.auth.currentUser?.id;
+
+    if (userId != null) {
+      final orderDatasource = OrderDatasourceImpl(supabaseClient: supa);
+      final data = await orderDatasource.getOrderByUserId(userId);
+      setState(() {
+        _items = data;
+      });
+    }
+  }
+
+  double calcularTotal() {
+    return _items.fold(0.0, (total, item) {
+      final product = item['product'] as Product;
+      final quantity = item['quantity'] as int;
+      return total + (product.price * quantity);
+    });
+  }
+
   void incrementarCantidad(int index) {
     setState(() {
       _items[index]['quantity']++;
@@ -66,10 +87,21 @@ class _CarritoState extends State<Carrito> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Esto se llama cada vez que la pestaña se vuelve visible
+    if (ModalRoute.of(context)?.isCurrent ?? false) {
+      cargarProductos();
+    }
+  }
+
+  @override
   void initState() {
     super.initState();
     final supa = Supabase.instance.client;
     final userId = supa.auth.currentUser?.id;
+    cargarProductos();
 
     if (userId != null) {
       final orderDatasource = OrderDatasourceImpl(supabaseClient: supa);
@@ -245,7 +277,9 @@ class _CarritoState extends State<Carrito> {
                 ),
                 onPressed: () async {
                   actualizarCarrito();
-                  Navigator.pushNamed(context, Routes.pago);
+                  final total = calcularTotal();
+                  Navigator.pushNamed(context, Routes.pago, arguments: total);
+                  await cargarProductos();
                 },
                 child: Text(
                   'Confirmar orden',
