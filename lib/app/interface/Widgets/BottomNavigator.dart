@@ -50,11 +50,6 @@ class _BottomNavigatorState extends State<BottomNavigator> {
             icon: Icon(NicoyaNowIcons.usuario, color: Colors.white),
             label: 'Usuario',
           ),
-
-          BottomNavigationBarItem(
-            icon: Icon(NicoyaNowIcons.usuario, color: Colors.white),
-            label: 'Usuario',
-          ),
         ],
       ),
     );
