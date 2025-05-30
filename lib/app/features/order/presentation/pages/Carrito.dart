@@ -196,62 +196,89 @@ class _CarritoState extends State<Carrito> {
                                     ],
                                   ),
 
-                                  Row(
+                                  Column(
                                     children: [
-                                      SizedBox(
-                                        width: 30,
-                                        height: 30,
-                                        child: Container(
-                                          padding: const EdgeInsets.all(2),
-                                          decoration: BoxDecoration(
-                                            color: Color(0xFFfee6e9),
-                                            shape: BoxShape.rectangle,
-                                            borderRadius: BorderRadius.circular(
-                                              10,
-                                            ),
-                                          ),
-                                          child: IconButton(
-                                            onPressed:
-                                                () =>
-                                                    decrementarCantidad(index),
-                                            icon: Icon(
-                                              NicoyaNowIcons.menos,
-                                              size: 10,
-                                              color: Color(0xFFf10027),
-                                            ),
+                                      GestureDetector(
+                                        onTap: () async {
+                                          final orderDatasource =
+                                              OrderDatasourceImpl(
+                                                supabaseClient:
+                                                    Supabase.instance.client,
+                                              );
+                                          await orderDatasource
+                                              .removeProductFromOrder(
+                                                item['order_item_id'],
+                                              );
+                                          await cargarProductos(); // para refrescar el estado del carrito
+                                        },
+                                        child: Text(
+                                          'Eliminar',
+                                          style: TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFFf10027),
                                           ),
                                         ),
                                       ),
-
-                                      const SizedBox(width: 10),
-
-                                      Text(quantity.toString()),
-
-                                      const SizedBox(width: 10),
-
-                                      SizedBox(
-                                        width: 30,
-                                        height: 30,
-                                        child: Container(
-                                          padding: const EdgeInsets.all(2),
-                                          decoration: BoxDecoration(
-                                            color: Color(0xFFfee6e9),
-                                            shape: BoxShape.rectangle,
-                                            borderRadius: BorderRadius.circular(
-                                              10,
+                                      SizedBox(height: 10),
+                                      Row(
+                                        children: [
+                                          SizedBox(
+                                            width: 30,
+                                            height: 30,
+                                            child: Container(
+                                              padding: const EdgeInsets.all(2),
+                                              decoration: BoxDecoration(
+                                                color: Color(0xFFfee6e9),
+                                                shape: BoxShape.rectangle,
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                              ),
+                                              child: IconButton(
+                                                onPressed:
+                                                    () => decrementarCantidad(
+                                                      index,
+                                                    ),
+                                                icon: Icon(
+                                                  NicoyaNowIcons.menos,
+                                                  size: 10,
+                                                  color: Color(0xFFf10027),
+                                                ),
+                                              ),
                                             ),
                                           ),
-                                          child: IconButton(
-                                            onPressed:
-                                                () =>
-                                                    incrementarCantidad(index),
-                                            icon: Icon(
-                                              NicoyaNowIcons.mas,
-                                              size: 10,
-                                              color: Color(0xFFf10027),
+
+                                          const SizedBox(width: 10),
+
+                                          Text(quantity.toString()),
+
+                                          const SizedBox(width: 10),
+
+                                          SizedBox(
+                                            width: 30,
+                                            height: 30,
+                                            child: Container(
+                                              padding: const EdgeInsets.all(2),
+                                              decoration: BoxDecoration(
+                                                color: Color(0xFFfee6e9),
+                                                shape: BoxShape.rectangle,
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                              ),
+                                              child: IconButton(
+                                                onPressed:
+                                                    () => incrementarCantidad(
+                                                      index,
+                                                    ),
+                                                icon: Icon(
+                                                  NicoyaNowIcons.mas,
+                                                  size: 10,
+                                                  color: Color(0xFFf10027),
+                                                ),
+                                              ),
                                             ),
                                           ),
-                                        ),
+                                        ],
                                       ),
                                     ],
                                   ),
