@@ -182,7 +182,6 @@ class _SelectUserRolePageState extends State<SelectUserRolePage> {
             Navigator.of(context).pushReplacementNamed(Routes.home_food);
             break;
           case 'driver':
-            // TODO: Implementar navegación a página de repartidor
             Navigator.of(context).pushReplacementNamed(Routes.home_driver);
             break;
           case 'merchant':

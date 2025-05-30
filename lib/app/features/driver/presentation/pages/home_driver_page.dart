@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -6,6 +7,14 @@ import 'package:nicoya_now/app/features/ubication/delivery_tracking/ubication_co
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 import 'package:nicoya_now/Icons/nicoya_now_icons_icons.dart';
 import 'package:nicoya_now/app/features/driver/presentation/widgets/active_order_tracking.dart';
+import 'package:nicoya_now/app/features/driver/presentation/widgets/improved_order_tracking.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:nicoya_now/app/features/driver/presentation/widgets/merchant_map_widget.dart';
+
+// Helper class for min function
+class Math {
+  static int min(int a, int b) => a < b ? a : b;
+}
 
 class HomeDriverPage extends StatefulWidget {
   const HomeDriverPage({Key? key}) : super(key: key);
@@ -16,10 +25,11 @@ class HomeDriverPage extends StatefulWidget {
 
 class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObserver {
   final UbicacionController ubicacionController = UbicacionController();
-  
-  int _selectedIndex = 0;
+    int _selectedIndex = 0;
   bool _isAvailable = true;
-  
+    // Location update stream subscription
+  StreamSubscription? _locationSubscription;
+
   @override
   void initState() {
     super.initState();
@@ -31,12 +41,21 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
     // Initialize driver data
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadDriverData();
+      
+      // Start location updates
+      _startLocationUpdates();
     });
   }
-  
-  @override
+  void _startLocationUpdates() {
+    _locationSubscription = ubicacionController.escucharUbicacion().listen((ubicacion) {
+      // Update driver location in database periodically
+      final controller = Provider.of<DriverController>(context, listen: false);
+      controller.updateLocation(ubicacion.latitude!, ubicacion.longitude!);
+    });
+  }@override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _locationSubscription?.cancel();
     super.dispose();
   }
   
@@ -78,9 +97,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
     } catch (e) {
       print("Error initializing location: $e");
     }
-  }
-  
-  Future<void> _updateDriverLocation() async {
+  }    Future<void> _updateDriverLocation() async {
     try {
       final ubicacion = await ubicacionController.obtenerUbicacion();
       if (ubicacion != null) {
@@ -221,12 +238,14 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
     
     // Check if there are active orders for delivery tracking
     final bool hasActiveOrder = controller.activeOrders.isNotEmpty;
-      // If there's an active order, show the tracking screen, otherwise show regular home tab
+    
+    // If there's an active order, show the improved tracking screen
     if (hasActiveOrder) {
       Map<String, dynamic> activeOrder = controller.activeOrders.first;
-      return ActiveOrderTrackingWidget(controller: controller, activeOrder: activeOrder);
+      return ImprovedOrderTrackingWidget(controller: controller, activeOrder: activeOrder);
     }
 
+    // Otherwise show the regular home tab
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -290,37 +309,39 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
               ),
             ),
             
-            const SizedBox(height: 24),
-            
-            // Stats card
+            const SizedBox(height: 24),              // Map card showing merchant locations
             Card(
               elevation: 4,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Resumen de hoy',
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      'Mapa de comercios',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        _buildStatItem('Viajes', '0'),
-                        _buildStatItem('Ganancias', '\$0'),
-                        _buildStatItem('Calificación', '5.0'),
-                      ],
+                  ),
+                  SizedBox(
+                    height: 300,
+                    child: MerchantMapWidget(
+                      driverLocation: controller.currentDriverData != null && 
+                          controller.currentDriverData!['current_latitude'] != null && 
+                          controller.currentDriverData!['current_longitude'] != null 
+                          ? LatLng(
+                              double.parse(controller.currentDriverData!['current_latitude'].toString()),
+                              double.parse(controller.currentDriverData!['current_longitude'].toString()),
+                            ) 
+                          : null,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
             
@@ -399,30 +420,8 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
         ),
       ),
     );
-  }
-
-  Widget _buildStatItem(String title, String value) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: const Color(0xFFE60023),
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.grey[700],
-          ),
-        ),
-      ],
-    );
-  }
+  }  // Los métodos _buildMerchantMap y _loadMerchantLocations se han eliminado
+  // ya que esta funcionalidad ahora está en la clase MerchantMapWidget
   
   Widget _buildActiveOrdersTab(DriverController controller) {
     if (controller.activeOrders.isEmpty) {
@@ -471,7 +470,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
       ),
     );
   }
-
+  
   Widget _buildProfileTab(DriverController controller) {
     // Format driver data for display
     final driverData = controller.currentDriverData;
@@ -614,7 +613,8 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
       ),
     );
   }
-    Widget _buildOrderListItem(Map<String, dynamic> order) {
+    
+  Widget _buildOrderListItem(Map<String, dynamic> order) {
     final String orderId = order['order_id'] ?? '';
     final String status = order['status'] ?? '';
     final String customerName = order['customer']?['name'] ?? 'Cliente';
@@ -739,7 +739,8 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
   List<Widget> _buildOrderActions(Map<String, dynamic> order) {
     final String status = order['status'] ?? '';
     final String orderId = order['order_id'] ?? '';
-      switch (status) {
+    
+    switch (status) {
       case 'assigned':
         return [
           ElevatedButton.icon(
@@ -750,13 +751,14 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
               foregroundColor: Colors.white,
             ),
             onPressed: () {
-              // Navigate using tracking widget
+              // Open map navigation - use the active order tracking
+              final activeOrder = order;
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => ActiveOrderTrackingWidget(
                     controller: Provider.of<DriverController>(context, listen: false),
-                    activeOrder: order,
+                    activeOrder: activeOrder,
                   ),
                 ),
               );
@@ -773,7 +775,8 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
               final controller = Provider.of<DriverController>(context, listen: false);
               await controller.updateOrderStatus(orderId, 'picked_up');
             },
-          ),        ];
+          ),
+        ];
       case 'picked_up':
         return [
           ElevatedButton.icon(
@@ -784,13 +787,14 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
               foregroundColor: Colors.white,
             ),
             onPressed: () {
-              // Navigate using tracking widget
+              // Open map navigation - use the active order tracking
+              final activeOrder = order;
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => ActiveOrderTrackingWidget(
                     controller: Provider.of<DriverController>(context, listen: false),
-                    activeOrder: order,
+                    activeOrder: activeOrder,
                   ),
                 ),
               );
@@ -819,13 +823,14 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
               foregroundColor: Colors.white,
             ),
             onPressed: () {
-              // Navigate using tracking widget
+              // Open map navigation - use the active order tracking
+              final activeOrder = order;
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => ActiveOrderTrackingWidget(
                     controller: Provider.of<DriverController>(context, listen: false),
-                    activeOrder: order,
+                    activeOrder: activeOrder,
                   ),
                 ),
               );
@@ -842,8 +847,8 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
               final controller = Provider.of<DriverController>(context, listen: false);
               await controller.updateOrderStatus(orderId, 'delivered');
             },
-          ),        ];
-      
+          ),
+        ];
       default:
         return [
           ElevatedButton.icon(
@@ -897,7 +902,4 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
   }
 }
 
-// Import math for min function
-class Math {
-  static int min(int a, int b) => a < b ? a : b;
-}
+
