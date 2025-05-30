@@ -15,6 +15,9 @@ import 'package:nicoya_now/app/features/merchant/domain/usecases/get_merchant_by
 import 'package:nicoya_now/app/features/merchant/domain/usecases/register_merchant_usecase.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/controllers/merchant_registration_controller.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/controllers/merchant_settings_controller.dart';
+import 'package:nicoya_now/app/features/order/data/datasources/order_datasource.dart';
+import 'package:nicoya_now/app/features/order/data/repositories/order_repository_impl.dart';
+import 'package:nicoya_now/app/features/order/domain/repositories/order_repository.dart';
 import 'package:nicoya_now/app/features/products/data/datasources/products_data_source.dart';
 import 'package:nicoya_now/app/features/products/data/repositories/products_repository_impl.dart';
 import 'package:nicoya_now/app/features/products/domain/repositories/products_repository.dart';
@@ -63,7 +66,9 @@ void setupServiceLocator() {
 locator.registerLazySingleton<ProductsDataSource>(
   () => ProductsDataSourceImpl(supabaseClient: locator<SupabaseClient>()),
 );
-
+locator.registerLazySingleton<OrderDatasource>(
+  () => OrderDatasourceImpl(supabaseClient: Supabase.instance.client),
+);
   // Repositories
   locator.registerLazySingleton<AuthRepository>(
     () => AuthRepositoryImpl(locator<AuthDataSource>()),
@@ -74,7 +79,9 @@ locator.registerLazySingleton<ProductsDataSource>(
   locator.registerLazySingleton<ProductsRepository>(
   () => ProductsRepositoryImpl(dataSource: locator<ProductsDataSource>()),
 );
-
+locator.registerLazySingleton<OrderRepository>(
+  () => OrderRepositoryImpl(datasource: locator<OrderDatasource>()),
+);
   // Use cases
   locator.registerLazySingleton<SignInUseCase>(
     () => SignInUseCase(locator<AuthRepository>()),
