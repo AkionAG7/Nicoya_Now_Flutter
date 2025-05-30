@@ -17,7 +17,7 @@ dependencies:
   flutter_riverpod: ^2.5.0 # state-management (opcional)
   provider: ^6.1.5 # state-management más sencillo
   image_picker: ^1.1.2
-  file_picker: ^10.1.7
+  file_picker: ^10.1.8
   flutter_launcher_icons: ^0.14.3
   shared_preferences: ^2.5.3
   uuid: ^4.5.1
