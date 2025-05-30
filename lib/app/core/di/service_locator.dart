@@ -32,6 +32,12 @@ import 'package:nicoya_now/app/features/admin/domain/repositories/merchant/merch
     as AdminMerchantRepo;
 import 'package:nicoya_now/app/features/admin/domain/usecases/merchant/merchant_usecases.dart';
 import 'package:nicoya_now/app/features/admin/presentation/controllers/admin_merchant_controller.dart';
+// Driver admin imports
+import 'package:nicoya_now/app/features/admin/data/datasources/driver/driver_remote_datasource.dart';
+import 'package:nicoya_now/app/features/admin/data/repositories/driver/driver_repository_impl.dart';
+import 'package:nicoya_now/app/features/admin/domain/repositories/driver/driver_repository.dart';
+import 'package:nicoya_now/app/features/admin/domain/usecases/driver/driver_usecases.dart';
+import 'package:nicoya_now/app/features/admin/presentation/controllers/admin_driver_controller.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final GetIt locator = GetIt.instance;
@@ -121,8 +127,7 @@ locator.registerLazySingleton<DeleteProductUseCase>(
   locator.registerLazySingleton<NetworkInfo>(
     () => NetworkInfoImpl(connectionChecker: locator<InternetConnectionChecker>()),
   );
-  
-  locator.registerLazySingleton<MerchantRemoteDataSource>(
+    locator.registerLazySingleton<MerchantRemoteDataSource>(
     () => MerchantRemoteDataSourceImpl(supabase: locator<SupabaseClient>()),
   );
   
@@ -143,6 +148,38 @@ locator.registerLazySingleton<DeleteProductUseCase>(
     () => AdminMerchantController(
       getAllMerchantsUseCase: locator<GetAllMerchantsUseCase>(),
       approveMerchantUseCase: locator<ApproveMerchantUseCase>(),
+    ),
+  );
+
+  // Driver admin dependencies
+  locator.registerLazySingleton<DriverRemoteDataSource>(
+    () => DriverRemoteDataSourceImpl(supabase: locator<SupabaseClient>()),
+  );
+  
+  locator.registerLazySingleton<DriverRepository>(
+    () => DriverRepositoryImpl(
+      remoteDataSource: locator<DriverRemoteDataSource>(),
+      networkInfo: locator<NetworkInfo>(),
+    ),
+  );
+  
+  locator.registerLazySingleton<GetAllDriversUseCase>(
+    () => GetAllDriversUseCase(locator<DriverRepository>()),
+  );
+  
+  locator.registerLazySingleton<ApproveDriverUseCase>(
+    () => ApproveDriverUseCase(locator<DriverRepository>()),
+  );
+  
+  locator.registerLazySingleton<RejectDriverUseCase>(
+    () => RejectDriverUseCase(locator<DriverRepository>()),
+  );
+  
+  locator.registerFactory<AdminDriverController>(
+    () => AdminDriverController(
+      getAllDriversUseCase: locator<GetAllDriversUseCase>(),
+      approveDriverUseCase: locator<ApproveDriverUseCase>(),
+      rejectDriverUseCase: locator<RejectDriverUseCase>(),
     ),
   );
    
