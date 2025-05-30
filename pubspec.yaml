@@ -13,27 +13,27 @@ dependencies:
     sdk: flutter
   supabase_flutter: ^2.9.0 # SDK oficial (usa PostgREST)
   flutter_dotenv: ^5.1.0 # lee variables .env
-  get_it: ^8.0.3 # inyección de dependencias
+  get_it: ^7.6.4 # inyección de dependencias
   flutter_riverpod: ^2.5.0 # state-management (opcional)
   provider: ^6.1.5 # state-management más sencillo
   image_picker: ^1.1.2
-  file_picker: ^10.1.9
+  file_picker: ^10.1.7
   flutter_launcher_icons: ^0.14.3
   shared_preferences: ^2.5.3
+  uuid: ^4.5.1
+  dartz: ^0.10.1
+  internet_connection_checker: ^3.0.1
   location: ^8.0.0
   flutter_polyline_points: ^2.1.0
   google_maps_flutter: ^2.12.1
   intl: ^0.20.2
-  uuid: ^4.5.1
-  dartz: ^0.10.1
-  internet_connection_checker: ^3.0.1
 
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  flutter_lints: ^6.0.0
+  flutter_lints: ^5.0.0
 
 flutter_launcher_icons:
   android: true
