@@ -29,6 +29,41 @@ class _CarritoState extends State<Carrito> {
     });
   }
 
+  Future<void> actualizarCarrito() async {
+    final supabase = Supabase.instance.client;
+    late bool _isSaving = false;
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      for (final item in _items) {
+        final orderItemId = item['order_item_id'];
+        final quantity = item['quantity'];
+        print('Actualizando: order_item_id: $orderItemId, quantity: $quantity');
+
+        final res =
+            await supabase
+                .from('order_item')
+                .update({'quantity': quantity})
+                .eq('order_item_id', orderItemId)
+                .select();
+
+        print('✔️ Resultado de update: $res');
+      }
+    } catch (e) {
+      print('Error actualizando carrito: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error al guardar los cambios')),
+      );
+    } finally {
+      setState(() {
+        _isSaving = false;
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -207,7 +242,9 @@ class _CarritoState extends State<Carrito> {
                     borderRadius: BorderRadius.circular(20),
                   ),
                 ),
-                onPressed: () => print('funcion y cambio de pagina'),
+                onPressed: () async {
+                  actualizarCarrito();
+                },
                 child: Text(
                   'Confirmar orden',
                   style: TextStyle(

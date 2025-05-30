@@ -41,6 +41,7 @@ class Routes {
   static const roleFormPage = '/roleFormPage';
   static const addRolePage = '/addRolePage';
   static const carrito = '/carrito';
+  static const pago = '/pago';
 
   // Test route
   static const testImages = '/testImages';

@@ -14,7 +14,7 @@ class OrderDatasourceImpl implements OrderDatasource {
   Future<List<Map<String, dynamic>>> getOrderByUserId(String userId) async {
     final response = await supabaseClient
         .from('order')
-        .select('order_item(quantity, product:product_id(*))')
+        .select('order_item(order_item_id, quantity, product:product_id(*))')
         .eq('customer_id', userId)
         .eq('status', 'pending');
 
@@ -27,10 +27,15 @@ class OrderDatasourceImpl implements OrderDatasource {
         for (final item in itemList) {
           final productJson = item['product'];
           final quantity = item['quantity'];
+          final orderItemId = item['order_item_id'];
 
           if (productJson != null && quantity != null) {
             final product = Product.fromJson(productJson);
-            items.add({'product': product, 'quantity': quantity});
+            items.add({
+              'product': product,
+              'quantity': quantity,
+              'order_item_id': orderItemId,
+            });
           }
         }
       }
