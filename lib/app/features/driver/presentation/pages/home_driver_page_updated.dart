@@ -213,7 +213,8 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
       ),
     );
   }
-    Widget _buildHomeTab(DriverController controller) {
+  
+  Widget _buildHomeTab(DriverController controller) {
     // Format driver data for display
     final driverData = controller.currentDriverData;
     final String firstName = driverData?['first_name'] ?? '';
@@ -221,12 +222,14 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
     
     // Check if there are active orders for delivery tracking
     final bool hasActiveOrder = controller.activeOrders.isNotEmpty;
-      // If there's an active order, show the tracking screen, otherwise show regular home tab
+    
+    // If there's an active order, show the tracking screen
     if (hasActiveOrder) {
       Map<String, dynamic> activeOrder = controller.activeOrders.first;
       return ActiveOrderTrackingWidget(controller: controller, activeOrder: activeOrder);
     }
 
+    // Otherwise show the regular home tab
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -471,7 +474,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
       ),
     );
   }
-
+  
   Widget _buildProfileTab(DriverController controller) {
     // Format driver data for display
     final driverData = controller.currentDriverData;
@@ -614,7 +617,8 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
       ),
     );
   }
-    Widget _buildOrderListItem(Map<String, dynamic> order) {
+    
+  Widget _buildOrderListItem(Map<String, dynamic> order) {
     final String orderId = order['order_id'] ?? '';
     final String status = order['status'] ?? '';
     final String customerName = order['customer']?['name'] ?? 'Cliente';
@@ -739,7 +743,8 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
   List<Widget> _buildOrderActions(Map<String, dynamic> order) {
     final String status = order['status'] ?? '';
     final String orderId = order['order_id'] ?? '';
-      switch (status) {
+    
+    switch (status) {
       case 'assigned':
         return [
           ElevatedButton.icon(
@@ -750,13 +755,14 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
               foregroundColor: Colors.white,
             ),
             onPressed: () {
-              // Navigate using tracking widget
+              // Open map navigation - use the active order tracking
+              final activeOrder = order;
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => ActiveOrderTrackingWidget(
                     controller: Provider.of<DriverController>(context, listen: false),
-                    activeOrder: order,
+                    activeOrder: activeOrder,
                   ),
                 ),
               );
@@ -773,7 +779,8 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
               final controller = Provider.of<DriverController>(context, listen: false);
               await controller.updateOrderStatus(orderId, 'picked_up');
             },
-          ),        ];
+          ),
+        ];
       case 'picked_up':
         return [
           ElevatedButton.icon(
@@ -784,13 +791,14 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
               foregroundColor: Colors.white,
             ),
             onPressed: () {
-              // Navigate using tracking widget
+              // Open map navigation - use the active order tracking
+              final activeOrder = order;
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => ActiveOrderTrackingWidget(
                     controller: Provider.of<DriverController>(context, listen: false),
-                    activeOrder: order,
+                    activeOrder: activeOrder,
                   ),
                 ),
               );
@@ -819,13 +827,14 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
               foregroundColor: Colors.white,
             ),
             onPressed: () {
-              // Navigate using tracking widget
+              // Open map navigation - use the active order tracking
+              final activeOrder = order;
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => ActiveOrderTrackingWidget(
                     controller: Provider.of<DriverController>(context, listen: false),
-                    activeOrder: order,
+                    activeOrder: activeOrder,
                   ),
                 ),
               );
@@ -842,8 +851,8 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
               final controller = Provider.of<DriverController>(context, listen: false);
               await controller.updateOrderStatus(orderId, 'delivered');
             },
-          ),        ];
-      
+          ),
+        ];
       default:
         return [
           ElevatedButton.icon(

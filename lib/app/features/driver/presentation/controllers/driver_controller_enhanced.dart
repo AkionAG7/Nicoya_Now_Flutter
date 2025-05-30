@@ -76,7 +76,8 @@ class DriverController extends ChangeNotifier {
       notifyListeners();
     }
   }
-    /// Loads active orders for the current driver
+  
+  /// Loads active orders for the current driver
   Future<void> loadActiveOrders() async {
     try {
       final userId = _supabase.auth.currentUser?.id;
@@ -86,7 +87,7 @@ class DriverController extends ChangeNotifier {
       }
       
       // Get orders assigned to this driver that are active
-      // This uses the current_driver_orders view to get more complete information
+      // This uses the current_driver_orders view for better order data
       final response = await _supabase
           .from('current_driver_orders')
           .select('*, customer:customer_id(*), merchant:merchant_id(*), delivery_address:delivery_address_id(*)')
@@ -95,25 +96,31 @@ class DriverController extends ChangeNotifier {
       _activeOrders = List<Map<String, dynamic>>.from(response);
       
       // Enrich the data with additional information needed for tracking
-      for (var order in _activeOrders) {
+      for (var i = 0; i < _activeOrders.length; i++) {
+        var order = _activeOrders[i];
+        
         // Add delivery coordinates from the address if available
-        if (order['delivery_address'] != null) {
-          order['delivery_latitude'] = order['delivery_address']['latitude'];
-          order['delivery_longitude'] = order['delivery_address']['longitude'];
+        if (order.containsKey('delivery_address') && order['delivery_address'] != null) {
+          order['delivery_latitude'] = order['delivery_address']['latitude'] ?? 0.0;
+          order['delivery_longitude'] = order['delivery_address']['longitude'] ?? 0.0;
         }
         
         // Get order assignment details
-        final assignmentResponse = await _supabase
-            .from('order_assignment')
-            .select('*')
-            .eq('order_id', order['order_id'])
-            .eq('driver_id', userId)
-            .single();
-            
-        if (assignmentResponse != null) {
-          order['assigned_at'] = assignmentResponse['assigned_at'];
-          order['picked_up_at'] = assignmentResponse['picked_up_at'];
-          order['delivered_at'] = assignmentResponse['delivered_at'];
+        try {
+          final assignmentResponse = await _supabase
+              .from('order_assignment')
+              .select()
+              .eq('order_id', order['order_id'])
+              .eq('driver_id', userId)
+              .maybeSingle();
+              
+          if (assignmentResponse != null) {
+            order['assigned_at'] = assignmentResponse['assigned_at'];
+            order['picked_up_at'] = assignmentResponse['picked_up_at'];
+            order['delivered_at'] = assignmentResponse['delivered_at'];
+          }
+        } catch (e) {
+          print('Error fetching assignment for order ${order['order_id']}: $e');
         }
       }
       
@@ -184,11 +191,18 @@ class DriverController extends ChangeNotifier {
       await _supabase
           .from('order')
           .update({
-            'driver_id': userId,
             'status': 'assigned',
-            'driver_assigned_at': DateTime.now().toIso8601String(),
           })
           .eq('order_id', orderId);
+          
+      // Create order assignment record
+      await _supabase
+          .from('order_assignment')
+          .insert({
+            'order_id': orderId,
+            'driver_id': userId,
+            'assigned_at': DateTime.now().toIso8601String(),
+          });
       
       // Reload active orders
       await loadActiveOrders();
@@ -203,10 +217,39 @@ class DriverController extends ChangeNotifier {
   /// Update order status
   Future<bool> updateOrderStatus(String orderId, String status) async {
     try {
+      final userId = _supabase.auth.currentUser?.id;
+      
+      if (userId == null) {
+        _error = 'Usuario no autenticado';
+        notifyListeners();
+        return false;
+      }
+      
+      // Update order status
       await _supabase
           .from('order')
           .update({'status': status})
           .eq('order_id', orderId);
+      
+      // Update assignment record with timestamps
+      final Map<String, dynamic> updates = {};
+      
+      switch (status) {
+        case 'picked_up':
+          updates['picked_up_at'] = DateTime.now().toIso8601String();
+          break;
+        case 'delivered':
+          updates['delivered_at'] = DateTime.now().toIso8601String();
+          break;
+      }
+      
+      if (updates.isNotEmpty) {
+        await _supabase
+            .from('order_assignment')
+            .update(updates)
+            .eq('order_id', orderId)
+            .eq('driver_id', userId);
+      }
       
       // Reload active orders
       await loadActiveOrders();
