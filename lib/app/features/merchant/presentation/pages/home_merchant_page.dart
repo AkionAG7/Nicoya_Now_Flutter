@@ -1,10 +1,12 @@
-// lib/app/features/merchant/presentation/pages/home_merchant_page.dart
-
 import 'package:flutter/material.dart';
-import 'package:nicoya_now/Icons/nicoya_now_icons_icons.dart';
+import 'package:nicoya_now/app/features/merchant/presentation/pages/order_detail_page.dart';
+import 'package:nicoya_now/app/features/order/data/datasources/order_datasource.dart';
+import 'package:nicoya_now/app/features/order/data/repositories/order_repository_impl.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_products_page.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_settings_page.dart';
+import 'package:nicoya_now/app/features/order/presentation/controllers/OrderController.dart';
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
+import 'package:nicoya_now/Icons/nicoya_now_icons_icons.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HomeMerchantPage extends StatefulWidget {
@@ -19,15 +21,24 @@ class _HomeMerchantPageState extends State<HomeMerchantPage> {
   bool _isLoading = true;
   bool _isVerified = false;
 
-  // Obtenemos el merchantId del usuario logueado
+  late final OrderController _orderController;
+
   String get _merchantId => Supabase.instance.client.auth.currentUser!.id;
-  
+
   @override
   void initState() {
     super.initState();
+    _orderController = OrderController(
+      repository: OrderRepositoryImpl(
+        datasource: OrderDatasourceImpl(
+          supabaseClient: Supabase.instance.client,
+        ),
+      ),
+    );
+    _orderController.addListener(() => setState(() {}));
     _checkVerificationStatus();
   }
-  
+
   Future<void> _checkVerificationStatus() async {
     try {
       final result = await Supabase.instance.client
@@ -35,41 +46,69 @@ class _HomeMerchantPageState extends State<HomeMerchantPage> {
           .select('is_active')
           .eq('merchant_id', _merchantId)
           .single();
-          
       setState(() {
         _isVerified = result['is_active'] ?? false;
         _isLoading = false;
       });
-      
-      // Si no está verificado, redirigir a la página de pendiente
-      if (!_isVerified && mounted) {
+      if (_isVerified) {
+        _orderController.loadOrders(_merchantId);
+      } else if (mounted) {
         Navigator.pushReplacementNamed(context, Routes.merchantPending);
       }
     } catch (e) {
-      print('Error verificando estado de merchant: $e');
       setState(() {
         _isLoading = false;
         _isVerified = false;
       });
-      
-      // En caso de error, también redirigir
       if (mounted) {
         Navigator.pushReplacementNamed(context, Routes.merchantPending);
       }
     }
   }
 
+  Widget _buildOrdersTab() {
+    if (_orderController.loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_orderController.error != null) {
+      return Center(child: Text('Error: ${_orderController.error}'));
+    }
+    final orders = _orderController.orders;
+    if (orders.isEmpty) {
+      return const Center(child: Text('No hay pedidos'));
+    }
+    return ListView.builder(
+      itemCount: orders.length,
+      itemBuilder: (ctx, i) {
+        final o = orders[i];
+        return ListTile(
+          leading: const Icon(Icons.shopping_bag),
+          title: Text('Pedido'),
+          subtitle: Text('Total: \$${o.total.toStringAsFixed(2)}'),
+          trailing: Text(
+            o.status.toString().split('.').last.toUpperCase(),
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => OrderDetailPage(orderId: o.order_id),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
+        body: Center(child: CircularProgressIndicator()),
       );
     }
-    
-    // Si no está verificado, mostrar mensaje mientras se redirige
     if (!_isVerified) {
       return const Scaffold(
         body: Center(
@@ -78,19 +117,14 @@ class _HomeMerchantPageState extends State<HomeMerchantPage> {
       );
     }
 
-    // Definimos la lista de pantallas según la pestaña seleccionada
     final pages = <Widget>[
-      // 0: Pedidos del comercio
-      const Center(child: Text('Pedidos del comercio')),
-      // 1: Inventario de productos
+      _buildOrdersTab(),
       MerchantProductsPage(merchantId: _merchantId),
-      // 2: Ajustes de comerciante (demo)
       const MerchantSettingsPage(),
     ];
 
     return Scaffold(
       body: SafeArea(
-        // IndexedStack mantiene el estado de cada pantalla
         child: IndexedStack(
           index: _selectedIndex,
           children: pages,
@@ -105,7 +139,7 @@ class _HomeMerchantPageState extends State<HomeMerchantPage> {
         items: const [
           BottomNavigationBarItem(
             icon: Icon(NicoyaNowIcons.nicoyanow),
-            label: 'Inicio',
+            label: 'Pedidos',
           ),
           BottomNavigationBarItem(
             icon: Icon(NicoyaNowIcons.maletatrabajo),
