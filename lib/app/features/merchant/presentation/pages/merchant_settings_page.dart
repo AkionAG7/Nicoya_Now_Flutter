@@ -1,6 +1,8 @@
 // lib/app/features/merchant/presentation/pages/merchant_settings_page.dart
 
 import 'package:flutter/material.dart';
+import 'package:nicoya_now/app/interface/Navigators/routes.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class MerchantSettingsPage extends StatelessWidget {
@@ -166,18 +168,25 @@ class MerchantSettingsPage extends StatelessWidget {
 
               const SizedBox(height: 24),
               // Cerrar sesión
-              TextButton.icon(
-                onPressed: () {
-                  Supabase.instance.client.auth.signOut();
-                  Navigator.of(context)
-                      .pushNamedAndRemoveUntil('/', (r) => false);
-                },
-                icon: const Icon(Icons.logout, color: Colors.red),
-                label: const Text(
-                  'Cerrar sesión',
-                  style: TextStyle(color: Colors.red),
-                ),
-              ),
+            TextButton.icon(
+  onPressed: () async {
+    // 1) Cerrar sesión en Supabase
+    await Supabase.instance.client.auth.signOut();
+
+    // 2) (Opcional) Limpiar SharedPreferences si guardas algo de sesión
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+
+    // 3) Navegar al login y eliminar todo el historial de pantallas
+    Navigator.of(context)
+      .pushNamedAndRemoveUntil(Routes.preLogin, (route) => false);
+  },
+  icon: const Icon(Icons.logout, color: Colors.red),
+  label: const Text(
+    'Cerrar sesión',
+    style: TextStyle(color: Colors.red),
+  ),
+),
             ],
           );
         },
