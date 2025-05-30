@@ -14,10 +14,13 @@ enum AdminMerchantState {
 /// Controller for managing merchants in the admin panel
 class AdminMerchantController extends ChangeNotifier {
   final GetAllMerchantsUseCase _getAllMerchantsUseCase;
+  final ApproveMerchantUseCase _approveMerchantUseCase;
 
   AdminMerchantController({
     required GetAllMerchantsUseCase getAllMerchantsUseCase,
-  }) : _getAllMerchantsUseCase = getAllMerchantsUseCase;
+    required ApproveMerchantUseCase approveMerchantUseCase,
+  }) : _getAllMerchantsUseCase = getAllMerchantsUseCase,
+       _approveMerchantUseCase = approveMerchantUseCase;
 
   AdminMerchantState _state = AdminMerchantState.initial;
   List<Merchant> _merchants = [];
@@ -97,6 +100,33 @@ class AdminMerchantController extends ChangeNotifier {
       return 'Error de conexión. Verifica tu internet.';
     } else {
       return 'Error desconocido. Intenta nuevamente.';
+    }
+  }
+
+  /// Approve a merchant by ID
+  Future<bool> approveMerchant(String merchantId) async {
+    try {
+      final result = await _approveMerchantUseCase.call(merchantId);
+      return result.fold(
+        (failure) {
+          _error = _getFailureMessage(failure);
+          notifyListeners();
+          return false;
+        },
+        (approvedMerchant) {
+          // Update the merchant in the local list
+          final index = _merchants.indexWhere((m) => m.merchantId == merchantId);
+          if (index != -1) {
+            _merchants[index] = approvedMerchant;
+            notifyListeners();
+          }
+          return true;
+        },
+      );
+    } catch (e) {
+      _error = 'Error inesperado: $e';
+      notifyListeners();
+      return false;
     }
   }
 

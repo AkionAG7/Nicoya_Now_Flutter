@@ -3,7 +3,7 @@ import 'package:nicoya_now/app/features/products/domain/entities/products.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract class OrderDatasource {
-  Future<List<Product>> getOrderByUserId(String userId);
+  Future<List<Map<String, dynamic>>> getOrderByUserId(String userId);
 }
 
 class OrderDatasourceImpl implements OrderDatasource {
@@ -11,33 +11,36 @@ class OrderDatasourceImpl implements OrderDatasource {
   OrderDatasourceImpl({required this.supabaseClient});
 
   @override
-  Future<List<Product>> getOrderByUserId(String userId) async {
+  Future<List<Map<String, dynamic>>> getOrderByUserId(String userId) async {
     final response = await supabaseClient
         .from('order')
-        .select('order_item(product:product_id(*))')
+        .select('order_item(order_item_id, quantity, product:product_id(*))')
         .eq('customer_id', userId)
         .eq('status', 'pending');
 
-    final List<Product> products = [];
+    final List<Map<String, dynamic>> items = [];
 
     for (final order in response as List<dynamic>) {
-      final items = order['order_item'] as List<dynamic>?;
+      final itemList = order['order_item'] as List<dynamic>?;
 
-      if (items != null) {
-        for (final item in items) {
+      if (itemList != null) {
+        for (final item in itemList) {
           final productJson = item['product'];
-          if (productJson != null) {
-            try {
-              final product = Product.fromJson(productJson);
-              products.add(product);
-            } catch (e) {
-              print('Error al parsear producto: $e');
-            }
+          final quantity = item['quantity'];
+          final orderItemId = item['order_item_id'];
+
+          if (productJson != null && quantity != null) {
+            final product = Product.fromJson(productJson);
+            items.add({
+              'product': product,
+              'quantity': quantity,
+              'order_item_id': orderItemId,
+            });
           }
         }
       }
     }
 
-    return products;
+    return items;
   }
 }

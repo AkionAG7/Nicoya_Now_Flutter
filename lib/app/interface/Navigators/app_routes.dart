@@ -13,6 +13,7 @@ import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_ste
 import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_step_owner.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_step_password.dart';
 import 'package:nicoya_now/app/features/order/presentation/pages/Carrito.dart';
+import 'package:nicoya_now/app/features/order/presentation/pages/Pago.dart';
 import 'package:nicoya_now/app/features/products/domain/entities/products.dart';
 import 'package:nicoya_now/app/features/products/presentation/pages/MerchantPublicProductsPage.dart';
 import 'package:nicoya_now/app/features/products/presentation/pages/SearchFilter.dart';
@@ -98,5 +99,6 @@ Map<String, Widget Function(BuildContext)> get appRoutes {
     },
     Routes.addRolePage: (context) => const AddRolePage(),
     Routes.carrito: (context) => const Carrito(),
+    Routes.pago: (context) => const Pago(),
   };
 }
