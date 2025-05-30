@@ -24,7 +24,6 @@ class DriverController extends ChangeNotifier {
   Map<String, dynamic>? get currentDriverData => _currentDriverData;
   List<Map<String, dynamic>> get activeOrders => _activeOrders;
   
-  /// Loads the current driver's data from the database
   Future<void> loadDriverData() async {
     _state = DriverState.loading;
     _error = null;
@@ -190,7 +189,6 @@ class DriverController extends ChangeNotifier {
           })
           .eq('order_id', orderId);
       
-      // Reload active orders
       await loadActiveOrders();
       return true;
     } catch (e) {
