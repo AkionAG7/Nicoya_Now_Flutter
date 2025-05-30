@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:nicoya_now/Icons/nicoya_now_icons_icons.dart';
 import 'package:nicoya_now/app/features/order/data/datasources/order_datasource.dart';
 import 'package:nicoya_now/app/features/products/domain/entities/products.dart';
+import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class Carrito extends StatefulWidget {
@@ -244,6 +245,7 @@ class _CarritoState extends State<Carrito> {
                 ),
                 onPressed: () async {
                   actualizarCarrito();
+                  Navigator.pushNamed(context, Routes.pago);
                 },
                 child: Text(
                   'Confirmar orden',

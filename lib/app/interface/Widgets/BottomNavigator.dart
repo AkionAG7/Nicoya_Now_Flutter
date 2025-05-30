@@ -34,17 +34,25 @@ class _BottomNavigatorState extends State<BottomNavigator> {
         selectedItemColor: Colors.grey[400],
         unselectedItemColor: Colors.white,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home, color: Colors.white,), label: 'Inicio'),
           BottomNavigationBarItem(
-            icon: Icon(Icons.favorite , color: Colors.white,),
+            icon: Icon(Icons.home, color: Colors.white),
+            label: 'Inicio',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite, color: Colors.white),
             label: 'Favoritos',
           ),
           BottomNavigationBarItem(
-            icon: Icon(NicoyaNowIcons.carritocompras , color: Colors.white,),
+            icon: Icon(NicoyaNowIcons.carritocompras, color: Colors.white),
             label: 'Carrito',
           ),
           BottomNavigationBarItem(
-            icon: Icon(NicoyaNowIcons.usuario , color: Colors.white,),
+            icon: Icon(NicoyaNowIcons.usuario, color: Colors.white),
+            label: 'Usuario',
+          ),
+
+          BottomNavigationBarItem(
+            icon: Icon(NicoyaNowIcons.usuario, color: Colors.white),
             label: 'Usuario',
           ),
         ],
