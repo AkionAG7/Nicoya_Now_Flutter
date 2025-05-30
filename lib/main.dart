@@ -6,6 +6,7 @@ import 'package:nicoya_now/app/core/di/service_locator.dart';
 import 'package:nicoya_now/app/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/controllers/merchant_registration_controller.dart';
 import 'package:nicoya_now/app/features/admin/presentation/controllers/admin_merchant_controller.dart';
+import 'package:nicoya_now/app/features/driver/presentation/controllers/driver_controller.dart';
 import 'package:nicoya_now/app/interface/Navigators/app_routes.dart';
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 import 'package:nicoya_now/app/interface/app_theme.dart';
@@ -31,8 +32,7 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  @override
-  Widget build(BuildContext context) {    return MultiProvider(
+  @override  Widget build(BuildContext context) {    return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => locator<AuthController>()),
         ChangeNotifierProvider(
@@ -40,6 +40,9 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (_) => locator<AdminMerchantController>(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => locator<DriverController>(),
         ),
       ],
       child: GestureDetector(

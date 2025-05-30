@@ -14,6 +14,8 @@ import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_ste
 import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_step_password.dart';
 import 'package:nicoya_now/app/features/order/presentation/pages/Carrito.dart';
 import 'package:nicoya_now/app/features/order/presentation/pages/Pago.dart';
+import 'package:nicoya_now/app/features/driver/presentation/pages/home_driver_page.dart';
+import 'package:nicoya_now/app/features/driver/presentation/pages/order_details_page.dart';
 import 'package:nicoya_now/app/features/products/domain/entities/products.dart';
 import 'package:nicoya_now/app/features/products/presentation/pages/MerchantPublicProductsPage.dart';
 import 'package:nicoya_now/app/features/products/presentation/pages/SearchFilter.dart';
@@ -63,10 +65,13 @@ Map<String, Widget Function(BuildContext)> get appRoutes {
     Routes.client_Form: (context) => const ClientForm(),
     Routes.deliver_Form1: (context) => const DeliverForm1(),
     Routes.deliver_Form2: (context) => const DeliverForm2(),
-    Routes.driverPending: (context) => const DriverPendingPage(),
-    Routes.merchantPending: (context) => const MerchantPendingPage(),
-    Routes.home_food: (context) => const HomeFood(),
+    Routes.driverPending: (context) => const DriverPendingPage(),    Routes.merchantPending: (context) => const MerchantPendingPage(),    Routes.home_food: (context) => const HomeFood(),
     Routes.home_merchant: (context) => const HomeMerchantPage(),
+    Routes.home_driver: (context) => const HomeDriverPage(),
+    Routes.driver_order_details: (context) {
+      final order = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+      return OrderDetailsPage(order: order);
+    },
     Routes.merchantStepBusiness: (context) => const MerchantStepBusiness(),
     Routes.merchantStepOwner: (context) => const MerchantStepOwner(),
     Routes.merchantStepPassword: (context) => const MerchantStepPassword(),

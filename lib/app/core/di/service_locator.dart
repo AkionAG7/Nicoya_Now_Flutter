@@ -38,6 +38,7 @@ import 'package:nicoya_now/app/features/admin/data/repositories/driver/driver_re
 import 'package:nicoya_now/app/features/admin/domain/repositories/driver/driver_repository.dart';
 import 'package:nicoya_now/app/features/admin/domain/usecases/driver/driver_usecases.dart';
 import 'package:nicoya_now/app/features/admin/presentation/controllers/admin_driver_controller.dart';
+import 'package:nicoya_now/app/features/driver/presentation/controllers/driver_controller.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final GetIt locator = GetIt.instance;
@@ -187,8 +188,12 @@ locator.registerLazySingleton<DeleteProductUseCase>(
      () => AddProductsController(
        addProductUseCase: locator<AddProductUseCase>(),
      ),
-   );
-   locator.registerFactory<EditProductController>(
-  () => EditProductController(updateProductUseCase: locator<UpdateProductUseCase>()),
-);
+   );  locator.registerFactory<EditProductController>(
+    () => EditProductController(updateProductUseCase: locator<UpdateProductUseCase>()),
+  );
+  
+  // Driver feature dependencies
+  locator.registerFactory<DriverController>(
+    () => DriverController(supabase: locator<SupabaseClient>()),
+  );
 }

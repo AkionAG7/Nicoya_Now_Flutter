@@ -251,10 +251,9 @@ class _LoginPageState extends State<LoginPage> {
                 switch (role) {                  case 'customer': // Updated to match database role name
                     Navigator.pushNamedAndRemoveUntil(
                       context, Routes.home_food, (route) => false);
-                    break;
-                  case 'driver':
+                    break;                  case 'driver':
                     Navigator.pushNamedAndRemoveUntil(
-                      context, Routes.home_food, (route) => false); // Cambiar a pantalla de repartidores
+                      context, Routes.home_driver, (route) => false);
                     break;
                   case 'merchant':
                     Navigator.pushNamedAndRemoveUntil(
@@ -323,12 +322,11 @@ class _LoginPageState extends State<LoginPage> {
                 context, 
                 Routes.clientNav,
                 (route) => false
-              );
-              break;
+              );              break;
             case 'driver':
               Navigator.pushNamedAndRemoveUntil(
                 context, 
-                Routes.home_food, // Cambiar a la pantalla para repartidores cuando esté disponible
+                Routes.home_driver,
                 (route) => false
               );
               break;

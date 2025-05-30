@@ -90,17 +90,29 @@ class _AppStartNavigationState extends State<AppStartNavigation> {
         
         if (roles.isNotEmpty) {
           final userRole = roles.first['role']['slug'];
-          
+            // Navigate based on user role
           if (userRole == 'admin') {
-            // Si es admin, ir a la pantalla de administración
+            // Admin panel
             if (mounted) {
               Navigator.pushReplacementNamed(context, Routes.home_admin);
+            }
+            return;
+          } else if (userRole == 'driver') {
+            // Driver home page
+            if (mounted) {
+              Navigator.pushReplacementNamed(context, Routes.home_driver);
+            }
+            return;
+          } else if (userRole == 'merchant') {
+            // Merchant home page
+            if (mounted) {
+              Navigator.pushReplacementNamed(context, Routes.home_merchant);
             }
             return;
           }
         }
         
-        // Para otros roles o si no se encontró rol específico
+        // If no specific role found, use the client navigation
         if (mounted) {
           Navigator.pushReplacementNamed(context, Routes.clientNav);
         }
