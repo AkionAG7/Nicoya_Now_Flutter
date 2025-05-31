@@ -136,12 +136,13 @@ class OrderDatasourceImpl implements OrderDatasource {
         .eq('status', 'pending');
   }
 
+  @override
   Future<void> removeProductFromOrder(String orderItemId) async {
-    // 1. Obtener el order_id del item a eliminar
+    // 1. Obtener el item con datos completos para calcular el subtotal
     final orderItem =
         await supabaseClient
             .from('order_item')
-            .select('order_id')
+            .select('order_id, quantity, unit_price')
             .eq('order_item_id', orderItemId)
             .maybeSingle();
 
@@ -150,21 +151,43 @@ class OrderDatasourceImpl implements OrderDatasource {
     }
 
     final String orderId = orderItem['order_id'];
+    final int quantity = orderItem['quantity'];
+    final double unitPrice = (orderItem['unit_price'] as num).toDouble();
+    final double subtotal = unitPrice * quantity;
 
-    // 2. Eliminar el item
+    // 2. Obtener el total actual de la orden
+    final order =
+        await supabaseClient
+            .from('order')
+            .select('total')
+            .eq('order_id', orderId)
+            .maybeSingle();
+
+    if (order != null) {
+      final double previousTotal = (order['total'] as num).toDouble();
+      final double updatedTotal = previousTotal - subtotal;
+
+      // 3. Actualizar el total en la orden
+      await supabaseClient
+          .from('order')
+          .update({'total': updatedTotal})
+          .eq('order_id', orderId);
+    }
+
+    // 4. Eliminar el item
     await supabaseClient
         .from('order_item')
         .delete()
         .eq('order_item_id', orderItemId);
 
-    // 3. Verificar si quedan más productos en esa orden
+    // 5. Verificar si quedan más productos en esa orden
     final remainingItems = await supabaseClient
         .from('order_item')
         .select('order_item_id')
         .eq('order_id', orderId);
 
     if (remainingItems == null || remainingItems.isEmpty) {
-      // 4. Si no quedan, eliminar la orden
+      // 6. Si no quedan, eliminar la orden
       await supabaseClient.from('order').delete().eq('order_id', orderId);
     }
   }

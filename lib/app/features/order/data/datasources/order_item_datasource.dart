@@ -22,6 +22,7 @@ class OrderItemDatasourceImpl implements OrderItemDatasource {
     int quantity,
     Address address,
   ) async {
+    final subtotal = product.price * quantity;
     final existingOrder =
         await supa
             .from('order')
@@ -41,6 +42,14 @@ class OrderItemDatasourceImpl implements OrderItemDatasource {
         );
       }
       orderId = existingOrder['order_id'];
+      // Sumar el subtotal al total actual
+      final double previousTotal = (existingOrder['total'] as num).toDouble();
+      final newTotal = previousTotal + subtotal;
+
+      await supa
+          .from('order')
+          .update({'total': newTotal})
+          .eq('order_id', orderId);
     } else {
       final insertResult =
           await supa
@@ -49,7 +58,7 @@ class OrderItemDatasourceImpl implements OrderItemDatasource {
                 'customer_id': customerId,
                 'merchant_id': product.merchant_id,
                 'delivery_address_id': address.address_id,
-                'total': 0,
+                'total': subtotal,
                 'status': 'pending',
                 'placed_at': DateTime.now().toIso8601String(),
               })
