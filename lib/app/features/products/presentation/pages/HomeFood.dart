@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:nicoya_now/Icons/nicoya_now_icons_icons.dart';
+import 'package:nicoya_now/app/interface/Widgets/notification_bell.dart';
 import 'package:nicoya_now/app/features/merchant/data/datasources/merchant_data_source.dart';
 import 'package:nicoya_now/app/features/merchant/data/repositories/merchant_repository_impl.dart';
 import 'package:nicoya_now/app/features/merchant/domain/entities/merchant.dart';
@@ -75,7 +76,7 @@ class _HomeFoodState extends State<HomeFood> {
   @override
   Widget build(BuildContext context) {
     return Form(
-      child: Scaffold(
+      child: Scaffold(  
         appBar: AppBar(
           backgroundColor: const Color(0xFFFFFFFF),
           title: const Text(
@@ -87,6 +88,11 @@ class _HomeFoodState extends State<HomeFood> {
               icon: const Icon(NicoyaNowIcons.campana),
               onPressed: () {},
             ),
+            const NotificationBell(
+              size: 28,
+              color: Color(0xffd72a23),
+            ),
+            const SizedBox(width: 8),
           ],
         ),
 

@@ -5,6 +5,7 @@ import 'package:nicoya_now/app/features/merchant/domain/usecases/fetch_merchant_
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:nicoya_now/app/features/products/data/datasources/products_data_source.dart';
+import 'package:nicoya_now/app/interface/Widgets/notification_bell.dart';
 
 
 class MerchantProductsPage extends StatefulWidget {
@@ -44,14 +45,11 @@ void initState() {
       appBar: AppBar(
         title: const Text('Productos Disponibles'),
         titleTextStyle: const TextStyle(
-          fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+          fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),    
         backgroundColor: const Color(0xFFE60023),
         leading: const BackButton(color: Colors.white),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications, color: Colors.white),
-            onPressed: () {},
-          ),
+          const NotificationBell(),
         ],
       ),
       body: FutureBuilder<List<Product>>(

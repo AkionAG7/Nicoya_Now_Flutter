@@ -1,5 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:nicoya_now/app/core/services/role_service.dart';
+import 'package:nicoya_now/app/core/services/notification_service.dart';
 import 'package:nicoya_now/app/features/auth/data/datasources/auth_data_source.dart';
 import 'package:nicoya_now/app/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:nicoya_now/app/features/auth/domain/repositories/auth_repository.dart';
@@ -53,9 +54,12 @@ void setupServiceLocator() {
     final supabase = Supabase.instance.client;
     locator.registerSingleton<SupabaseClient>(supabase);
   }
-
   locator.registerLazySingleton<RoleService>(
         () => RoleService(locator<SupabaseClient>()));
+
+  // Services
+  locator.registerLazySingleton<NotificationService>(
+        () => NotificationService());
 
   // Data sources
   locator.registerLazySingleton<AuthDataSource>(
