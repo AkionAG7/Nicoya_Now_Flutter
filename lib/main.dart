@@ -3,6 +3,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:nicoya_now/app/core/di/service_locator.dart';
+import 'package:nicoya_now/app/core/services/notification_service.dart';
+import 'package:nicoya_now/app/core/widgets/notification_initializer.dart';
 import 'package:nicoya_now/app/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/controllers/merchant_registration_controller.dart';
 import 'package:nicoya_now/app/features/admin/presentation/controllers/admin_merchant_controller.dart';
@@ -41,15 +43,21 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => locator<AdminMerchantController>(),
         ),
+        ChangeNotifierProvider(
+          create: (_) => locator<NotificationService>(),
+        ),
       ],
       child: GestureDetector(
         onTap: () {
           FocusScope.of(context).unfocus();
-        },        child: MaterialApp(
-          title: 'Nicoya Now',
-          theme: AppTheme.lightTheme,
-          initialRoute: Routes.appStartNavigation,
-          routes: appRoutes,
+        },        
+        child: NotificationInitializer(
+          child: MaterialApp(
+            title: 'Nicoya Now',
+            theme: AppTheme.lightTheme,
+            initialRoute: Routes.appStartNavigation,
+            routes: appRoutes,
+          ),
         ),
       ),
     );

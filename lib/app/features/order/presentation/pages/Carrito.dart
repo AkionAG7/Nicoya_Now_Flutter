@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:nicoya_now/Icons/nicoya_now_icons_icons.dart';
+import 'package:nicoya_now/app/interface/Widgets/notification_bell.dart';
 import 'package:nicoya_now/app/features/order/data/datasources/order_datasource.dart';
 import 'package:nicoya_now/app/features/products/domain/entities/products.dart';
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
@@ -134,7 +135,7 @@ class _CarritoState extends State<Carrito> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return Scaffold( 
       appBar: AppBar(
         backgroundColor: const Color(0xFFFFFFFF),
         title: const Text(
@@ -146,6 +147,11 @@ class _CarritoState extends State<Carrito> {
             icon: const Icon(NicoyaNowIcons.campana),
             onPressed: () {},
           ),
+          const NotificationBell(
+            size: 28,
+            color: Color(0xffd72a23),
+          ),
+          const SizedBox(width: 8),
         ],
       ),
 
