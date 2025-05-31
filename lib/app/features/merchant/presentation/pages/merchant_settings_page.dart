@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
-import 'package:nicoya_now/app/interface/Widgets/notification_bell.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -49,16 +48,6 @@ class MerchantSettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(   
-      appBar: AppBar(
-        title: const Text('Ajustes del Comerciante'),
-        titleTextStyle: const TextStyle(
-          fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
-        backgroundColor: const Color(0xFFE60023),
-        actions: const [
-          NotificationBell(),
-          SizedBox(width: 16),
-        ],
-      ),
       body: FutureBuilder<Map<String, dynamic>>(
         future: _loadData(),
         builder: (ctx, snap) {
