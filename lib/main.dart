@@ -10,9 +10,13 @@ import 'package:nicoya_now/app/features/driver/presentation/controllers/driver_c
 import 'package:nicoya_now/app/interface/Navigators/app_routes.dart';
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 import 'package:nicoya_now/app/interface/app_theme.dart';
+import 'package:nicoya_now/app/core/utils/map_initializer.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Google Maps with proper renderers
+  await MapInitializer.initialize();
 
   await dotenv.load(fileName: '.env');
 

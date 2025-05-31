@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:nicoya_now/app/core/constants/map_constants.dart';
 
 class MerchantMapWidget extends StatefulWidget {
   final LatLng? driverLocation;
@@ -18,14 +19,14 @@ class MerchantMapWidget extends StatefulWidget {
 class _MerchantMapWidgetState extends State<MerchantMapWidget> {
   GoogleMapController? _mapController;
   final Set<Marker> _markers = {};
-  
-  // Default to Nicoya center if driver location isn't provided
+    // Default to Nicoya center if driver location isn't provided
   late LatLng _centerLocation;
 
   @override
   void initState() {
     super.initState();
-    _centerLocation = widget.driverLocation ?? const LatLng(10.15749, -85.44926);
+    _centerLocation = widget.driverLocation ?? 
+      const LatLng(MapConstants.defaultLatitude, MapConstants.defaultLongitude);
     _loadMerchantLocations();
   }
 
@@ -34,41 +35,60 @@ class _MerchantMapWidgetState extends State<MerchantMapWidget> {
     _mapController?.dispose();
     super.dispose();
   }
-
   Future<void> _loadMerchantLocations() async {
     try {
       final supabase = Supabase.instance.client;
       
       // Fetch merchant locations from database
-      final response = await supabase
-          .from('merchant')
-          .select('merchant_id, business_name, latitude, longitude')
-          .eq('is_active', true);
-      
-      // Add driver marker if location available
-      if (widget.driverLocation != null) {
-        _markers.add(Marker(
-          markerId: const MarkerId('driver'),
-          position: widget.driverLocation!,
-          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-          infoWindow: const InfoWindow(title: 'Mi ubicación'),
-        ));
-      }
-      
-      // Add merchant markers from response
-      for (final merchant in response) {
-        if (merchant['latitude'] != null && merchant['longitude'] != null) {
-          final location = LatLng(
-            double.parse(merchant['latitude'].toString()),
-            double.parse(merchant['longitude'].toString()),
-          );
-          
+      // First try with address field which might contain coordinates
+      try {
+        final response = await supabase
+            .from('merchant')
+            .select('merchant_id, business_name, address')
+            .eq('is_active', true);
+        
+        // Add driver marker if location available
+        if (widget.driverLocation != null) {
           _markers.add(Marker(
-            markerId: MarkerId('merchant_${merchant['merchant_id']}'),
-            position: location,
-            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
-            infoWindow: InfoWindow(title: merchant['business_name'] ?? 'Comercio'),
+            markerId: const MarkerId('driver'),
+            position: widget.driverLocation!,
+            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+            infoWindow: const InfoWindow(title: 'Mi ubicación'),
           ));
+        }
+        
+        print('Merchants found: ${response.length}');
+        
+        // For now, add sample merchants instead of trying to parse addresses
+        // In a production app, you would need address geocoding
+        _addSampleMerchants();
+        
+      } catch (e) {
+        print('Error with first merchant query approach: $e');
+        
+        // Fallback option if the first query fails - try with a different schema
+        try {
+          final responseFallback = await supabase
+              .from('merchant')
+              .select('merchant_id, business_name')
+              .eq('is_active', true);
+          
+          // Add driver marker if location available
+          if (widget.driverLocation != null) {
+            _markers.add(Marker(
+              markerId: const MarkerId('driver'),
+              position: widget.driverLocation!,
+              icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+              infoWindow: const InfoWindow(title: 'Mi ubicación'),
+            ));
+          }
+          
+          // Add sample merchant markers since we don't have location data
+          _addSampleMerchants();
+          
+        } catch (e2) {
+          print('Error with fallback merchant query: $e2');
+          throw e2;
         }
       }
       

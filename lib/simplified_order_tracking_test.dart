@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 // Importamos las dependencias necesarias
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:nicoya_now/app/core/constants/map_constants.dart';
 
 // Creamos un archivo de prueba simplificado que no dependa del DriverController
 

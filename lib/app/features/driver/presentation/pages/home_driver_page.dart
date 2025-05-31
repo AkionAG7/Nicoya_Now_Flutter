@@ -9,7 +9,7 @@ import 'package:nicoya_now/Icons/nicoya_now_icons_icons.dart';
 import 'package:nicoya_now/app/features/driver/presentation/widgets/active_order_tracking.dart';
 import 'package:nicoya_now/app/features/driver/presentation/widgets/improved_order_tracking.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:nicoya_now/app/features/driver/presentation/widgets/merchant_map_widget.dart';
+import 'package:nicoya_now/app/features/driver/presentation/widgets/merchant_map_widget_fixed.dart';
 
 // Helper class for min function
 class Math {
@@ -34,8 +34,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    
-    // Request location permissions and initialize
+      // Request location permissions and initialize
     _initLocationAndPermissions();
     
     // Initialize driver data
@@ -235,13 +234,48 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
     final driverData = controller.currentDriverData;
     final String firstName = driverData?['first_name'] ?? '';
     final String vehicleType = driverData?['vehicle_type'] ?? '';
+      // Filter orders by status
+    final List<Map<String, dynamic>> assignedOrders = controller.activeOrders
+        .where((order) => order['status'] == 'pending')
+        .toList();
     
-    // Check if there are active orders for delivery tracking
-    final bool hasActiveOrder = controller.activeOrders.isNotEmpty;
+    // Show orders that are in_process, accepted, pending with assignments, etc.
+    // Explicitly include all status types we want to display - with error handling
+    List<Map<String, dynamic>> inProgressOrders = [];
+      try {
+      inProgressOrders = controller.activeOrders
+          .where((order) {
+            try {
+              final status = order['status']?.toString() ?? '';
+              
+              // Include orders with these statuses
+              bool isActiveStatus = status == 'in_process' || 
+                                   status == 'accepted' || 
+                                   status == 'on_way';
+              
+              // Also include pending orders that have assignments
+              bool isPendingWithAssignment = status == 'pending' && 
+                                           order['assigned_at'] != null;
+                                           
+              return isActiveStatus || isPendingWithAssignment || status == 'pending';
+            } catch (e) {
+              print('Error processing order: $e');
+              return false;
+            }
+          })
+          .toList();
+          
+      print('Active orders: ${controller.activeOrders.length}, In progress: ${inProgressOrders.length}');
+    } catch (e) {
+      print('Error filtering orders: $e');
+      // Fall back to empty list if there's an error
+      inProgressOrders = [];
+    }
     
-    // If there's an active order, show the improved tracking screen
-    if (hasActiveOrder) {
-      Map<String, dynamic> activeOrder = controller.activeOrders.first;
+    // If there's an active in-progress order, show the improved tracking screen
+    if (inProgressOrders.isNotEmpty) {
+      Map<String, dynamic> activeOrder = inProgressOrders.first;
+      print('Selected order for tracking: ${activeOrder['order_id']}, Status: ${activeOrder['status']}');
       return ImprovedOrderTrackingWidget(controller: controller, activeOrder: activeOrder);
     }
 
@@ -309,7 +343,45 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
               ),
             ),
             
-            const SizedBox(height: 24),              // Map card showing merchant locations
+            // Assigned orders section (if any)
+            if (assignedOrders.isNotEmpty) ...[
+              const SizedBox(height: 24),
+              Card(
+                elevation: 4,
+                color: Colors.orange[50],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.notification_important, color: Colors.orange),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Pedidos nuevos asignados',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.orange[800],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      ...assignedOrders.map((order) => _buildAssignedOrderCard(order)).toList(),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+            
+            const SizedBox(height: 24),
+            
+            // Map card showing merchant locations
             Card(
               elevation: 4,
               shape: RoundedRectangleBorder(
@@ -377,7 +449,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
                       ],
                     ),
                     const SizedBox(height: 8),
-                    if (controller.activeOrders.isEmpty)
+                    if (inProgressOrders.isEmpty)
                       Center(
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 24.0),
@@ -404,16 +476,27 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
                       ListView.builder(
                         shrinkWrap: true,
                         physics: NeverScrollableScrollPhysics(),
-                        itemCount: controller.activeOrders.length > 2
+                        itemCount: inProgressOrders.length > 2
                             ? 2
-                            : controller.activeOrders.length,
+                            : inProgressOrders.length,
                         itemBuilder: (context, index) {
-                          final order = controller.activeOrders[index];
+                          final order = inProgressOrders[index];
                           return _buildOrderListItem(order);
                         },
                       ),
                   ],
                 ),
+              ),
+            ),
+            
+            ElevatedButton(
+              onPressed: () => _debugOrders(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+              ),
+              child: const Text(
+                'Depurar pedidos',
+                style: TextStyle(color: Colors.white),
               ),
             ),
           ],
@@ -422,7 +505,6 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
     );
   }  // Los métodos _buildMerchantMap y _loadMerchantLocations se han eliminado
   // ya que esta funcionalidad ahora está en la clase MerchantMapWidget
-  
   Widget _buildActiveOrdersTab(DriverController controller) {
     if (controller.activeOrders.isEmpty) {
       return Center(
@@ -470,7 +552,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
       ),
     );
   }
-  
+
   Widget _buildProfileTab(DriverController controller) {
     // Format driver data for display
     final driverData = controller.currentDriverData;
@@ -587,8 +669,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
       ),
     );
   }
-  
-  Widget _buildProfileField(String label, String value) {
+    Widget _buildProfileField(String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
       child: Column(
@@ -610,6 +691,81 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
             ),
           ),
         ],
+      ),
+    );
+  }
+  
+  // This used to be for 'assigned' status, now for 'pending' status orders
+  Widget _buildAssignedOrderCard(Map<String, dynamic> order) {
+    final String orderId = order['order_id'] ?? '';
+    final String merchantName = order['merchant']?['business_name'] ?? 'Comercio';
+    final String customerName = order['customer']?['name'] ?? 'Cliente';
+    final double orderTotal = order['total'] != null ? double.parse(order['total'].toString()) : 0.0;
+    
+    return Card(
+      margin: EdgeInsets.symmetric(vertical: 8.0),
+      child: Padding(
+        padding: EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Pedido #${orderId.substring(0, Math.min(8, orderId.length))}',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                Text(
+                  '₡${orderTotal.toStringAsFixed(2)}',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFFE60023),
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 8),
+            Text('Comercio: $merchantName'),
+            Text('Cliente: $customerName'),
+            SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      final controller = Provider.of<DriverController>(context, listen: false);
+                      await controller.updateOrderStatus(orderId, 'accepted');
+                    },
+                    icon: Icon(Icons.check),
+                    label: Text('Aceptar'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ),
+                SizedBox(width: 8),
+                IconButton(
+                  onPressed: () {
+                    // Navigate to order details
+                    Navigator.pushNamed(
+                      context, 
+                      Routes.driver_order_details,
+                      arguments: order,
+                    );
+                  },
+                  icon: Icon(Icons.info_outline),
+                  tooltip: 'Ver detalles',
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -735,13 +891,49 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
       ),
     );
   }
-  
   List<Widget> _buildOrderActions(Map<String, dynamic> order) {
     final String status = order['status'] ?? '';
     final String orderId = order['order_id'] ?? '';
-    
-    switch (status) {
-      case 'assigned':
+      switch (status) {
+      // Using 'pending' for orders that would have been 'assigned'
+      case 'pending':
+        return [
+          ElevatedButton.icon(
+            icon: Icon(Icons.thumb_up),
+            label: Text('Aceptar'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.amber,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () async {
+              final controller = Provider.of<DriverController>(context, listen: false);
+              await controller.updateOrderStatus(orderId, 'accepted');
+            },
+          ),
+          ElevatedButton.icon(
+            icon: Icon(Icons.navigation),
+            label: Text('Navegar'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () {
+              // Open map navigation - use the active order tracking
+              final activeOrder = order;
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ActiveOrderTrackingWidget(
+                    controller: Provider.of<DriverController>(context, listen: false),
+                    activeOrder: activeOrder,
+                  ),
+                ),
+              );
+            },
+          ),
+        ];
+      
+      case 'accepted':
         return [
           ElevatedButton.icon(
             icon: Icon(Icons.navigation),
@@ -773,11 +965,10 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
             ),
             onPressed: () async {
               final controller = Provider.of<DriverController>(context, listen: false);
-              await controller.updateOrderStatus(orderId, 'picked_up');
+              await controller.updateOrderStatus(orderId, 'in_process');
             },
           ),
-        ];
-      case 'picked_up':
+        ];      case 'in_process':
         return [
           ElevatedButton.icon(
             icon: Icon(Icons.navigation),
@@ -802,18 +993,18 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
           ),
           ElevatedButton.icon(
             icon: Icon(Icons.home),
-            label: Text('Entregar'),
+            label: Text('En camino'),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFE60023),
               foregroundColor: Colors.white,
             ),
             onPressed: () async {
               final controller = Provider.of<DriverController>(context, listen: false);
-              await controller.updateOrderStatus(orderId, 'delivered');
+              await controller.updateOrderStatus(orderId, 'on_way');
             },
           ),
         ];
-      case 'on_the_way':
+      case 'on_way':
         return [
           ElevatedButton.icon(
             icon: Icon(Icons.navigation),
@@ -869,18 +1060,20 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
           ),
         ];
     }
-  }
-  
-  String _formatStatus(String status) {
+  }  String _formatStatus(String status) {
     switch (status) {
-      case 'assigned':
-        return 'Asignado';
-      case 'picked_up':
-        return 'Recogido';
-      case 'on_the_way':
+      case 'pending':
+        return 'Pendiente'; // Used to be 'Asignado' for 'assigned' status
+      case 'accepted':
+        return 'Aceptado';
+      case 'in_process':
+        return 'En proceso';
+      case 'on_way':
         return 'En camino';
       case 'delivered':
         return 'Entregado';
+      case 'cancelled':
+        return 'Cancelado';
       default:
         return 'Desconocido';
     }
@@ -888,18 +1081,99 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
   
   Color _getStatusColor(String status) {
     switch (status) {
-      case 'assigned':
-        return Colors.orange;
-      case 'picked_up':
+      case 'pending':
+        return Colors.grey;      // We don't have 'assigned' status in the enum anymore
+      // Using 'pending' instead for orders that would have been 'assigned'
+      // Keeping the same color for UI consistency
+      case 'accepted':
+        return Colors.amber;
+      case 'in_process':
         return Colors.blue;
-      case 'on_the_way':
+      case 'on_way':
         return Colors.purple;
       case 'delivered':
         return Colors.green;
+      case 'cancelled':
+        return Colors.red;
       default:
         return Colors.grey;
     }
   }
+  
+  // Método para ayudar a la depuración de pedidos
+  void _debugOrders() async {
+    final controller = Provider.of<DriverController>(context, listen: false);
+    
+    // Mostrar indicador de carga
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const AlertDialog(
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Depurando pedidos...'),
+          ],
+        ),
+      ),
+    );
+    
+    try {
+      final String specificOrderId = 'f50a1fbb-d76b-4c0e-af0e-d20015396591';
+        // Llamar a los métodos de depuración
+      await controller.forceUpdateSpecificOrderStatus(); // First, fix any status inconsistencies
+      await controller.loadActiveOrdersWithDebug();
+      await controller.forceCheckSpecificOrder(); // Use forceCheckSpecificOrder directly
+      
+      // Check if the problematic order exists in controller
+      _orderExistsInController(specificOrderId, controller);
+      
+      // Cerrar el diálogo y mostrar resultados
+      if (mounted) {
+        Navigator.of(context).pop();
+        
+        // Mostrar mensaje con conteo de pedidos
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Pedidos cargados: ${controller.activeOrders.length}'),
+            duration: const Duration(seconds: 5),
+            action: SnackBarAction(
+              label: 'Ver logs',
+              onPressed: () {
+                // En una app real aquí podrías mostrar los logs en una pantalla
+                print('Ver logs de depuración');
+              },
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      // Mostrar error
+      if (mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    }
+  }
+    // Removed unused helper functions
+  
+  // Special debug method to check if a specific order is in the active orders
+  bool _orderExistsInController(String specificOrderId, DriverController controller) {
+    try {
+      final exists = controller.activeOrders.any((order) => order['order_id'] == specificOrderId);
+      if (exists) {
+        print('Found specific order $specificOrderId in controller');
+      } else {
+        print('Specific order $specificOrderId NOT found in controller');
+      }
+      return exists;
+    } catch (e) {
+      print('Error checking for specific order: $e');
+      return false;
+    }
+  }
 }
-
-
