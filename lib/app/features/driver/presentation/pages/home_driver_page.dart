@@ -1123,7 +1123,6 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
     try {
       final String specificOrderId = 'f50a1fbb-d76b-4c0e-af0e-d20015396591';
         // Llamar a los métodos de depuración
-      await controller.forceUpdateSpecificOrderStatus(); // First, fix any status inconsistencies
       await controller.loadActiveOrdersWithDebug();
       await controller.forceCheckSpecificOrder(); // Use forceCheckSpecificOrder directly
       

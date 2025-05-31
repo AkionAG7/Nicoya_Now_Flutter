@@ -35,14 +35,17 @@ class SupabaseAuthDataSource implements AuthDataSource {
         .select()
         .eq('user_id', response.user!.id)
         .single();
-          // Obtener roles desde la tabla user_role en lugar de profile.role
+      // Obtener roles desde la tabla user_role en lugar de profile.role
     final roles = await _supabaseClient
         .from('user_role')
-        .select('role:role_id(slug)')
+        .select('role_id, role:role_id(slug)')
         .eq('user_id', response.user!.id);
 
     // Usamos exactamente los roles asignados, sin defaults
-    final primaryRole = roles.isNotEmpty ? roles.first['role']['slug'] : '';
+    String primaryRole = '';
+    if (roles.isNotEmpty && roles.first['role'] != null) {
+      primaryRole = roles.first['role']['slug'] ?? '';
+    }
     
     if (primaryRole == 'driver') {
       try {
@@ -117,11 +120,14 @@ class SupabaseAuthDataSource implements AuthDataSource {
           .single();      // Obtener roles desde la tabla user_role
       final roles = await _supabaseClient
           .from('user_role')
-          .select('role:role_id(slug)')
+          .select('role_id, role:role_id(slug)')
           .eq('user_id', currentUser.id);
 
       // Solo usamos el rol que realmente tenga asignado, sin defaults
-      final primaryRole = roles.isNotEmpty ? roles.first['role']['slug'] : '';
+      String primaryRole = '';
+      if (roles.isNotEmpty && roles.first['role'] != null) {
+        primaryRole = roles.first['role']['slug'] ?? '';
+      }
 
       return {
         'id': currentUser.id,
@@ -153,21 +159,38 @@ class SupabaseAuthDataSource implements AuthDataSource {
       'user_id': userId,
       ...data,
     });
-  }
-    @override
+  }  @override
   Future<List<String>> getRolesForUser(String userId) async {
-    final roles = await _supabaseClient
-        .from('user_role')
-        .select('role:role_id(slug)')
-        .eq('user_id', userId);
-    
-    // Retornamos solo los roles exactos que tenga el usuario en la base de datos
-    // Sin asignar automáticamente el rol 'customer'
-    if (roles.isEmpty) {
-      return []; // No asignamos un rol por defecto
+    // Use a simpler role querying approach to avoid SQL errors with 'role' column
+    try {
+      // First, get user-role associations
+      final userRoles = await _supabaseClient
+          .from('user_role')
+          .select('role_id')
+          .eq('user_id', userId);
+
+      if (userRoles.isEmpty) {
+        return [];
+      }
+
+      // Extract role IDs
+      final List<String> roleIds = userRoles
+          .map<String>((role) => role['role_id'].toString())
+          .toList();      // Get role details
+      final roles = await _supabaseClient
+          .from('role')
+          .select('slug')
+          .filter('role_id', 'in', roleIds);
+
+      // Return role slugs
+      return roles
+          .map<String>((role) => role['slug'].toString())
+          .where((slug) => slug.isNotEmpty)
+          .toList();
+    } catch (e) {
+      print('Error fetching roles: $e');
+      return []; // Return empty list on error
     }
-    
-    return roles.map<String>((role) => role['role']['slug'] as String).toList();
   }
 
   @override

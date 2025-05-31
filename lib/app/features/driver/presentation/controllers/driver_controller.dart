@@ -395,13 +395,14 @@ class DriverController extends ChangeNotifier {
         _error = 'Usuario no autenticado';
         notifyListeners();
         return false;
-      }
-        // Update order status and assign driver
+      }      // Update order status and assign driver
+      // Use 'pending' status as this is a valid status in the enum
+      // and create an entry in order_assignment table to track the assignment
       await _supabase
           .from('order')
           .update({
             'driver_id': userId,
-            'status': 'pending', // Using pending instead of assigned (which doesn't exist in enum)
+            'status': 'pending',
             'driver_assigned_at': DateTime.now().toIso8601String(),
           })
           .eq('order_id', orderId);
@@ -439,14 +440,9 @@ class DriverController extends ChangeNotifier {
       // Use the appropriate SQL function or direct update for each status
       try {
         switch (status) {
-          case 'accepted':
-            try {
-              await _supabase.rpc('accept_order', params: {
-                '_order_id': orderId,
-              });
-            } catch (rpcError) {
-              print('RPC error for accept_order, trying direct update: $rpcError');
-              // Fallback to direct update if RPC fails
+          case 'accepted':            try {
+              // Skip problematic RPC and use direct SQL update instead
+              // to avoid potential SQL errors related to missing columns
               await _supabase
                   .from('order')
                   .update({
@@ -454,18 +450,16 @@ class DriverController extends ChangeNotifier {
                     'updated_at': DateTime.now().toIso8601String(),
                   })
                   .eq('order_id', orderId);
+            } catch (error) {
+              print('Error updating order status to accepted: $error');
+              throw error;
             }
             break;
             
           case 'in_process':
-            // This status is used when the driver has picked up the order
+            // This status is used when the driver has picked up the order            // Skip problematic RPC calls that might reference non-existent columns
+            // Use direct updates instead to avoid 'column role does not exist' errors
             try {
-              await _supabase.rpc('mark_picked_up', params: {
-                '_order_id': orderId,
-              });
-            } catch (rpcError) {
-              print('RPC error for mark_picked_up, trying direct update: $rpcError');
-              // Fallback to direct update if RPC fails
               await _supabase
                   .from('order')
                   .update({
@@ -473,6 +467,9 @@ class DriverController extends ChangeNotifier {
                     'updated_at': DateTime.now().toIso8601String(),
                   })
                   .eq('order_id', orderId);
+            } catch (error) {
+              print('Error updating order status to in_process: $error');
+              throw error;
             }
             
             // Try to update assignment record with timestamp
@@ -498,21 +495,20 @@ class DriverController extends ChangeNotifier {
                 .eq('order_id', orderId);
             break;
             
-          case 'delivered':
+          case 'delivered':            // Skip problematic RPC calls to avoid column errors
+            // Use direct SQL updates instead
             try {
-              await _supabase.rpc('deliver_order', params: {
-                '_order_id': orderId,
-              });
-            } catch (rpcError) {
-              print('RPC error for deliver_order, trying direct update: $rpcError');
-              // Fallback to direct update if RPC fails
               await _supabase
                   .from('order')
                   .update({
                     'status': status,
                     'updated_at': DateTime.now().toIso8601String(),
+                    'delivered_at': DateTime.now().toIso8601String(), 
                   })
                   .eq('order_id', orderId);
+            } catch (error) {
+              print('Error updating order status to delivered: $error');
+              throw error;
             }
             
             // Try to update assignment record with delivery timestamp
@@ -806,29 +802,31 @@ class DriverController extends ChangeNotifier {
       final specificOrderId = 'f50a1fbb-d76b-4c0e-af0e-d20015396591';
       print('Performing direct database query for order: $specificOrderId');
       
-      // Direct approach - first check for an assignment record
+      // Direct approach - first check for an assignment record      
       try {
-        // Simple direct SQL-like query to the order_assignment table
+        // Instead of using RPC which has an error, use direct query to avoid 'column role does not exist' error
         final assignmentQuery = await _supabase
-            .rpc('get_assignment_by_id', params: {
-              'order_id_param': specificOrderId,
-              'driver_id_param': userId
-            });
+            .from('order_assignment')
+            .select('*')
+            .eq('order_id', specificOrderId)
+            .eq('driver_id', userId)
+            .maybeSingle();
             
         if (assignmentQuery != null) {
           print('Assignment found through direct RPC call');
           
           // Now try to get the order record
-          try {
-            // Direct query to the orders table
+          try {            
+            // Direct query to the orders table instead of using RPC
             final orderQuery = await _supabase
-                .rpc('get_order_by_id', params: {
-                  'order_id_param': specificOrderId
-                });
+                .from('order')
+                .select('*')
+                .eq('order_id', specificOrderId)
+                .maybeSingle();
                 
             if (orderQuery != null) {
-              print('Order found through direct RPC call, adding to active orders');
-                // Get the actual status from the database
+              print('Order found through direct query, adding to active orders');
+              // Get the actual status from the database
               String status = 'in_process'; // Default fallback
               try {
                 final orderStatus = await _supabase
@@ -867,13 +865,13 @@ class DriverController extends ChangeNotifier {
         }
       } catch (assignErr) {
         print('Error checking assignment through RPC: $assignErr');
-        
         // Try most basic direct query as last resort
         try {
           final basicAssignmentCheck = await _supabase
               .from('order_assignment')
-              .select('order_id')
+              .select('order_id, driver_id')
               .eq('order_id', specificOrderId)
+              .eq('driver_id', userId)
               .maybeSingle();
               
           if (basicAssignmentCheck != null) {
