@@ -8,11 +8,28 @@ abstract class OrderDatasource {
   Future<Order> getOrderById(String orderId);
   Future<void> confirmOrder(String userId);
   Future<void> removeProductFromOrder(String productId);
+   Future<void> updateOrderStatus(String orderId, String newStatus);
 }
 
 class OrderDatasourceImpl implements OrderDatasource {
   final SupabaseClient supabaseClient;
   OrderDatasourceImpl({required this.supabaseClient});
+
+    @override
+  Future<void> updateOrderStatus(String orderId, String newStatus) async {
+    final resp = await supabaseClient
+        .from('order')
+        .update({ 'status': newStatus })
+        .eq('order_id', orderId);
+
+    if (resp == null || (resp is Map && resp['error'] != null)) {
+      final errorMsg = resp is Map && resp['error'] != null
+          ? resp['error']['message']
+          : 'Unknown error';
+      throw Exception('Error actualizando estado: $errorMsg');
+    }
+  }
+
   @override
   Future<Order> getOrderById(String orderId) async {
     final resp =
