@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nicoya_now/app/interface/Widgets/UserBottomBarCustomer.dart';
 import 'package:nicoya_now/app/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:nicoya_now/app/features/auth/presentation/pages/driver_register_done.dart';
 import 'package:nicoya_now/app/features/auth/presentation/pages/merchant_register_done.dart';
@@ -100,5 +101,6 @@ Map<String, Widget Function(BuildContext)> get appRoutes {
     Routes.addRolePage: (context) => const AddRolePage(),
     Routes.carrito: (context) => const Carrito(),
     Routes.pago: (context) => const Pago(),
+    Routes.UserBottomBarCustomer: (context) => const UserBottomBarCustomer(),
   };
 }

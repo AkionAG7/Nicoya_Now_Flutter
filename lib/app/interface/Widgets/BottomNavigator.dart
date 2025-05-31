@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:nicoya_now/Icons/nicoya_now_icons_icons.dart';
+import 'package:nicoya_now/app/interface/Widgets/UserBottomBarCustomer.dart';
 import 'package:nicoya_now/app/features/order/presentation/pages/Carrito.dart';
 import 'package:nicoya_now/app/features/products/presentation/pages/HomeFood.dart';
 
@@ -17,9 +18,9 @@ class _BottomNavigatorState extends State<BottomNavigator> {
 
   final List<Widget> _pages = [
     HomeFood(),
-    const Placeholder(), 
+    const Placeholder(),
     Carrito(),
-    HomeFood(),
+    UserBottomBarCustomer(),
   ];
 
   @override
@@ -32,7 +33,7 @@ class _BottomNavigatorState extends State<BottomNavigator> {
         currentIndex: _currentIndex,
         onTap: (i) {
           if (i == 2) {
-            // Forzar que Carrito 
+            // Forzar que Carrito
             setState(() {
               _carritoKey = UniqueKey();
               _currentIndex = i;
