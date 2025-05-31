@@ -79,23 +79,32 @@ class RpcUtils {
     
     return result;
   }
-  
-  /// Ejecuta una función RPC específica para obtener una asignación por ID
+    /// Ejecuta una función RPC específica para obtener una asignación por ID de orden y conductor
   static Future<Map<String, dynamic>?> getAssignmentById(
     SupabaseClient supabase, 
-    String assignmentId
+    String driverId,
+    String orderId
   ) async {
     try {
-      // Formato correcto para pasar el UUID
-      final formattedId = UuidUtils.parseUuid(assignmentId);
+      // Formatear correctamente los UUIDs
+      final formattedDriverId = UuidUtils.parseUuid(driverId);
+      final formattedOrderId = UuidUtils.parseUuid(orderId);
       
+      // Llamar a la nueva función SQL que usa 'slug' en lugar de 'role'
       final result = await supabase.rpc(
         'get_assignment_by_id', 
-        params: {'assignment_id': formattedId}
+        params: {
+          'driver_id_param': formattedDriverId,
+          'order_id_param': formattedOrderId,
+        }
       );
       
       if (result == null) {
         return null;
+      }
+      
+      if (result is List && result.isNotEmpty) {
+        return result.first as Map<String, dynamic>;
       }
       
       return result is Map<String, dynamic> ? result : {'data': result};

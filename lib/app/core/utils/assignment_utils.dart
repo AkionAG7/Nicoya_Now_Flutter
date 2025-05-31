@@ -3,35 +3,48 @@ import 'package:nicoya_now/app/core/utils/uuid_utils.dart';
 import 'package:nicoya_now/app/core/utils/rpc_utils.dart';
 
 /// Utilidad para manejar las funciones relacionadas con asignaciones de órdenes
-class AssignmentUtils {
-  /// Obtiene una asignación por su ID
+class AssignmentUtils {  /// Obtiene una asignación por ID de orden y ID de conductor
+  /// Utiliza la nueva función SQL que usa 'slug' en lugar de 'role'
   static Future<Map<String, dynamic>?> getAssignmentById(
     SupabaseClient supabase, 
-    String assignmentId
+    String driverId,
+    String orderId
   ) async {
-    if (assignmentId.isEmpty) {
+    if (driverId.isEmpty || orderId.isEmpty) {
       return null;
     }
 
-    // Asegurarse de que el UUID esté en formato correcto
-    final formattedId = UuidUtils.parseUuid(assignmentId);
+    // Asegurarse de que los UUIDs estén en formato correcto
+    final formattedDriverId = UuidUtils.parseUuid(driverId);
+    final formattedOrderId = UuidUtils.parseUuid(orderId);
     
     try {
-      // Utilizar la función de RpcUtils para hacer la llamada
-      return await RpcUtils.getAssignmentById(supabase, formattedId);
+      // Utilizar la función de RpcUtils actualizada para hacer la llamada
+      return await RpcUtils.getAssignmentById(supabase, formattedDriverId, formattedOrderId);
     } catch (e) {
       print('Error al obtener asignación por ID: $e');
       
       // En caso de error, intentar un enfoque alternativo con consultas directas
       try {
-        // Consulta directa a la tabla order_assignment
+        // Consulta directa a la tabla order_assignment con join a user_role y role
+        // para obtener el slug en lugar de usar la columna 'role'
         final result = await supabase
             .from('order_assignment')
-            .select('*')
-            .eq('assignment_id', formattedId)
+            .select('order_id, driver_id, assigned_at, user_role!inner(role(slug))')
+            .eq('driver_id', formattedDriverId)
+            .eq('order_id', formattedOrderId)
             .maybeSingle();
             
-        return result;
+        if (result != null) {
+          // Transformar el resultado para que coincida con la estructura de la función RPC
+          return {
+            'order_id': result['order_id'],
+            'driver_id': result['driver_id'],
+            'role_slug': result['user_role']['role']['slug'],
+            'assigned_at': result['assigned_at'],
+          };
+        }
+        return null;
       } catch (directQueryError) {
         print('Error en consulta directa: $directQueryError');
         return null;
