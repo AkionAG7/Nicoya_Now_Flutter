@@ -18,6 +18,8 @@ import 'package:nicoya_now/app/features/merchant/presentation/controllers/mercha
 import 'package:nicoya_now/app/features/order/data/datasources/order_datasource.dart';
 import 'package:nicoya_now/app/features/order/data/repositories/order_repository_impl.dart';
 import 'package:nicoya_now/app/features/order/domain/repositories/order_repository.dart';
+import 'package:nicoya_now/app/features/order/domain/usecases/change_order_status_usecase.dart';
+import 'package:nicoya_now/app/features/order/presentation/controllers/ChangeOrderStatusController.dart';
 import 'package:nicoya_now/app/features/products/data/datasources/products_data_source.dart';
 import 'package:nicoya_now/app/features/products/data/repositories/products_repository_impl.dart';
 import 'package:nicoya_now/app/features/products/domain/repositories/products_repository.dart';
@@ -107,6 +109,9 @@ locator.registerLazySingleton<OrderRepository>(
 );
 locator.registerLazySingleton<DeleteProductUseCase>(
   () => DeleteProductUseCase(locator<ProductsRepository>()),
+);
+locator.registerLazySingleton<ChangeOrderStatusUseCase>(
+  () => ChangeOrderStatusUseCase(locator<OrderRepository>()),
 );
   // Controllers
   locator.registerFactory<AuthController>(
@@ -198,4 +203,9 @@ locator.registerLazySingleton<DeleteProductUseCase>(
    locator.registerFactory<EditProductController>(
   () => EditProductController(updateProductUseCase: locator<UpdateProductUseCase>()),
 );
+  locator.registerFactory<ChangeOrderStatusController>(
+    () => ChangeOrderStatusController(
+      changeStatusUseCase: locator<ChangeOrderStatusUseCase>(),
+    ),
+  );
 }

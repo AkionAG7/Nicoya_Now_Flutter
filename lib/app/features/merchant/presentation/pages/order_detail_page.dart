@@ -1,5 +1,6 @@
+// lib/app/features/order/presentation/pages/order_detail_page.dart
+
 import 'package:flutter/material.dart';
-import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class OrderDetailPage extends StatelessWidget {
@@ -33,10 +34,47 @@ class OrderDetailPage extends StatelessWidget {
     return Map<String, dynamic>.from(result as Map);
   }
 
+  /// Actualiza el campo `status` de la orden a `newStatus`
+Future<void> _updateOrderStatus(
+  BuildContext context,
+  String newStatus,
+) async {
+  debugPrint('>>> _updateOrderStatus llamado con orderId = $orderId y newStatus = $newStatus');
+  try {
+    final res = await Supabase.instance.client
+        .from('order')
+        .update({ 'status': newStatus })
+        .eq('order_id', orderId)
+        .select();
+
+    // res is a PostgrestList (List<dynamic>)
+    final updatedRows = res as List<dynamic>?;
+    if (updatedRows == null || updatedRows.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('La orden no fue encontrada o no se pudo actualizar.'),
+        ),
+      );
+      return;
+    }
+
+    final updatedStatus = (updatedRows.first as Map<String, dynamic>)['status'];
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Estado actualizado a "$updatedStatus"')),
+    );
+    Navigator.of(context).pop();
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Excepción: $e')),
+    );
+  }
+}
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Detalle de Orden')), 
+      appBar: AppBar(title: const Text('Detalle de Orden')),
       body: FutureBuilder<Map<String, dynamic>>(
         future: _loadData(),
         builder: (ctx, snap) {
@@ -48,13 +86,14 @@ class OrderDetailPage extends StatelessWidget {
           }
 
           final data = snap.data!;
-          final street = (data['delivery_address'] as Map<String, dynamic>?)?['street'] as String? ?? '-';
+          final street = (data['delivery_address'] as Map<String, dynamic>?)?['street']
+              as String? ?? '-';
           final items = data['items'] as List<dynamic>? ?? [];
+          final currentStatus = data['status'] as String? ?? 'pending';
 
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
-
               ListTile(
                 leading: const Icon(Icons.person),
                 title: Text('Cliente: ${data['customer_id']}'),
@@ -69,20 +108,28 @@ class OrderDetailPage extends StatelessWidget {
               ),
               ListTile(
                 leading: const Icon(Icons.attach_money),
-                title: Text('Total: \$${(data['total'] as num).toDouble().toStringAsFixed(2)}'),
+                title: Text(
+                  'Total: \$${(data['total'] as num).toDouble().toStringAsFixed(2)}',
+                ),
               ),
               ListTile(
                 leading: const Icon(Icons.calendar_today),
-                title: Text('Fecha: ${DateTime.parse(data['placed_at'] as String).toLocal()}'),
+                title: Text(
+                  'Fecha: ${DateTime.parse(data['placed_at'] as String).toLocal()}',
+                ),
               ),
               ListTile(
                 leading: const Icon(Icons.info),
-                title: Text('Estado: ${(data['status'] as String).toUpperCase()}'),
+                title: Text('Estado: ${currentStatus.toUpperCase()}'),
               ),
-              const Divider(),
+
+              const Divider(height: 32),
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 8),
-                child: Text('Productos', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                child: Text(
+                  'Productos',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
               ),
               ...items.map((item) {
                 final m = item as Map<String, dynamic>;
@@ -91,9 +138,47 @@ class OrderDetailPage extends StatelessWidget {
                 return ListTile(
                   title: Text(prod['name'] as String),
                   subtitle: Text('Cantidad: $qty'),
-                  trailing: Text('\$${(prod['price'] as num).toDouble().toStringAsFixed(2)}'),
+                  trailing: Text(
+                    '\$${(prod['price'] as num).toDouble().toStringAsFixed(2)}',
+                  ),
                 );
               }).toList(),
+
+              const SizedBox(height: 24),
+              const Divider(height: 32),
+
+              // ROW CON LOS DOS BOTONES: ACEPTAR y CANCELAR
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: currentStatus == 'pending'
+                        ? () {
+                            // Cambia a "in_process"
+                            _updateOrderStatus(context, 'in_process');
+                          }
+                        : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      minimumSize: const Size(120, 40),
+                    ),
+                    child: const Text('Aceptar'),
+                  ),
+                  ElevatedButton(
+                    onPressed: currentStatus == 'pending'
+                        ? () {
+                            // Cambia a "cancelled"
+                            _updateOrderStatus(context, 'cancelled');
+                          }
+                        : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      minimumSize: const Size(120, 40),
+                    ),
+                    child: const Text('Cancelar'),
+                  ),
+                ],
+              ),
             ],
           );
         },
@@ -101,3 +186,10 @@ class OrderDetailPage extends StatelessWidget {
     );
   }
 }
+
+/*extension on PostgrestList {
+  get error => null;
+  
+  get data => null;
+}
+*/

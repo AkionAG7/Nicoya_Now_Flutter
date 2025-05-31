@@ -24,4 +24,10 @@ class OrderRepositoryImpl implements OrderRepository {
       rethrow;
     }
   }
+
+    @override
+  Future<void> changeOrderStatus(String orderId, OrderStatus newStatus) async {
+    final statusStr = newStatus.toString().split('.').last;
+    return _datasource.updateOrderStatus(orderId, statusStr);
+  }
 }
