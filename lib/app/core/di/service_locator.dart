@@ -1,5 +1,13 @@
 import 'package:get_it/get_it.dart';
+import 'package:nicoya_now/app/features/order/presentation/controllers/ChangeOrderStatusController.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+// Core & shared
+import 'package:nicoya_now/app/core/network/network_info.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:nicoya_now/app/core/services/role_service.dart';
+
+// Auth
 import 'package:nicoya_now/app/features/auth/data/datasources/auth_data_source.dart';
 import 'package:nicoya_now/app/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:nicoya_now/app/features/auth/domain/repositories/auth_repository.dart';
@@ -8,6 +16,8 @@ import 'package:nicoya_now/app/features/auth/domain/usecases/get_user_roles_usec
 import 'package:nicoya_now/app/features/auth/domain/usecases/sign_in_usecase.dart';
 import 'package:nicoya_now/app/features/auth/domain/usecases/sign_up_usecase.dart';
 import 'package:nicoya_now/app/features/auth/presentation/controllers/auth_controller.dart';
+
+// Merchant
 import 'package:nicoya_now/app/features/merchant/data/datasources/merchant_data_source.dart';
 import 'package:nicoya_now/app/features/merchant/data/repositories/merchant_repository_impl.dart';
 import 'package:nicoya_now/app/features/merchant/domain/repositories/merchant_repository.dart';
@@ -18,6 +28,8 @@ import 'package:nicoya_now/app/features/merchant/presentation/controllers/mercha
 import 'package:nicoya_now/app/features/order/data/datasources/order_datasource.dart';
 import 'package:nicoya_now/app/features/order/data/repositories/order_repository_impl.dart';
 import 'package:nicoya_now/app/features/order/domain/repositories/order_repository.dart';
+import 'package:nicoya_now/app/features/order/domain/usecases/change_order_status_usecase.dart';
+import 'package:nicoya_now/app/features/order/presentation/controllers/ChangeOrderStatusController.dart';
 import 'package:nicoya_now/app/features/products/data/datasources/products_data_source.dart';
 import 'package:nicoya_now/app/features/products/data/repositories/products_repository_impl.dart';
 import 'package:nicoya_now/app/features/products/domain/repositories/products_repository.dart';
@@ -26,28 +38,33 @@ import 'package:nicoya_now/app/features/products/domain/usecases/delete_product_
 import 'package:nicoya_now/app/features/products/domain/usecases/update_product_usecase.dart';
 import 'package:nicoya_now/app/features/products/presentation/controllers/add_product_controller.dart';
 import 'package:nicoya_now/app/features/products/presentation/controllers/update_product_controller.dart';
-// Admin imports
-import 'package:nicoya_now/app/core/network/network_info.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
+
+// Orders
+import 'package:nicoya_now/app/features/order/data/datasources/order_datasource.dart';
+import 'package:nicoya_now/app/features/order/data/repositories/order_repository_impl.dart';
+import 'package:nicoya_now/app/features/order/domain/repositories/order_repository.dart';
+import 'package:nicoya_now/app/features/order/domain/usecases/change_order_status_usecase.dart';
+
+// Admin – Merchant
 import 'package:nicoya_now/app/features/admin/data/datasources/merchant/merchant_remote_datasource.dart';
 import 'package:nicoya_now/app/features/admin/data/repositories/merchant/merchant_repository_impl.dart';
 import 'package:nicoya_now/app/features/admin/domain/repositories/merchant/merchant_repository.dart'
     as AdminMerchantRepo;
 import 'package:nicoya_now/app/features/admin/domain/usecases/merchant/merchant_usecases.dart';
 import 'package:nicoya_now/app/features/admin/presentation/controllers/admin_merchant_controller.dart';
-// Driver admin imports
+
+// Admin – Driver
 import 'package:nicoya_now/app/features/admin/data/datasources/driver/driver_remote_datasource.dart';
 import 'package:nicoya_now/app/features/admin/data/repositories/driver/driver_repository_impl.dart';
 import 'package:nicoya_now/app/features/admin/domain/repositories/driver/driver_repository.dart';
 import 'package:nicoya_now/app/features/admin/domain/usecases/driver/driver_usecases.dart';
 import 'package:nicoya_now/app/features/admin/presentation/controllers/admin_driver_controller.dart';
-import 'package:nicoya_now/app/features/driver/presentation/controllers/driver_controller.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final GetIt locator = GetIt.instance;
 
 void setupServiceLocator() {
-  // External dependencies
+  // ───────────────────────────── External ──────────────────────────────
   if (!locator.isRegistered<SupabaseClient>()) {
     final supabase = Supabase.instance.client;
     locator.registerSingleton<SupabaseClient>(supabase);
@@ -108,6 +125,9 @@ locator.registerLazySingleton<OrderRepository>(
 );
 locator.registerLazySingleton<DeleteProductUseCase>(
   () => DeleteProductUseCase(locator<ProductsRepository>()),
+);
+locator.registerLazySingleton<ChangeOrderStatusUseCase>(
+  () => ChangeOrderStatusUseCase(locator<OrderRepository>()),
 );
   // Controllers
   locator.registerFactory<AuthController>(
@@ -195,12 +215,13 @@ locator.registerLazySingleton<DeleteProductUseCase>(
      () => AddProductsController(
        addProductUseCase: locator<AddProductUseCase>(),
      ),
-   );  locator.registerFactory<EditProductController>(
-    () => EditProductController(updateProductUseCase: locator<UpdateProductUseCase>()),
-  );
-  
-  // Driver feature dependencies
-  locator.registerFactory<DriverController>(
-    () => DriverController(supabase: locator<SupabaseClient>()),
+   );
+   locator.registerFactory<EditProductController>(
+  () => EditProductController(updateProductUseCase: locator<UpdateProductUseCase>()),
+);
+  locator.registerFactory<ChangeOrderStatusController>(
+    () => ChangeOrderStatusController(
+      changeStatusUseCase: locator<ChangeOrderStatusUseCase>(),
+    ),
   );
 }

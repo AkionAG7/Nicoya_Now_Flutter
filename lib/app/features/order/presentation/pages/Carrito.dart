@@ -53,29 +53,48 @@ class _CarritoState extends State<Carrito> {
 
   Future<void> actualizarCarrito() async {
     final supabase = Supabase.instance.client;
-    late bool _isSaving = false;
+    bool _isSaving = true;
 
     setState(() {
       _isSaving = true;
     });
 
     try {
+      final Map<String, double> orderTotals = {};
+
       for (final item in _items) {
         final orderItemId = item['order_item_id'];
         final quantity = item['quantity'];
-        print('Actualizando: order_item_id: $orderItemId, quantity: $quantity');
+        final product = item['product'] as Product;
 
-        final res =
+        // 1. Actualizar la cantidad en Supabase
+        final updated =
             await supabase
                 .from('order_item')
                 .update({'quantity': quantity})
                 .eq('order_item_id', orderItemId)
-                .select();
+                .select('order_id, unit_price')
+                .single();
 
-        print('✔️ Resultado de update: $res');
+        final String orderId = updated['order_id'];
+        final double unitPrice = (updated['unit_price'] as num).toDouble();
+        final double subtotal = unitPrice * quantity;
+
+        // 2. Acumular total por orden
+        orderTotals[orderId] = (orderTotals[orderId] ?? 0) + subtotal;
       }
+
+      // 3. Actualizar totales en tabla order
+      for (final entry in orderTotals.entries) {
+        await supabase
+            .from('order')
+            .update({'total': entry.value})
+            .eq('order_id', entry.key);
+      }
+
+      print('✔️ Carrito actualizado correctamente');
     } catch (e) {
-      print('Error actualizando carrito: $e');
+      print('❌ Error actualizando carrito: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Error al guardar los cambios')),
       );

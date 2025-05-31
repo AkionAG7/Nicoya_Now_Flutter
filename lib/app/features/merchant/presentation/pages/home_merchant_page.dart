@@ -67,40 +67,45 @@ class _HomeMerchantPageState extends State<HomeMerchantPage> {
   }
 
   Widget _buildOrdersTab() {
-    if (_orderController.loading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    if (_orderController.error != null) {
-      return Center(child: Text('Error: ${_orderController.error}'));
-    }
-    final orders = _orderController.orders;
-    if (orders.isEmpty) {
-      return const Center(child: Text('No hay pedidos'));
-    }
-    return ListView.builder(
-      itemCount: orders.length,
-      itemBuilder: (ctx, i) {
-        final o = orders[i];
-        return ListTile(
-          leading: const Icon(Icons.shopping_bag),
-          title: Text('Pedido'),
-          subtitle: Text('Total: \$${o.total.toStringAsFixed(2)}'),
-          trailing: Text(
-            o.status.toString().split('.').last.toUpperCase(),
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => OrderDetailPage(orderId: o.order_id),
-              ),
-            );
-          },
-        );
-      },
-    );
+  if (_orderController.loading) {
+    return const Center(child: CircularProgressIndicator());
   }
+  if (_orderController.error != null) {
+    return Center(child: Text('Error: ${_orderController.error}'));
+  }
+  final orders = _orderController.orders;
+  if (orders.isEmpty) {
+    return const Center(child: Text('No hay pedidos'));
+  }
+  return ListView.builder(
+    itemCount: orders.length,
+    itemBuilder: (ctx, i) {
+      final o = orders[i];
+      return ListTile(
+        leading: const Icon(Icons.shopping_bag),
+        title: Text('Pedido'),
+        subtitle: Text('Total: \$${o.total.toStringAsFixed(2)}'),
+        trailing: Text(
+          o.status.toString().split('.').last.toUpperCase(),
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        onTap: () {
+          // 1) Navegamos a OrderDetailPage
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => OrderDetailPage(orderId: o.order_id),
+            ),
+          )
+          // 2) Cuando regrese (pop), volvemos a cargar la lista de pedidos:
+          .then((_) {
+            _orderController.loadOrders(_merchantId);
+          });
+        },
+      );
+    },
+  );
+}
 
   @override
   Widget build(BuildContext context) {
