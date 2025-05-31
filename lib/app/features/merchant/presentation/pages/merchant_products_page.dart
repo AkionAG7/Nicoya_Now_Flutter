@@ -4,8 +4,6 @@ import 'package:nicoya_now/app/features/products/data/datasources/products_data_
 import 'package:nicoya_now/app/features/merchant/domain/usecases/fetch_merchant_products_usecase.dart';
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:nicoya_now/app/features/products/data/datasources/products_data_source.dart';
-import 'package:nicoya_now/app/interface/Widgets/notification_bell.dart';
 
 
 class MerchantProductsPage extends StatefulWidget {
@@ -42,16 +40,6 @@ void initState() {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Productos Disponibles'),
-        titleTextStyle: const TextStyle(
-          fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),    
-        backgroundColor: const Color(0xFFE60023),
-        leading: const BackButton(color: Colors.white),
-        actions: [
-          const NotificationBell(),
-        ],
-      ),
       body: FutureBuilder<List<Product>>(
         future: _productsFuture,
         builder: (ctx, snap) {
