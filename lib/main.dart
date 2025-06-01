@@ -38,9 +38,13 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  @override  Widget build(BuildContext context) {    return MultiProvider(
+  @override
+  Widget build(BuildContext context) {
+    return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => locator<AuthController>()),
+        ChangeNotifierProvider(
+          create: (_) => locator<AuthController>(),
+        ),
         ChangeNotifierProvider(
           create: (_) => locator<MerchantRegistrationController>(),
         ),
@@ -48,13 +52,16 @@ class MyApp extends StatelessWidget {
           create: (_) => locator<AdminMerchantController>(),
         ),
         ChangeNotifierProvider(
+          create: (_) => locator<DriverController>(),
+        ),
+        Provider<NotificationService>(
           create: (_) => locator<NotificationService>(),
         ),
       ],
       child: GestureDetector(
         onTap: () {
           FocusScope.of(context).unfocus();
-        },        
+        },
         child: NotificationInitializer(
           child: MaterialApp(
             title: 'Nicoya Now',

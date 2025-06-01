@@ -1,3 +1,5 @@
+// lib/app/features/order/presentation/pages/order_detail_page.dart
+
 import 'package:get_it/get_it.dart';
 import 'package:nicoya_now/app/features/order/presentation/controllers/ChangeOrderStatusController.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -7,6 +9,8 @@ import 'package:nicoya_now/app/core/network/network_info.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:nicoya_now/app/core/services/role_service.dart';
 import 'package:nicoya_now/app/core/services/notification_service.dart';
+
+// Auth
 import 'package:nicoya_now/app/features/auth/data/datasources/auth_data_source.dart';
 import 'package:nicoya_now/app/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:nicoya_now/app/features/auth/domain/repositories/auth_repository.dart';
@@ -67,7 +71,8 @@ void setupServiceLocator() {
     final supabase = Supabase.instance.client;
     locator.registerSingleton<SupabaseClient>(supabase);
   }
-  locator.registerLazySingleton<RoleService>(
+
+   locator.registerLazySingleton<RoleService>(
         () => RoleService(locator<SupabaseClient>()));
 
   // Services
@@ -160,6 +165,9 @@ locator.registerLazySingleton<ChangeOrderStatusUseCase>(
   // ───────────────────────────── Core ──────────────────────────────────
   locator.registerLazySingleton<RoleService>(
     () => RoleService(locator<SupabaseClient>()),
+  );
+  locator.registerLazySingleton<NotificationService>(
+    () => NotificationService(),
   );
 
   // ───────────────────────────── DataSources ───────────────────────────
