@@ -78,8 +78,7 @@ class _HomeFoodState extends State<HomeFood> {
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           actions: <Widget>[
-            NotificationIcon(),
-            const NotificationBell(size: 28, color: Color(0xffd72a23)),
+            const NotificationBell(size: 35, color: Color(0xffd72a23)),
             const SizedBox(width: 8),
           ],
         ),
