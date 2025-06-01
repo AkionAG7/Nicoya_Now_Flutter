@@ -253,36 +253,37 @@ class _CarritoState extends State<Carrito> {
                       },
                     ),
           ),
-          const SizedBox(height: 20),
-          Center(
-            child: SizedBox(
-              width: 250,
-              height: 70,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFFf10027),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+          if (_items.isNotEmpty) ...[
+            const SizedBox(height: 20),
+            Center(
+              child: SizedBox(
+                width: 250,
+                height: 70,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFFf10027),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
                   ),
-                ),
-                onPressed: () async {
-                  await updateCarrito(_items);
-                  final total = calcularTotal(_items);
-                  Navigator.pushNamed(context, Routes.pago, arguments: total);
-                  await cargarProductos();
-                },
-                child: Text(
-                  'Confirmar orden',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                  onPressed: () async {
+                    await updateCarrito(_items);
+                    final total = calcularTotal(_items);
+                    Navigator.pushNamed(context, Routes.pago, arguments: total);
+                    await cargarProductos();
+                  },
+                  child: Text(
+                    'Confirmar orden',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-
+          ],
           const SizedBox(height: 40),
         ],
       ),
