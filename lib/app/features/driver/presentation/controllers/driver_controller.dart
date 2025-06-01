@@ -425,8 +425,7 @@ class DriverController extends ChangeNotifier {
       return false;
     }
   }
-  
-  /// Fetch available orders (not assigned to any driver)
+    /// Fetch available orders (not assigned to any driver) using the new view
   Future<List<Map<String, dynamic>>> fetchAvailableOrders() async {
     try {
       final userId = _supabase.auth.currentUser?.id;
@@ -437,16 +436,24 @@ class DriverController extends ChangeNotifier {
         return [];
       }
       
-      // Call the RPC function to get available orders
-      final response = await _supabase.rpc(
-        'get_available_orders_for_driver',
-        params: {'p_driver_id': userId},
-      );
+      // Using the available_orders_view instead of the RPC function
+      final response = await _supabase
+          .from('available_orders_view')
+          .select();
       
       // Return the list of available orders
-      return List<Map<String, dynamic>>.from(response);
+      final List<Map<String, dynamic>> orders = List<Map<String, dynamic>>.from(response);
+      
+      // Log for debugging
+      print('Fetched ${orders.length} available orders');
+      if (orders.isNotEmpty) {
+        print('Sample order: ${orders.first}');
+      }
+      
+      return orders;
     } catch (e) {
       _error = 'Error al obtener pedidos disponibles: $e';
+      print('Error fetching available orders: $e');
       notifyListeners();
       return [];
     }
