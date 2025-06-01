@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:nicoya_now/app/features/driver/presentation/controllers/driver_controller.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:nicoya_now/app/features/driver/presentation/controllers/driver_controller.dart';
 import 'package:nicoya_now/app/features/driver/presentation/managers/location_manager.dart';
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 import 'package:nicoya_now/Icons/nicoya_now_icons_icons.dart';
@@ -127,10 +127,6 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
     
     try {
       final String specificOrderId = 'f50a1fbb-d76b-4c0e-af0e-d20015396591';
-      
-      // Llamar a los métodos de depuración
-      await controller.loadActiveOrdersWithDebug();
-      await controller.forceCheckSpecificOrder(); 
       
       // Check if the problematic order exists in controller
       _orderExistsInController(specificOrderId, controller);
