@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:nicoya_now/app/features/auth/data/datasources/auth_data_source.dart';
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class UserBottomBarCustomer extends StatefulWidget {
-  const UserBottomBarCustomer({Key? key}) : super(key: key);
+  const UserBottomBarCustomer({super.key});
 
   @override
-  _UserBottomBarCustomerState createState() => _UserBottomBarCustomerState();
+  UserBottomBarCustomerState createState() => UserBottomBarCustomerState();
 }
 
-class _UserBottomBarCustomerState extends State<UserBottomBarCustomer> {
+class UserBottomBarCustomerState extends State<UserBottomBarCustomer> {
   final AuthDataSource authDataSource = SupabaseAuthDataSource(
     Supabase.instance.client,
   );
@@ -35,8 +34,8 @@ class _UserBottomBarCustomerState extends State<UserBottomBarCustomer> {
                 onPressed: () async {
                   await authDataSource.signOut();
                   if (!mounted) return;
-                  Navigator.pushNamedAndRemoveUntil(
-                    context,
+                  // ignore: use_build_context_synchronously
+                  Navigator.pushNamedAndRemoveUntil(context,
                     Routes.login_page,
                     (route) => false,
                   );

@@ -3,18 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:nicoya_now/Icons/nicoya_now_icons_icons.dart';
 import 'package:nicoya_now/app/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
-import 'package:nicoya_now/app/interface/Widgets/SelectTypeAccount.dart';
+import 'package:nicoya_now/app/interface/Widgets/select_type_account.dart';
 import 'package:provider/provider.dart';
 
 class LoginPage extends StatefulWidget {
   final AccountType? accountType;
-  const LoginPage({Key? key, this.accountType}) : super(key: key);
+  const LoginPage({super.key, this.accountType});
 
   @override
-  _LoginPageState createState() => _LoginPageState();
+  LoginPageState createState() => LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class LoginPageState extends State<LoginPage> {
   bool _obscureText = true;
   bool _rememberMe = false;
   final TextEditingController _emailController = TextEditingController();
@@ -24,7 +24,8 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void initState() {
-    super.initState();    _tapRegister =
+    super.initState();
+    _tapRegister =
         TapGestureRecognizer()
           ..onTap = () async {
             // Dirigir al usuario a la selección de tipo de cuenta
@@ -190,13 +191,14 @@ class _LoginPageState extends State<LoginPage> {
                     children: [
                       IconButton(
                         onPressed:
-                            () => print('hello'), // implementar logica de login
+                            // ignore: avoid_print
+                            () => print('hello'),
                         icon: Icon(NicoyaNowIcons.facebook, size: 40),
                       ),
                       const SizedBox(width: 40),
                       IconButton(
-                        onPressed:
-                            () => print('hello'), // implementar logica de login
+                        // ignore: avoid_print
+                        onPressed: () => print('hello'),
                         icon: Icon(NicoyaNowIcons.google, size: 40),
                       ),
                     ],
@@ -209,71 +211,95 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
+
   // Construye un diálogo para seleccionar el rol cuando el usuario tiene múltiples roles
-  Widget _buildRoleSelectionDialog(BuildContext context, AuthController authController) {
+  Widget _buildRoleSelectionDialog(
+    BuildContext context,
+    AuthController authController,
+  ) {
     // Lista de roles disponibles para mostrar (usando el nuevo método del controlador)
     final roles = authController.userRoles;
-    
+
     return AlertDialog(
       title: Text('Selecciona tu rol'),
       content: SingleChildScrollView(
         child: ListBody(
-          children: roles.map((role) {
-            String title;
-            IconData icon;
-              // Configurar título e icono según el rol
-            switch (role) {       
-              case 'customer': // Updated to match database role name
-                title = 'Cliente';
-                icon = Icons.person;
-                break;
-              case 'driver':
-                title = 'Repartidor';
-                icon = Icons.delivery_dining;
-                break;
-              case 'merchant':
-                title = 'Comerciante';
-                icon = Icons.store;
-                break;
-              case 'admin':
-                title = 'Administrador';
-                icon = Icons.admin_panel_settings;
-                break;
-              default:
-                title = 'Usuario';
-                icon = Icons.person;
-            }
-            
-            return ListTile(
-              leading: Icon(icon, color: Color(0xffd72a23)),
-              title: Text(title),
-              onTap: () {                // Manejar selección del rol
-                switch (role) {                  case 'customer': // Updated to match database role name
-                    Navigator.pushNamedAndRemoveUntil(
-                      context, Routes.home_food, (route) => false);
-                    break;                  case 'driver':
-                    Navigator.pushNamedAndRemoveUntil(
-                      context, Routes.home_driver, (route) => false);
+          children:
+              roles.map((role) {
+                String title;
+                IconData icon;
+                // Configurar título e icono según el rol
+                switch (role) {
+                  case 'customer': // Updated to match database role name
+                    title = 'Cliente';
+                    icon = Icons.person;
+                    break;
+                  case 'driver':
+                    title = 'Repartidor';
+                    icon = Icons.delivery_dining;
                     break;
                   case 'merchant':
-                    Navigator.pushNamedAndRemoveUntil(
-                      context, Routes.home_merchant, (route) => false); // Cambiar a pantalla de comercios
+                    title = 'Comerciante';
+                    icon = Icons.store;
                     break;
                   case 'admin':
-                    Navigator.pushNamedAndRemoveUntil(
-                      context, Routes.home_admin, (route) => false); // Pantalla de administración
+                    title = 'Administrador';
+                    icon = Icons.admin_panel_settings;
                     break;
                   default:
-                    Navigator.pushNamedAndRemoveUntil(
-                      context, Routes.home_food, (route) => false);
+                    title = 'Usuario';
+                    icon = Icons.person;
                 }
-              },
-            );
-          }).toList(),
+
+                return ListTile(
+                  leading: Icon(icon, color: Color(0xffd72a23)),
+                  title: Text(title),
+                  onTap: () {
+                    // Manejar selección del rol
+                    switch (role) {
+                      case 'customer': // Updated to match database role name
+                        Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          Routes.home_food,
+                          (route) => false,
+                        );
+                        break;
+                      case 'driver':
+                        Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          Routes.home_driver,
+                          (route) => false,
+                        );
+                        break;
+                      case 'merchant':
+                        Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          Routes.home_merchant,
+                          (route) => false,
+                        ); // Cambiar a pantalla de comercios
+                        break;
+                      case 'admin':
+                        Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          Routes.home_admin,
+                          (route) => false,
+                        ); // Pantalla de administración
+                        break;
+                      default:
+                        Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          Routes.home_food,
+                          (route) => false,
+                        );
+                    }
+                  },
+                );
+              }).toList(),
         ),
       ),
     );
   }
+
   Future<void> _login() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -291,15 +317,15 @@ class _LoginPageState extends State<LoginPage> {
         context,
         listen: false,
       );
-      
+
       // Usar el método actualizado para login con selección de rol y verificación
       final result = await authController.handleLoginWithRoleSelection(
         _emailController.text.trim(),
         _passwordController.text,
       );
-      
+
       if (!mounted) return;
-      
+
       if (result['success'] == true) {
         // Verificar si hay múltiples roles disponibles
         if (result['hasMultipleRoles'] == true) {
@@ -312,37 +338,38 @@ class _LoginPageState extends State<LoginPage> {
             case 'admin':
               // Redirección para administradores
               Navigator.pushNamedAndRemoveUntil(
-                context, 
+                context,
                 Routes.home_admin,
-                (route) => false
+                (route) => false,
               );
               break;
             case 'customer':
               Navigator.pushNamedAndRemoveUntil(
-                context, 
+                context,
                 Routes.clientNav,
-                (route) => false
-              );              break;
+                (route) => false,
+              );
+              break;
             case 'driver':
               Navigator.pushNamedAndRemoveUntil(
-                context, 
+                context,
                 Routes.home_driver,
-                (route) => false
+                (route) => false,
               );
               break;
             case 'merchant':
               Navigator.pushNamedAndRemoveUntil(
-                context, 
+                context,
                 Routes.home_merchant,
-                (route) => false
+                (route) => false,
               );
               break;
             default:
               // Si no hay rol definido, ir a la pantalla principal
               Navigator.pushNamedAndRemoveUntil(
-                context, 
+                context,
                 Routes.clientNav,
-                (route) => false
+                (route) => false,
               );
           }
         }
@@ -354,21 +381,19 @@ class _LoginPageState extends State<LoginPage> {
             Navigator.pushNamedAndRemoveUntil(
               context,
               Routes.merchantPending,
-              (route) => false
+              (route) => false,
             );
           } else if (redirectPage == 'driverPending') {
             Navigator.pushNamedAndRemoveUntil(
               context,
               Routes.driverPending,
-              (route) => false
+              (route) => false,
             );
           }
         } else {
           // Mostrar mensaje de error genérico
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(result['message'] ?? 'Error desconocido'),
-            ),
+            SnackBar(content: Text(result['message'] ?? 'Error desconocido')),
           );
         }
       }

@@ -1,25 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:nicoya_now/Icons/nicoya_now_icons_icons.dart';
-import 'package:nicoya_now/app/interface/Widgets/UserBottomBarCustomer.dart';
+import 'package:nicoya_now/app/interface/Widgets/user_bottom_bar_customer.dart';
 import 'package:nicoya_now/app/features/order/presentation/pages/carrito_page.dart';
 import 'package:nicoya_now/app/features/products/presentation/pages/home_food.dart';
 
 class BottomNavigator extends StatefulWidget {
-  const BottomNavigator({Key? key}) : super(key: key);
+  const BottomNavigator({super.key});
 
   @override
-  _BottomNavigatorState createState() => _BottomNavigatorState();
+  BottomNavigatorState createState() => BottomNavigatorState();
 }
 
-class _BottomNavigatorState extends State<BottomNavigator> {
+class BottomNavigatorState extends State<BottomNavigator> {
   int _currentIndex = 0;
   Key _carritoKey = UniqueKey();
 
-  final List<Widget> _pages = [
+  List<Widget> get _pages => [
     HomeFood(),
     const Placeholder(),
-    Carrito(),
+    Carrito(key: _carritoKey),
     UserBottomBarCustomer(),
   ];
 

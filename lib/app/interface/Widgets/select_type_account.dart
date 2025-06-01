@@ -5,13 +5,13 @@ import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 enum AccountType { repartidor, comercio, cliente }
 
 class SelectTypeAccount extends StatefulWidget {
-  const SelectTypeAccount({Key? key}) : super(key: key);
+  const SelectTypeAccount({super.key});
 
   @override
-  _SelectTypeAccountState createState() => _SelectTypeAccountState();
+  SelectTypeAccountState createState() => SelectTypeAccountState();
 }
 
-class _SelectTypeAccountState extends State<SelectTypeAccount> {
+class SelectTypeAccountState extends State<SelectTypeAccount> {
   
   /// Shows a login prompt dialog for the customer role
   void _showLoginPrompt(String roleSlug) {

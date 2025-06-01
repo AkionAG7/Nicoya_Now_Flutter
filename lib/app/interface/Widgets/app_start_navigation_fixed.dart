@@ -5,13 +5,13 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:nicoya_now/app/core/utils/role_utils.dart';
 
 class AppStartNavigation extends StatefulWidget {
-  const AppStartNavigation({Key? key}) : super(key: key);
+  const AppStartNavigation({super.key});
 
   @override
-  _AppStartNavigationState createState() => _AppStartNavigationState();
+  AppStartNavigationState createState() => AppStartNavigationState();
 }
 
-class _AppStartNavigationState extends State<AppStartNavigation> {
+class AppStartNavigationState extends State<AppStartNavigation> {
   bool _isLoading = true;
   bool _isFirstTime = false;
   bool _isAuthenticated = false;
@@ -28,7 +28,7 @@ class _AppStartNavigationState extends State<AppStartNavigation> {
       // 1. Verificar si es la primera vez que abre la app
       final prefs = await SharedPreferences.getInstance();
       final alreadyOpened = prefs.getBool('already_opened') ?? false;
-      
+
       if (!alreadyOpened) {
         await prefs.setBool('already_opened', true);
         setState(() {
@@ -37,11 +37,11 @@ class _AppStartNavigationState extends State<AppStartNavigation> {
         });
         return;
       }
-      
+
       // 2. Verificar si hay sesión activa
       final auth = Supabase.instance.client.auth;
       final session = auth.currentSession;
-      
+
       if (session == null) {
         setState(() {
           _isLoading = false;
@@ -49,19 +49,19 @@ class _AppStartNavigationState extends State<AppStartNavigation> {
         });
         return;
       }
-      
+
       // 3. Verificar si el usuario tiene múltiples roles
       try {
         final userId = auth.currentUser!.id;
-        
+
         // Use the safer approach to query roles
         final rolesList = await RoleUtils.getRolesForUser(
-          Supabase.instance.client, 
-          userId
+          Supabase.instance.client,
+          userId,
         );
-            
+
         final hasMultipleRoles = rolesList.length > 1;
-        
+
         setState(() {
           _isLoading = false;
           _isAuthenticated = true;
@@ -89,13 +89,13 @@ class _AppStartNavigationState extends State<AppStartNavigation> {
         // Obtener el rol del usuario actual
         final userId = Supabase.instance.client.auth.currentUser!.id;
         final rolesList = await RoleUtils.getRolesForUser(
-          Supabase.instance.client, 
-          userId
+          Supabase.instance.client,
+          userId,
         );
-        
+
         if (rolesList.isNotEmpty) {
           final userRole = rolesList.first;
-          
+
           // Navigate based on user role
           if (userRole == 'admin') {
             // Admin panel
@@ -117,7 +117,7 @@ class _AppStartNavigationState extends State<AppStartNavigation> {
             return;
           }
         }
-        
+
         // If no specific role found, use the client navigation
         if (mounted) {
           Navigator.pushReplacementNamed(context, Routes.clientNav);
@@ -130,7 +130,7 @@ class _AppStartNavigationState extends State<AppStartNavigation> {
       }
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -139,9 +139,7 @@ class _AppStartNavigationState extends State<AppStartNavigation> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CircularProgressIndicator(
-                color: Color(0xFFD72A23),
-              ),
+              CircularProgressIndicator(color: Color(0xFFD72A23)),
               SizedBox(height: 20),
               Text('Cargando...'),
             ],

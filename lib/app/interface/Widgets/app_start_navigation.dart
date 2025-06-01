@@ -5,13 +5,13 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:nicoya_now/app/core/utils/role_utils.dart';
 
 class AppStartNavigation extends StatefulWidget {
-  const AppStartNavigation({Key? key}) : super(key: key);
+  const AppStartNavigation({super.key});
 
   @override
-  _AppStartNavigationState createState() => _AppStartNavigationState();
+  AppStartNavigationState createState() => AppStartNavigationState();
 }
 
-class _AppStartNavigationState extends State<AppStartNavigation> {
+class AppStartNavigationState extends State<AppStartNavigation> {
   bool _isLoading = true;
   bool _isFirstTime = false;
   bool _isAuthenticated = false;

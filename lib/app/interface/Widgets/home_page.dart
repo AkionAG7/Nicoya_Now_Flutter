@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:nicoya_now/Icons/nicoya_now_icons_icons.dart';
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
-import 'package:nicoya_now/app/interface/Widgets/SelectTypeAccount.dart';
+import 'package:nicoya_now/app/interface/Widgets/select_type_account.dart';
 
 class Home extends StatelessWidget {
   final AccountType? accountType;
-  const Home({Key? key, required this.accountType}) : super(key: key);
+  const Home({super.key, required this.accountType});
 
   @override
   Widget build(BuildContext context) {
@@ -37,12 +37,10 @@ class Home extends StatelessWidget {
                   NicoyaNowIcons.nicoyanow,
                   size: 400,
                   color: Color(0xffd72a23),
-                ),                ElevatedButton(
+                ),
+                ElevatedButton(
                   onPressed:
-                      () => Navigator.pushNamed(
-                        context,
-                        Routes.login_page,
-                      ),
+                      () => Navigator.pushNamed(context, Routes.login_page),
                   style: ElevatedButton.styleFrom(
                     padding: EdgeInsets.symmetric(horizontal: 50, vertical: 30),
                     backgroundColor: Color(0xffd72a23),
@@ -64,7 +62,8 @@ class Home extends StatelessWidget {
                   ),
                 ),
 
-                SizedBox(height: 50),                ElevatedButton(
+                SizedBox(height: 50),
+                ElevatedButton(
                   onPressed: () {
                     // Dirigir al usuario a la selección del tipo de cuenta
                     Navigator.pushNamed(context, Routes.selecctTypeAccount);

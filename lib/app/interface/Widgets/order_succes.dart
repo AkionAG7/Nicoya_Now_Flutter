@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 
 class OrderSucces extends StatefulWidget {
-  const OrderSucces({Key? key}) : super(key: key);
+  const OrderSucces({super.key});
 
   @override
-  _OrderSuccesState createState() => _OrderSuccesState();
+  OrderSuccesState createState() => OrderSuccesState();
 }
 
-class _OrderSuccesState extends State<OrderSucces> {
+class OrderSuccesState extends State<OrderSucces> {
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;

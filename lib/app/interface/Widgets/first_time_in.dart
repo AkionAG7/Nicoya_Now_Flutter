@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
-import 'package:nicoya_now/app/interface/SplashWidgets/SplashFT1.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class FirstTimeIn extends StatefulWidget {
-  const FirstTimeIn({Key? key}) : super(key: key);
+  const FirstTimeIn({super.key});
 
   @override
-  _FirstTimeInState createState() => _FirstTimeInState();
+  FirstTimeInState createState() => FirstTimeInState();
 }
 
-class _FirstTimeInState extends State<FirstTimeIn> {
+class FirstTimeInState extends State<FirstTimeIn> {
   bool? _showSplash;
 
   @override

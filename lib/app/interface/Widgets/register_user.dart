@@ -1,13 +1,13 @@
 import 'package:flutter/widgets.dart';
 
 class RegisterUser extends StatefulWidget {
-  const RegisterUser({ Key? key }) : super(key: key);
+  const RegisterUser({ super.key });
 
   @override
-  _RegisterUserState createState() => _RegisterUserState();
+  RegisterUserState createState() => RegisterUserState();
 }
 
-class _RegisterUserState extends State<RegisterUser> {
+class RegisterUserState extends State<RegisterUser> {
   @override
   Widget build(BuildContext context) {
     return Container(

@@ -10,19 +10,19 @@ class NotificationBell extends StatelessWidget {
   final bool showBadge;
 
   const NotificationBell({
-    Key? key,
+    super.key,
     this.size = 24,
     this.color,
     this.badgeColor,
     this.showBadge = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return Consumer<NotificationService>(
       builder: (context, notificationService, child) {
         final unreadCount = notificationService.unreadCount;
-        
+
         return GestureDetector(
           onTap: () => _showNotificationBottomSheet(context),
           child: Stack(
@@ -75,10 +75,11 @@ class NotificationBell extends StatelessWidget {
 }
 
 class NotificationBottomSheet extends StatefulWidget {
-  const NotificationBottomSheet({Key? key}) : super(key: key);
+  const NotificationBottomSheet({super.key});
 
   @override
-  State<NotificationBottomSheet> createState() => _NotificationBottomSheetState();
+  State<NotificationBottomSheet> createState() =>
+      _NotificationBottomSheetState();
 }
 
 class _NotificationBottomSheetState extends State<NotificationBottomSheet> {
@@ -102,7 +103,7 @@ class _NotificationBottomSheetState extends State<NotificationBottomSheet> {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          
+
           // Header
           Padding(
             padding: const EdgeInsets.all(16),
@@ -111,15 +112,12 @@ class _NotificationBottomSheetState extends State<NotificationBottomSheet> {
               children: [
                 const Text(
                   'Notificaciones',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 Consumer<NotificationService>(
                   builder: (context, notificationService, child) {
                     if (!notificationService.hasUnread) return const SizedBox();
-                    
+
                     return TextButton(
                       onPressed: () => notificationService.markAllAsRead(),
                       child: const Text('Marcar todas como leídas'),
@@ -129,15 +127,15 @@ class _NotificationBottomSheetState extends State<NotificationBottomSheet> {
               ],
             ),
           ),
-          
+
           const Divider(height: 1),
-          
+
           // Notifications list
           Expanded(
             child: Consumer<NotificationService>(
               builder: (context, notificationService, child) {
                 final notifications = notificationService.notifications;
-                
+
                 if (notifications.isEmpty) {
                   return const Center(
                     child: Column(
@@ -151,16 +149,13 @@ class _NotificationBottomSheetState extends State<NotificationBottomSheet> {
                         SizedBox(height: 16),
                         Text(
                           'No hay notificaciones',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey,
-                          ),
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
                         ),
                       ],
                     ),
                   );
                 }
-                
+
                 return RefreshIndicator(
                   onRefresh: notificationService.refresh,
                   child: ListView.builder(
@@ -170,8 +165,12 @@ class _NotificationBottomSheetState extends State<NotificationBottomSheet> {
                       final notification = notifications[index];
                       return NotificationTile(
                         notification: notification,
-                        onTap: () => _handleNotificationTap(context, notification),
-                        onDismiss: () => notificationService.deleteNotification(notification.id),
+                        onTap:
+                            () => _handleNotificationTap(context, notification),
+                        onDismiss:
+                            () => notificationService.deleteNotification(
+                              notification.id,
+                            ),
                       );
                     },
                   ),
@@ -184,9 +183,15 @@ class _NotificationBottomSheetState extends State<NotificationBottomSheet> {
     );
   }
 
-  void _handleNotificationTap(BuildContext context, NotificationModel notification) {
-    final notificationService = Provider.of<NotificationService>(context, listen: false);
-    
+  void _handleNotificationTap(
+    BuildContext context,
+    NotificationModel notification,
+  ) {
+    final notificationService = Provider.of<NotificationService>(
+      context,
+      listen: false,
+    );
+
     // Marcar como leída si no lo está
     if (!notification.isRead) {
       notificationService.markAsRead(notification.id);
@@ -196,7 +201,10 @@ class _NotificationBottomSheetState extends State<NotificationBottomSheet> {
     _navigateBasedOnNotification(context, notification);
   }
 
-  void _navigateBasedOnNotification(BuildContext context, NotificationModel notification) {
+  void _navigateBasedOnNotification(
+    BuildContext context,
+    NotificationModel notification,
+  ) {
     Navigator.pop(context); // Cerrar el bottom sheet
 
     switch (notification.type) {
@@ -233,11 +241,11 @@ class NotificationTile extends StatelessWidget {
   final VoidCallback onDismiss;
 
   const NotificationTile({
-    Key? key,
+    super.key,
     required this.notification,
     required this.onTap,
     required this.onDismiss,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -249,21 +257,17 @@ class NotificationTile extends StatelessWidget {
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
         color: Colors.red,
-        child: const Icon(
-          Icons.delete,
-          color: Colors.white,
-        ),
+        child: const Icon(Icons.delete, color: Colors.white),
       ),
       child: InkWell(
         onTap: onTap,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: notification.isRead ? Colors.white : Colors.blue.withOpacity(0.05),
+            color:
+                notification.isRead ? Colors.white : Colors.blue.withAlpha(13),
             border: Border(
-              bottom: BorderSide(
-                color: Colors.grey.withOpacity(0.2),
-              ),
+              bottom: BorderSide(color: Colors.grey.withAlpha(51)),
             ),
           ),
           child: Row(
@@ -274,7 +278,7 @@ class NotificationTile extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: _getNotificationColor(notification.type).withOpacity(0.1),
+                  color: _getNotificationColor(notification.type).withAlpha(26),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Center(
@@ -284,9 +288,9 @@ class NotificationTile extends StatelessWidget {
                   ),
                 ),
               ),
-              
+
               const SizedBox(width: 12),
-              
+
               // Content
               Expanded(
                 child: Column(
@@ -298,7 +302,10 @@ class NotificationTile extends StatelessWidget {
                           child: Text(
                             notification.title,
                             style: TextStyle(
-                              fontWeight: notification.isRead ? FontWeight.normal : FontWeight.bold,
+                              fontWeight:
+                                  notification.isRead
+                                      ? FontWeight.normal
+                                      : FontWeight.bold,
                               fontSize: 14,
                             ),
                           ),
@@ -314,27 +321,21 @@ class NotificationTile extends StatelessWidget {
                           ),
                       ],
                     ),
-                    
+
                     const SizedBox(height: 4),
-                    
+
                     Text(
                       notification.body,
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 12,
-                      ),
+                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    
+
                     const SizedBox(height: 4),
-                    
+
                     Text(
                       notification.getTimeAgo(),
-                      style: TextStyle(
-                        color: Colors.grey[500],
-                        fontSize: 11,
-                      ),
+                      style: TextStyle(color: Colors.grey[500], fontSize: 11),
                     ),
                   ],
                 ),
