@@ -1,7 +1,7 @@
 // lib/app/features/order/presentation/pages/order_detail_page.dart
 
 import 'package:get_it/get_it.dart';
-import 'package:nicoya_now/app/features/order/presentation/controllers/ChangeOrderStatusController.dart';
+import 'package:nicoya_now/app/features/order/presentation/controllers/change_order_status_controller.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 // Core & shared

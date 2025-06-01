@@ -148,6 +148,7 @@ class OrderDatasourceImpl implements OrderDatasource {
 
   @override
   Future<void> confirmOrder(String userId) async {
+    // ignore: avoid_print
     print('Confirmando orden para userId: $userId');
     await supabaseClient
         .from('order')
@@ -206,7 +207,7 @@ class OrderDatasourceImpl implements OrderDatasource {
         .select('order_item_id')
         .eq('order_id', orderId);
 
-    if (remainingItems == null || remainingItems.isEmpty) {
+    if (remainingItems.isEmpty) {
       // 6. Si no quedan, eliminar la orden
       await supabaseClient.from('order').delete().eq('order_id', orderId);
     }
@@ -228,7 +229,6 @@ class OrderDatasourceImpl implements OrderDatasource {
     for (final item in items) {
       final orderItemId = item['order_item_id'];
       final quantity = item['quantity'];
-      final product = item['product'] as Product;
 
       final updated =
           await supabaseClient

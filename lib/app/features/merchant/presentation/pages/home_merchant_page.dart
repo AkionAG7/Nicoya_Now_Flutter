@@ -4,7 +4,7 @@ import 'package:nicoya_now/app/features/order/data/datasources/order_datasource.
 import 'package:nicoya_now/app/features/order/data/repositories/order_repository_impl.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_products_page.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_settings_page.dart';
-import 'package:nicoya_now/app/features/order/presentation/controllers/OrderController.dart';
+import 'package:nicoya_now/app/features/order/presentation/controllers/order_controller.dart';
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 import 'package:nicoya_now/app/interface/Widgets/notification_bell.dart';
 import 'package:nicoya_now/Icons/nicoya_now_icons_icons.dart';

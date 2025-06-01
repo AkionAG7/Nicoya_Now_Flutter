@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:nicoya_now/app/core/enums/payment_method.dart';
-import 'package:nicoya_now/app/features/order/data/datasources/order_datasource.dart';
 import 'package:nicoya_now/app/features/order/presentation/widgets/detalles_confirmar_orden.dart';
 import 'package:nicoya_now/app/features/order/presentation/widgets/payment_method_view.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+
 
 class Pago extends StatefulWidget {
   const Pago({super.key});
