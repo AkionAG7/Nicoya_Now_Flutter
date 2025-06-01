@@ -125,7 +125,7 @@ class NotificationModel {
       case NotificationType.orderApproved:
         return '🎉';
       case NotificationType.orderAccepted:
-        return '🚗';
+        return '🧑‍🍳';
       case NotificationType.orderOnWay:
         return '🚚';
       case NotificationType.orderDelivered:
