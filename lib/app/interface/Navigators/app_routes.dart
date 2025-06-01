@@ -15,7 +15,6 @@ import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_ste
 import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_step_password.dart';
 import 'package:nicoya_now/app/features/order/presentation/pages/Carrito.dart';
 import 'package:nicoya_now/app/features/order/presentation/pages/Pago.dart';
-import 'package:nicoya_now/app/features/driver/presentation/pages/home_driver_page.dart';
 import 'package:nicoya_now/app/features/driver/presentation/pages/order_details_page.dart';
 import 'package:nicoya_now/app/features/products/domain/entities/products.dart';
 import 'package:nicoya_now/app/features/products/presentation/pages/MerchantPublicProductsPage.dart';
@@ -38,6 +37,8 @@ import 'package:nicoya_now/app/features/products/presentation/pages/ProductDetai
 import 'package:nicoya_now/app/interface/Widgets/RegisterUser.dart';
 import 'package:nicoya_now/app/interface/Widgets/SelectTypeAccount.dart';
 import 'package:nicoya_now/app/features/admin/presentation/pages/home_admin_page.dart';
+// Usando la version refactorizada del home_driver_page
+import 'package:nicoya_now/app/features/driver/presentation/pages/home_driver_page_refactored.dart';
 
 import 'routes.dart';
 
