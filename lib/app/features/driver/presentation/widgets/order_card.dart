@@ -98,6 +98,7 @@ class OrderCard extends StatelessWidget {
   List<Widget> _buildOrderActions(BuildContext context, Map<String, dynamic> order) {
     final String status = order['status'] ?? '';
     final String orderId = order['order_id'] ?? '';
+    final controller = Provider.of<DriverController>(context, listen: false);
     
     switch (status) {
       // Using 'pending' for orders that would have been 'assigned'
@@ -111,8 +112,25 @@ class OrderCard extends StatelessWidget {
               foregroundColor: Colors.white,
             ),
             onPressed: () async {
-              final controller = Provider.of<DriverController>(context, listen: false);
-              await controller.updateOrderStatus(orderId, 'accepted');
+              // Mostrar indicador de carga
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) => const Center(child: CircularProgressIndicator()),
+              );
+              
+              // Usar el método acceptOrderRPC
+              final success = await controller.acceptOrderRPC(orderId);
+              
+              // Cerrar indicador de carga
+              Navigator.of(context).pop();
+              
+              // Mostrar mensaje de resultado
+              if (success && context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Pedido aceptado correctamente')),
+                );
+              }
             },
           ),
           ElevatedButton.icon(
@@ -124,13 +142,12 @@ class OrderCard extends StatelessWidget {
             ),
             onPressed: () {
               // Open map navigation - use the active order tracking
-              final activeOrder = order;
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => ActiveOrderTrackingWidget(
-                    controller: Provider.of<DriverController>(context, listen: false),
-                    activeOrder: activeOrder,
+                    controller: controller,
+                    activeOrder: order,
                   ),
                 ),
               );
@@ -149,13 +166,12 @@ class OrderCard extends StatelessWidget {
             ),
             onPressed: () {
               // Open map navigation - use the active order tracking
-              final activeOrder = order;
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => ActiveOrderTrackingWidget(
-                    controller: Provider.of<DriverController>(context, listen: false),
-                    activeOrder: activeOrder,
+                    controller: controller,
+                    activeOrder: order,
                   ),
                 ),
               );
@@ -169,47 +185,29 @@ class OrderCard extends StatelessWidget {
               foregroundColor: Colors.white,
             ),
             onPressed: () async {
-              final controller = Provider.of<DriverController>(context, listen: false);
-              await controller.updateOrderStatus(orderId, 'in_process');
+              // Mostrar indicador de carga
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) => const Center(child: CircularProgressIndicator()),
+              );
+              
+              // Usar el método markOrderPickedUp
+              final success = await controller.markOrderPickedUp(orderId);
+              
+              // Cerrar indicador de carga
+              Navigator.of(context).pop();
+              
+              // Mostrar mensaje de resultado
+              if (success && context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Pedido recogido correctamente')),
+                );
+              }
             },
           ),
         ];
       case 'in_process':
-        return [
-          ElevatedButton.icon(
-            icon: Icon(Icons.navigation),
-            label: Text('Navegar'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
-              foregroundColor: Colors.white,
-            ),
-            onPressed: () {
-              // Open map navigation - use the active order tracking
-              final activeOrder = order;
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ActiveOrderTrackingWidget(
-                    controller: Provider.of<DriverController>(context, listen: false),
-                    activeOrder: activeOrder,
-                  ),
-                ),
-              );
-            },
-          ),
-          ElevatedButton.icon(
-            icon: Icon(Icons.home),
-            label: Text('En camino'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFE60023),
-              foregroundColor: Colors.white,
-            ),
-            onPressed: () async {
-              final controller = Provider.of<DriverController>(context, listen: false);
-              await controller.updateOrderStatus(orderId, 'on_way');
-            },
-          ),
-        ];
       case 'on_way':
         return [
           ElevatedButton.icon(
@@ -221,13 +219,12 @@ class OrderCard extends StatelessWidget {
             ),
             onPressed: () {
               // Open map navigation - use the active order tracking
-              final activeOrder = order;
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => ActiveOrderTrackingWidget(
-                    controller: Provider.of<DriverController>(context, listen: false),
-                    activeOrder: activeOrder,
+                    controller: controller,
+                    activeOrder: order,
                   ),
                 ),
               );
@@ -241,8 +238,25 @@ class OrderCard extends StatelessWidget {
               foregroundColor: Colors.white,
             ),
             onPressed: () async {
-              final controller = Provider.of<DriverController>(context, listen: false);
-              await controller.updateOrderStatus(orderId, 'delivered');
+              // Mostrar indicador de carga
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) => const Center(child: CircularProgressIndicator()),
+              );
+              
+              // Usar el método markOrderDelivered
+              final success = await controller.markOrderDelivered(orderId);
+              
+              // Cerrar indicador de carga
+              Navigator.of(context).pop();
+              
+              // Mostrar mensaje de resultado
+              if (success && context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Pedido entregado correctamente')),
+                );
+              }
             },
           ),
         ];

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:nicoya_now/app/features/driver/presentation/controllers/driver_controller.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:nicoya_now/app/core/di/service_locator.dart';
@@ -8,17 +9,12 @@ import 'package:nicoya_now/app/core/widgets/notification_initializer.dart';
 import 'package:nicoya_now/app/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/controllers/merchant_registration_controller.dart';
 import 'package:nicoya_now/app/features/admin/presentation/controllers/admin_merchant_controller.dart';
-import 'package:nicoya_now/app/features/driver/presentation/controllers/driver_controller.dart';
 import 'package:nicoya_now/app/interface/Navigators/app_routes.dart';
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 import 'package:nicoya_now/app/interface/app_theme.dart';
-import 'package:nicoya_now/app/core/utils/map_initializer.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // Initialize Google Maps with proper renderers
-  await MapInitializer.initialize();
 
   await dotenv.load(fileName: '.env');
 
@@ -39,12 +35,9 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MultiProvider(
+  Widget build(BuildContext context) {    return MultiProvider(
       providers: [
-        ChangeNotifierProvider(
-          create: (_) => locator<AuthController>(),
-        ),
+        ChangeNotifierProvider(create: (_) => locator<AuthController>()),
         ChangeNotifierProvider(
           create: (_) => locator<MerchantRegistrationController>(),
         ),
@@ -52,16 +45,16 @@ class MyApp extends StatelessWidget {
           create: (_) => locator<AdminMerchantController>(),
         ),
         ChangeNotifierProvider(
-          create: (_) => locator<DriverController>(),
-        ),
-        Provider<NotificationService>(
           create: (_) => locator<NotificationService>(),
+        ),
+            ChangeNotifierProvider(
+          create: (_) => locator<DriverController>(),
         ),
       ],
       child: GestureDetector(
         onTap: () {
           FocusScope.of(context).unfocus();
-        },
+        },        
         child: NotificationInitializer(
           child: MaterialApp(
             title: 'Nicoya Now',

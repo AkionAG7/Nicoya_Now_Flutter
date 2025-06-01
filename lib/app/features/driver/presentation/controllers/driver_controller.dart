@@ -426,6 +426,132 @@ class DriverController extends ChangeNotifier {
     }
   }
   
+  /// Fetch available orders (not assigned to any driver)
+  Future<List<Map<String, dynamic>>> fetchAvailableOrders() async {
+    try {
+      final userId = _supabase.auth.currentUser?.id;
+      
+      if (userId == null) {
+        _error = 'Usuario no autenticado';
+        notifyListeners();
+        return [];
+      }
+      
+      // Call the RPC function to get available orders
+      final response = await _supabase.rpc(
+        'get_available_orders_for_driver',
+        params: {'p_driver_id': userId},
+      );
+      
+      // Return the list of available orders
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      _error = 'Error al obtener pedidos disponibles: $e';
+      notifyListeners();
+      return [];
+    }
+  }
+  
+  /// Accept an available order using the new RPC function
+  Future<bool> acceptOrderRPC(String orderId) async {
+    try {
+      final userId = _supabase.auth.currentUser?.id;
+      
+      if (userId == null) {
+        _error = 'Usuario no autenticado';
+        notifyListeners();
+        return false;
+      }
+      
+      // Call the RPC function to accept the order
+      await _supabase.rpc(
+        'accept_order',
+        params: {
+          'p_driver_id': userId,
+          'p_order_id': orderId,
+        },
+      );
+      
+      // Reload active orders to get the newly accepted order
+      await loadActiveOrders();
+      return true;
+    } catch (e) {
+      _error = 'Error al aceptar pedido: $e';
+      notifyListeners();
+      return false;
+    }
+  }
+  
+  /// Mark an order as picked up using the new RPC function
+  Future<bool> markOrderPickedUp(String orderId) async {
+    try {
+      final userId = _supabase.auth.currentUser?.id;
+      
+      if (userId == null) {
+        _error = 'Usuario no autenticado';
+        notifyListeners();
+        return false;
+      }
+      
+      // Call the RPC function to mark the order as picked up
+      await _supabase.rpc(
+        'mark_order_picked_up',
+        params: {
+          'p_driver_id': userId,
+          'p_order_id': orderId,
+        },
+      );
+      
+      // Update local order status
+      final orderIndex = _activeOrders.indexWhere((order) => order['order_id'] == orderId);
+      if (orderIndex != -1) {
+        _activeOrders[orderIndex]['status'] = 'on_way';
+        notifyListeners();
+      }
+      
+      return true;
+    } catch (e) {
+      _error = 'Error al marcar pedido como recogido: $e';
+      notifyListeners();
+      return false;
+    }
+  }
+  
+  /// Mark an order as delivered using the new RPC function
+  Future<bool> markOrderDelivered(String orderId) async {
+    try {
+      final userId = _supabase.auth.currentUser?.id;
+      
+      if (userId == null) {
+        _error = 'Usuario no autenticado';
+        notifyListeners();
+        return false;
+      }
+      
+      // Call the RPC function to mark the order as delivered
+      await _supabase.rpc(
+        'mark_order_delivered',
+        params: {
+          'p_driver_id': userId,
+          'p_order_id': orderId,
+        },
+      );
+      
+      // Update local order status
+      final orderIndex = _activeOrders.indexWhere((order) => order['order_id'] == orderId);
+      if (orderIndex != -1) {
+        _activeOrders[orderIndex]['status'] = 'delivered';
+        notifyListeners();
+      }
+      
+      return true;
+    } catch (e) {
+      _error = 'Error al marcar pedido como entregado: $e';
+      notifyListeners();
+      return false;
+    }
+  }
+  
   /// Update order status using the specific SQL functions for each status
   Future<bool> updateOrderStatus(String orderId, String status) async {
     try {

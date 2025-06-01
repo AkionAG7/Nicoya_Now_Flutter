@@ -68,92 +68,9 @@ final GetIt locator = GetIt.instance;
 void setupServiceLocator() {
   // ───────────────────────────── External ──────────────────────────────
   if (!locator.isRegistered<SupabaseClient>()) {
-    final supabase = Supabase.instance.client;
-    locator.registerSingleton<SupabaseClient>(supabase);
+    locator.registerSingleton<SupabaseClient>(Supabase.instance.client);
   }
 
-   locator.registerLazySingleton<RoleService>(
-        () => RoleService(locator<SupabaseClient>()));
-
-  // Services
-  locator.registerLazySingleton<NotificationService>(
-        () => NotificationService());
-
-  // Data sources
-  locator.registerLazySingleton<AuthDataSource>(
-    () => SupabaseAuthDataSource(locator<SupabaseClient>()),
-  );
-  locator.registerLazySingleton<MerchantDataSource>(
-    () => SupabaseMerchantDataSource(locator<SupabaseClient>()),
-  );
-locator.registerLazySingleton<ProductsDataSource>(
-  () => ProductsDataSourceImpl(supabaseClient: locator<SupabaseClient>()),
-);
-locator.registerLazySingleton<OrderDatasource>(
-  () => OrderDatasourceImpl(supabaseClient: Supabase.instance.client),
-);
-  // Repositories
-  locator.registerLazySingleton<AuthRepository>(
-    () => AuthRepositoryImpl(locator<AuthDataSource>()),
-  );
-  locator.registerLazySingleton<MerchantRepository>(
-    () => MerchantRepositoryImpl(locator<MerchantDataSource>()),
-  );
-  locator.registerLazySingleton<ProductsRepository>(
-  () => ProductsRepositoryImpl(dataSource: locator<ProductsDataSource>()),
-);
-locator.registerLazySingleton<OrderRepository>(
-  () => OrderRepositoryImpl(datasource: locator<OrderDatasource>()),
-);
-  // Use cases
-  locator.registerLazySingleton<SignInUseCase>(
-    () => SignInUseCase(locator<AuthRepository>()),
-  );  locator.registerLazySingleton<SignUpUseCase>(
-    () => SignUpUseCase(locator<AuthRepository>()),
-  );
-  locator.registerLazySingleton<GetUserRolesUseCase>(
-    () => GetUserRolesUseCase(locator<AuthRepository>()),
-  );
-  locator.registerLazySingleton<AddUserRoleUseCase>(
-    () => AddUserRoleUseCase(locator<AuthRepository>()),
-  );
-  locator.registerLazySingleton<RegisterMerchantUseCase>(
-    () => RegisterMerchantUseCase(locator<MerchantRepository>()),
-  );
-  locator.registerLazySingleton<GetMerchantByOwnerUseCase>(
-    () => GetMerchantByOwnerUseCase(locator<MerchantRepository>()),
-  );
-  locator.registerLazySingleton<AddProductUseCase>(
-    () => AddProductUseCase(locator<ProductsRepository>()),
-  );
-  locator.registerLazySingleton<UpdateProductUseCase>(
-  () => UpdateProductUseCase(locator<ProductsRepository>()),
-);
-locator.registerLazySingleton<DeleteProductUseCase>(
-  () => DeleteProductUseCase(locator<ProductsRepository>()),
-);
-locator.registerLazySingleton<ChangeOrderStatusUseCase>(
-  () => ChangeOrderStatusUseCase(locator<OrderRepository>()),
-);
-  // Controllers
-  locator.registerFactory<AuthController>(
-    () => AuthController(
-      signInUseCase: locator<SignInUseCase>(),
-      signUpUseCase: locator<SignUpUseCase>(),
-      roleService: locator<RoleService>(),
-      getUserRolesUseCase: locator<GetUserRolesUseCase>(),
-      addUserRoleUseCase: locator<AddUserRoleUseCase>(),
-    ),
-  );
-  locator.registerFactory<MerchantRegistrationController>(
-    () => MerchantRegistrationController(
-      registerMerchantUseCase: locator<RegisterMerchantUseCase>(),
-    ),
-  );  locator.registerFactory<MerchantSettingsController>(
-     () => MerchantSettingsController(locator<GetMerchantByOwnerUseCase>()),
-   );
-     // Admin dependencies
-  // Registrar el ConnectionChecker
   locator.registerLazySingleton<InternetConnectionChecker>(
     () => InternetConnectionChecker.createInstance(),
   );
