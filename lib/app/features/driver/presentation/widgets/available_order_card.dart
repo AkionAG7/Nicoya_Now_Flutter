@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math' as math;
 
 class AvailableOrderCard extends StatelessWidget {
   final Map<String, dynamic> order;
@@ -9,14 +10,22 @@ class AvailableOrderCard extends StatelessWidget {
     required this.order,
     required this.onAccept,
   }) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
-    // Extract order information safely
+    // Extract order information safely from the structure of available_orders_view
     final String orderId = order['order_id']?.toString() ?? 'Sin ID';
-    final String merchantName = order['merchant']?['name']?.toString() ?? 'Comercio desconocido';
+    
+    // Merchant info
+    final merchant = order['merchant'];
+    final String merchantName = merchant != null ? merchant['name']?.toString() ?? 'Comercio desconocido' : 'Comercio desconocido';
+    
     final String total = order['total']?.toString() ?? '0';
-    final String customerName = order['customer']?['first_name']?.toString() ?? 'Cliente';
+    
+    // Customer info
+    final customer = order['customer'];
+    final String firstName = customer != null ? customer['first_name']?.toString() ?? '' : '';
+    final String lastName = customer != null ? customer['last_name']?.toString() ?? '' : '';
+    final String customerName = (firstName + ' ' + lastName).trim().isEmpty ? 'Cliente' : '$firstName $lastName';
     
     // Address info
     final deliveryAddress = order['delivery_address'];
@@ -33,17 +42,28 @@ class AvailableOrderCard extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+          children: [            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                  child: Text(
-                    merchantName,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        merchantName,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
+                      Text(
+                        'ID: ${orderId.substring(0, math.min(8, orderId.length))}...',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 Container(
