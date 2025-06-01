@@ -47,13 +47,7 @@ class MerchantSettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Ajustes del Comerciante'),
-        titleTextStyle: const TextStyle(
-          fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
-        backgroundColor: const Color(0xFFE60023),
-      ),
+    return Scaffold(   
       body: FutureBuilder<Map<String, dynamic>>(
         future: _loadData(),
         builder: (ctx, snap) {

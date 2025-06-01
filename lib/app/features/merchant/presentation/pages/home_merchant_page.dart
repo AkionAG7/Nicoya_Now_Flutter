@@ -6,6 +6,7 @@ import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_pro
 import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_settings_page.dart';
 import 'package:nicoya_now/app/features/order/presentation/controllers/OrderController.dart';
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
+import 'package:nicoya_now/app/interface/Widgets/notification_bell.dart';
 import 'package:nicoya_now/Icons/nicoya_now_icons_icons.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -65,7 +66,7 @@ class _HomeMerchantPageState extends State<HomeMerchantPage> {
       }
     }
   }
-
+  
   Widget _buildOrdersTab() {
   if (_orderController.loading) {
     return const Center(child: CircularProgressIndicator());
@@ -107,6 +108,19 @@ class _HomeMerchantPageState extends State<HomeMerchantPage> {
   );
 }
 
+  String _getAppBarTitle() {
+    switch (_selectedIndex) {
+      case 0:
+        return 'Pedidos';
+      case 1:
+        return 'Inventario';
+      case 2:
+        return 'Configuración';
+      default:
+        return 'Comercio';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -126,9 +140,18 @@ class _HomeMerchantPageState extends State<HomeMerchantPage> {
       _buildOrdersTab(),
       MerchantProductsPage(merchantId: _merchantId),
       const MerchantSettingsPage(),
-    ];
-
+    ]; 
+    
     return Scaffold(
+      appBar: AppBar(
+        title: Text(_getAppBarTitle()),
+        backgroundColor: const Color(0xFFE60023),
+        foregroundColor: Colors.white,
+        actions: const [
+          NotificationBell(),
+          SizedBox(width: 16),
+        ],
+      ),
       body: SafeArea(
         child: IndexedStack(
           index: _selectedIndex,

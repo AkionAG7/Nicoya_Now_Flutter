@@ -35,41 +35,40 @@ class OrderDetailPage extends StatelessWidget {
   }
 
   /// Actualiza el campo `status` de la orden a `newStatus`
-Future<void> _updateOrderStatus(
-  BuildContext context,
-  String newStatus,
-) async {
-  debugPrint('>>> _updateOrderStatus llamado con orderId = $orderId y newStatus = $newStatus');
-  try {
-    final res = await Supabase.instance.client
-        .from('order')
-        .update({ 'status': newStatus })
-        .eq('order_id', orderId)
-        .select();
+  Future<void> _updateOrderStatus(
+    BuildContext context,
+    String newStatus,
+  ) async {
+    debugPrint('>>> _updateOrderStatus llamado con orderId = $orderId y newStatus = $newStatus');
+    try {
+      final res = await Supabase.instance.client
+          .from('order')
+          .update({ 'status': newStatus })
+          .eq('order_id', orderId)
+          .select();
 
-    // res is a PostgrestList (List<dynamic>)
-    final updatedRows = res as List<dynamic>?;
-    if (updatedRows == null || updatedRows.isEmpty) {
+      // res is a PostgrestList (List<dynamic>)
+      final updatedRows = res as List<dynamic>?;
+      if (updatedRows == null || updatedRows.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('La orden no fue encontrada o no se pudo actualizar.'),
+          ),
+        );
+        return;
+      }
+
+      final updatedStatus = (updatedRows.first as Map<String, dynamic>)['status'];
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('La orden no fue encontrada o no se pudo actualizar.'),
-        ),
+        SnackBar(content: Text('Estado actualizado a "$updatedStatus"')),
       );
-      return;
+      Navigator.of(context).pop();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Excepción: $e')),
+      );
     }
-
-    final updatedStatus = (updatedRows.first as Map<String, dynamic>)['status'];
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Estado actualizado a "$updatedStatus"')),
-    );
-    Navigator.of(context).pop();
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Excepción: $e')),
-    );
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -147,25 +146,52 @@ Future<void> _updateOrderStatus(
               const SizedBox(height: 24),
               const Divider(height: 32),
 
-              // ROW CON LOS DOS BOTONES: ACEPTAR y CANCELAR
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ElevatedButton(
-                    onPressed: currentStatus == 'pending'
-                        ? () {
-                            // Cambia a "in_process"
-                            _updateOrderStatus(context, 'in_process');
-                          }
-                        : null,
+              // Botones dinámicos según el estado de la orden
+              if (currentStatus == 'pending') ...[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        // Cambia de "pending" a "accepted"
+                        _updateOrderStatus(context, 'accepted');
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        minimumSize: const Size(120, 40),
+                      ),
+                      child: const Text('Aceptar'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        // Cambia de "pending" a "cancelled"
+                        _updateOrderStatus(context, 'cancelled');
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        minimumSize: const Size(120, 40),
+                      ),
+                      child: const Text('Cancelar'),
+                    ),
+                  ],
+                ),
+              ] else if (currentStatus == 'accepted') ...[
+                Center(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // Una vez aceptada, el comerciante puede pasarla a "in_process"
+                      _updateOrderStatus(context, 'in_process');
+                    },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
+                      backgroundColor: Colors.orange,
                       minimumSize: const Size(120, 40),
                     ),
-                    child: const Text('Aceptar'),
+                    child: const Text('Procesar'),
                   ),
-                  ElevatedButton(
-                    onPressed: currentStatus == 'pending'
+                ),
+              ] else ...[
+                ElevatedButton(
+                    onPressed: currentStatus == 'pending' || currentStatus == 'accepted' || currentStatus == 'in_process'
                         ? () {
                             // Cambia a "cancelled"
                             _updateOrderStatus(context, 'cancelled');
@@ -177,8 +203,8 @@ Future<void> _updateOrderStatus(
                     ),
                     child: const Text('Cancelar'),
                   ),
-                ],
-              ),
+                const SizedBox.shrink(),
+              ],
             ],
           );
         },
@@ -186,10 +212,3 @@ Future<void> _updateOrderStatus(
     );
   }
 }
-
-/*extension on PostgrestList {
-  get error => null;
-  
-  get data => null;
-}
-*/
