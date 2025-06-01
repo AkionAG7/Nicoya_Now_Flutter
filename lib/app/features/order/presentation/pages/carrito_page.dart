@@ -1,25 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:nicoya_now/app/features/order/data/repositories/order_repository_impl.dart';
 import 'package:nicoya_now/app/features/order/domain/usecases/calcular_total_usecase.dart';
 import 'package:nicoya_now/app/features/order/domain/usecases/get_user_cart_usecase.dart';
 import 'package:nicoya_now/app/features/order/domain/usecases/update_carrito_usecase.dart';
 import 'package:nicoya_now/app/features/order/domain/usecases/update_quantity_carrito_usecase.dart';
-import 'package:nicoya_now/app/features/order/presentation/widgets/ButtomConfirmarOrden.dart';
-import 'package:nicoya_now/app/features/order/presentation/widgets/ItemCart.dart';
+import 'package:nicoya_now/app/features/order/presentation/widgets/buttom_confirmar_orden.dart';
+import 'package:nicoya_now/app/features/order/presentation/widgets/item_cart.dart';
 import 'package:nicoya_now/app/interface/Widgets/notification_bell.dart';
 import 'package:nicoya_now/app/features/order/data/datasources/order_datasource.dart';
 import 'package:nicoya_now/app/features/products/domain/entities/products.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class Carrito extends StatefulWidget {
-  const Carrito({Key? key}) : super(key: key);
+  const Carrito({super.key});
 
   @override
-  _CarritoState createState() => _CarritoState();
+  CarritoState createState() => CarritoState();
 }
 
-class _CarritoState extends State<Carrito> {
+class CarritoState extends State<Carrito> {
   List<Map<String, dynamic>> _items = [];
   late final GetUserCart getUserCart;
   late final CalcularTotal calcularTotal;

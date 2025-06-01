@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+
 import 'package:nicoya_now/app/features/order/domain/usecases/calcular_total_usecase.dart';
 import 'package:nicoya_now/app/features/order/domain/usecases/update_carrito_usecase.dart';
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
@@ -34,6 +34,7 @@ class ButtomConfirmarOrden extends StatelessWidget {
           onPressed: () async {
             await updateCarrito(items);
             final total = calcularTotal(items);
+            // ignore: use_build_context_synchronously
             Navigator.pushNamed(context, Routes.pago, arguments: total);
             onConfirmed(); // llamamos para refrescar después de volver
           },

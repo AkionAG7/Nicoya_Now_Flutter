@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:nicoya_now/Icons/nicoya_now_icons_icons.dart';
 import 'package:nicoya_now/app/interface/Widgets/UserBottomBarCustomer.dart';
-import 'package:nicoya_now/app/features/order/presentation/pages/Carrito.dart';
+import 'package:nicoya_now/app/features/order/presentation/pages/carrito_page.dart';
 import 'package:nicoya_now/app/features/products/presentation/pages/home_food.dart';
 
 class BottomNavigator extends StatefulWidget {

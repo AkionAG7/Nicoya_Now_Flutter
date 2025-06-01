@@ -13,8 +13,8 @@ import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_set
 import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_step_business.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_step_owner.dart';
 import 'package:nicoya_now/app/features/merchant/presentation/pages/merchant_step_password.dart';
-import 'package:nicoya_now/app/features/order/presentation/pages/Carrito.dart';
-import 'package:nicoya_now/app/features/order/presentation/pages/Pago.dart';
+import 'package:nicoya_now/app/features/order/presentation/pages/carrito_page.dart';
+import 'package:nicoya_now/app/features/order/presentation/pages/pago_page.dart';
 import 'package:nicoya_now/app/features/driver/presentation/pages/order_details_page.dart';
 import 'package:nicoya_now/app/features/products/domain/entities/products.dart';
 import 'package:nicoya_now/app/features/products/presentation/pages/merchant_public_products_page.dart';
