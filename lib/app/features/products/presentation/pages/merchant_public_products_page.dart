@@ -5,7 +5,7 @@ import 'package:nicoya_now/app/features/products/domain/entities/products.dart';
 import 'package:nicoya_now/app/features/merchant/domain/usecases/fetch_merchant_products_usecase.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
-import 'package:nicoya_now/app/interface/Widgets/notification_bell.dart';
+
 
 class MerchantPublicProductsPage extends StatefulWidget {
   const MerchantPublicProductsPage({super.key});

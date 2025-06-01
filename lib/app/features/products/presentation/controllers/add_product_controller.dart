@@ -12,6 +12,7 @@ class AddProductsController extends ChangeNotifier {
       await addProductUseCase.execute(product);
       // mostrar success
     } catch (e) {
+      // ignore: avoid_print
       print('Error al agregar producto: $e');
       // mostrar error
     }

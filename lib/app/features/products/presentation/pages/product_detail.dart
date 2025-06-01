@@ -2,19 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:nicoya_now/app/features/order/data/datasources/order_item_datasource.dart';
 import 'package:nicoya_now/app/features/order/domain/usecases/add_product_to_car_usecase.dart';
 import 'package:nicoya_now/app/features/products/domain/entities/products.dart';
-import 'package:nicoya_now/app/features/products/presentation/widgets/AddToCarProduct.dart';
-import 'package:nicoya_now/app/features/products/presentation/widgets/ProductDetailImage.dart';
-import 'package:nicoya_now/app/features/products/presentation/widgets/ProductDetailInfo.dart';
+import 'package:nicoya_now/app/features/products/presentation/widgets/add_to_car_product.dart';
+import 'package:nicoya_now/app/features/products/presentation/widgets/product_detail_image.dart';
+import 'package:nicoya_now/app/features/products/presentation/widgets/product_detail_info.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ProductDetail extends StatefulWidget {
-  const ProductDetail({Key? key}) : super(key: key);
+  const ProductDetail({super.key});
 
   @override
-  _ProductDetailState createState() => _ProductDetailState();
+  ProductDetailState createState() => ProductDetailState();
 }
 
-class _ProductDetailState extends State<ProductDetail> {
+class ProductDetailState extends State<ProductDetail> {
   int cantidad = 1;
   late final AddProductToCart addProductToCart;
 

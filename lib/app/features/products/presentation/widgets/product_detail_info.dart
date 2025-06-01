@@ -9,12 +9,12 @@ class ProductDetailInfo extends StatelessWidget {
   final VoidCallback onDecrement;
 
   const ProductDetailInfo({
-    Key? key,
+    super.key,
     required this.product,
     required this.cantidad,
     required this.onIcrement,
     required this.onDecrement,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

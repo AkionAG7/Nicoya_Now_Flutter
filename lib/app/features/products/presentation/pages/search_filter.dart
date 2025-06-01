@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:nicoya_now/app/features/merchant/data/datasources/merchant_data_source.dart';
 import 'package:nicoya_now/app/features/merchant/data/repositories/merchant_repository_impl.dart';
 import 'package:nicoya_now/app/features/merchant/domain/entities/merchant.dart';
@@ -14,16 +13,17 @@ import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SearchFilter extends StatefulWidget {
-  const SearchFilter({Key? key}) : super(key: key);
+  const SearchFilter({super.key});
 
   @override
-  _SearchFilterState createState() => _SearchFilterState();
+  SearchFilterState createState() => SearchFilterState();
 }
 
-class _SearchFilterState extends State<SearchFilter> {
+class SearchFilterState extends State<SearchFilter> {
   bool _initialized = false;
   late Future<List<dynamic>> _combinedResults;
 
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
 
@@ -115,9 +115,7 @@ class _SearchFilterState extends State<SearchFilter> {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: GestureDetector(
-                        onTap: () {
-                          print('Ver merchant');
-                        },
+                        onTap: () {},
                         child: Image.network(
                           item.logoUrl,
                           fit: BoxFit.cover,

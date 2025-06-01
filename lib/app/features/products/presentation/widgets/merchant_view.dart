@@ -52,22 +52,16 @@ class MerchantView extends StatelessWidget {
                   child: SizedBox(
                     width: 50,
                     height: 100,
-                    child:
-                        mercader.logoUrl != null
-                            ? GestureDetector(
-                              onTap: () {
-                                Navigator.pushNamed(
-                                  context,
-                                  Routes.merchantPublicProducts,
-                                  arguments: mercader,
-                                );
-                              },
-                              child: Image.network(
-                                mercader.logoUrl,
-                                fit: BoxFit.cover,
-                              ),
-                            )
-                            : const Text('No imagen suported'),
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.pushNamed(
+                          context,
+                          Routes.merchantPublicProducts,
+                          arguments: mercader,
+                        );
+                      },
+                      child: Image.network(mercader.logoUrl, fit: BoxFit.cover),
+                    ),
                   ),
                 ),
               );

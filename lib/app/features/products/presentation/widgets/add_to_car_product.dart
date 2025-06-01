@@ -31,10 +31,11 @@ class AddToCarProduct extends StatelessWidget {
                 product: product,
                 quantity: cantidad,
               );
+              // ignore: use_build_context_synchronously
               Navigator.popAndPushNamed(context, Routes.clientNav);
             } catch (e) {
-              ScaffoldMessenger.of(
-                context,
+              // ignore: use_build_context_synchronously
+              ScaffoldMessenger.of(context,
               ).showSnackBar(SnackBar(content: Text('Error: $e')));
             }
           },

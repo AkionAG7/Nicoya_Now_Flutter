@@ -10,7 +10,7 @@ abstract class ProductsDataSource {
 
   /// Nuevo: obtiene productos filtrados por merchant_id
   Future<List<Product>> fetchProductsByMerchant(String merchantId);
-  Future<List<Product>> fetchBySearch (String query);
+  Future<List<Product>> fetchBySearch(String query);
   Future<void> addProduct(Product product);
   Future<void> updateProduct(Product product);
   Future<void> deleteProduct(String productId);
@@ -22,59 +22,62 @@ class ProductsDataSourceImpl implements ProductsDataSource {
   ProductsDataSourceImpl({required this.supabaseClient});
 
   @override
-Future<void> deleteProduct(String productId) async {
-    final response = await supabaseClient
-        .from('product')
-        .delete()
-        .eq('product_id', productId)
-        .select();
+  Future<void> deleteProduct(String productId) async {
+    final response =
+        await supabaseClient
+            .from('product')
+            .delete()
+            .eq('product_id', productId)
+            .select();
 
-    // Optionally, you can check if the response is empty to determine if a row was deleted
-    if (response == null || (response is List && response.isEmpty)) {
-      throw Exception('Failed to delete product: No product found with the given ID.');
+    if (response.isEmpty) {
+      throw Exception(
+        'Failed to delete product: No product found with the given ID.',
+      );
     }
   }
 
- @override
-Future<void> updateProduct(Product product) async {
-  final response = await supabaseClient
-      .from('product')
-      .update({
+  @override
+  Future<void> updateProduct(Product product) async {
+    final response =
+        await supabaseClient
+            .from('product')
+            .update({
+              'name': product.name,
+              'description': product.description,
+              'price': product.price,
+              'image_url': product.image_url,
+              'category_id': product.category_id,
+              'is_active': product.is_activate,
+            })
+            .eq('product_id', product.product_id)
+            .select(); // ← importante para obtener respuesta válida
+
+    if (response.isEmpty) {
+      throw Exception('No se pudo actualizar el producto.');
+    }
+  }
+
+  @override
+  Future<void> addProduct(Product product) async {
+    try {
+      await supabaseClient.from('product').insert({
+        'product_id': product.product_id,
+        'merchant_id': product.merchant_id,
         'name': product.name,
         'description': product.description,
         'price': product.price,
         'image_url': product.image_url,
-        'category_id': product.category_id,
         'is_active': product.is_activate,
-      })
-      .eq('product_id', product.product_id)
-      .select(); // ← importante para obtener respuesta válida
-
-  if (response == null || (response is List && response.isEmpty)) {
-    throw Exception('No se pudo actualizar el producto.');
+        'created_at': product.created_at.toIso8601String(),
+        'category_id': product.category_id,
+      });
+    } catch (e) {
+      // ignore: avoid_print
+      print('Error al agregar producto: $e');
+      rethrow;
+    }
   }
-}
-
-  @override
-Future<void> addProduct(Product product) async {
-  try {
-    await supabaseClient.from('product').insert({
-      'product_id'  : product.product_id,
-      'merchant_id' : product.merchant_id,
-      'name'        : product.name,
-      'description' : product.description,
-      'price'       : product.price,
-      'image_url'   : product.image_url,
-      'is_active'   : product.is_activate,
-      'created_at'  : product.created_at.toIso8601String(),
-      'category_id' : product.category_id,
-    });
-  } catch (e) {
-    print('Error al agregar producto: $e');
-    rethrow;
-  }
-}
-
 
   @override
   Future<List<Product>> fetchBySearch(String query) async {
@@ -122,13 +125,15 @@ Future<void> addProduct(Product product) async {
     String categoryName,
   ) async {
     // Paso 1: obtener el ID de la categoría
-    final categoryResponse = await supabaseClient
-        .from('category')
-        .select('category_id')
-        .eq('name', categoryName)
-        .maybeSingle();
+    final categoryResponse =
+        await supabaseClient
+            .from('category')
+            .select('category_id')
+            .eq('name', categoryName)
+            .maybeSingle();
 
     if (categoryResponse == null) {
+      // ignore: avoid_print
       print('Categoría "$categoryName" no encontrada.');
       return [];
     }

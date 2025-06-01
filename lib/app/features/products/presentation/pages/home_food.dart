@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:nicoya_now/app/core/enums/ValorVerMas_enum.dart';
-import 'package:nicoya_now/app/features/products/presentation/widgets/HomeFoodSearch.dart';
-import 'package:nicoya_now/app/features/products/presentation/widgets/MerchantView.dart';
-import 'package:nicoya_now/app/features/products/presentation/widgets/NotificationIcon.dart';
-import 'package:nicoya_now/app/features/products/presentation/widgets/ProductsViews.dart';
-import 'package:nicoya_now/app/features/products/presentation/widgets/VerMasProducto.dart';
+import 'package:nicoya_now/app/features/products/presentation/widgets/home_food_search.dart';
+import 'package:nicoya_now/app/features/products/presentation/widgets/merchant_view.dart';
+import 'package:nicoya_now/app/features/products/presentation/widgets/products_views.dart';
+import 'package:nicoya_now/app/features/products/presentation/widgets/ver_mas_producto.dart';
 import 'package:nicoya_now/app/interface/Widgets/notification_bell.dart';
 import 'package:nicoya_now/app/features/merchant/data/datasources/merchant_data_source.dart';
 import 'package:nicoya_now/app/features/merchant/data/repositories/merchant_repository_impl.dart';
@@ -25,10 +23,10 @@ class HomeFood extends StatefulWidget {
   const HomeFood({super.key});
 
   @override
-  _HomeFoodState createState() => _HomeFoodState();
+  HomeFoodState createState() => HomeFoodState();
 }
 
-class _HomeFoodState extends State<HomeFood> {
+class HomeFoodState extends State<HomeFood> {
   late Future<List<Product>> _productsFuture;
   late Future<List<Product>> _postreFuture;
   late Future<List<Product>> _platoFuerteFuture;

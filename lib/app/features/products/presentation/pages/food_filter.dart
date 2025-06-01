@@ -13,17 +13,16 @@ import 'package:nicoya_now/app/features/products/domain/usecases/get_plato_fuert
 import 'package:nicoya_now/app/features/products/domain/usecases/get_postres_usecase.dart';
 import 'package:nicoya_now/app/features/products/domain/usecases/get_products_usecase.dart';
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
-import 'package:nicoya_now/app/features/products/presentation/pages/HomeFood.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class FoodFilter extends StatefulWidget {
-  const FoodFilter({Key? key}) : super(key: key);
+  const FoodFilter({super.key});
 
   @override
-  _FoodFilterState createState() => _FoodFilterState();
+  FoodFilterState createState() => FoodFilterState();
 }
 
-class _FoodFilterState extends State<FoodFilter> {
+class FoodFilterState extends State<FoodFilter> {
   late Future<List<Product>> _productsFuture;
   late Future<List<Product>> _postreFuture;
   late Future<List<Product>> _platoFuerteFuture;
@@ -96,10 +95,6 @@ class _FoodFilterState extends State<FoodFilter> {
         _categoriaFuture = _merchantsFuture;
         titulo = 'Nuestros comercios';
         break;
-
-      default:
-        _categoriaFuture = _productsFuture;
-        titulo = 'Nuestros platillos';
     }
 
     return Scaffold(
@@ -142,9 +137,7 @@ class _FoodFilterState extends State<FoodFilter> {
                         child:
                             merchant.logoUrl != null
                                 ? GestureDetector(
-                                  onTap: () {
-                                    print('Ver comercio');
-                                  },
+                                  onTap: () {},
                                   child: Image.network(
                                     merchant.logoUrl!,
                                     fit: BoxFit.cover,
