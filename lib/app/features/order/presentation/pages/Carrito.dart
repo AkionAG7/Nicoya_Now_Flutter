@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:nicoya_now/Icons/nicoya_now_icons_icons.dart';
+import 'package:nicoya_now/app/features/order/data/repositories/order_repository_impl.dart';
+import 'package:nicoya_now/app/features/order/domain/usecases/calcular_total_usecase.dart';
+import 'package:nicoya_now/app/features/order/domain/usecases/get_user_cart_usecase.dart';
+import 'package:nicoya_now/app/features/order/domain/usecases/update_carrito_usecase.dart';
+import 'package:nicoya_now/app/features/order/domain/usecases/update_quantity_carrito_usecase.dart';
 import 'package:nicoya_now/app/interface/Widgets/notification_bell.dart';
 import 'package:nicoya_now/app/features/order/data/datasources/order_datasource.dart';
 import 'package:nicoya_now/app/features/products/domain/entities/products.dart';
@@ -16,101 +21,41 @@ class Carrito extends StatefulWidget {
 
 class _CarritoState extends State<Carrito> {
   List<Map<String, dynamic>> _items = [];
+  late final GetUserCart getUserCart;
+  late final CalcularTotal calcularTotal;
+  late final UpdateQuantityCarrito updateQuantityCarrito;
+  late final UpdateCarrito updateCarrito;
 
   Future<void> cargarProductos() async {
-    final supa = Supabase.instance.client;
-    final userId = supa.auth.currentUser?.id;
-
-    if (userId != null) {
-      final orderDatasource = OrderDatasourceImpl(supabaseClient: supa);
-      final data = await orderDatasource.getOrderByUserId(userId);
-      setState(() {
-        _items = data;
-      });
-    }
-  }
-
-  double calcularTotal() {
-    return _items.fold(0.0, (total, item) {
-      final product = item['product'] as Product;
-      final quantity = item['quantity'] as int;
-      return total + (product.price * quantity);
+    final data = await getUserCart();
+    setState(() {
+      _items = data;
     });
   }
 
   void incrementarCantidad(int index) {
     setState(() {
-      _items[index]['quantity']++;
+      _items = updateQuantityCarrito(
+        items: _items,
+        index: index,
+        increment: true,
+      );
     });
   }
 
   void decrementarCantidad(int index) {
     setState(() {
-      if (_items[index]['quantity'] > 1) {
-        _items[index]['quantity']--;
-      }
-    });
-  }
-
-  Future<void> actualizarCarrito() async {
-    final supabase = Supabase.instance.client;
-    bool _isSaving = true;
-
-    setState(() {
-      _isSaving = true;
-    });
-
-    try {
-      final Map<String, double> orderTotals = {};
-
-      for (final item in _items) {
-        final orderItemId = item['order_item_id'];
-        final quantity = item['quantity'];
-        final product = item['product'] as Product;
-
-        // 1. Actualizar la cantidad en Supabase
-        final updated =
-            await supabase
-                .from('order_item')
-                .update({'quantity': quantity})
-                .eq('order_item_id', orderItemId)
-                .select('order_id, unit_price')
-                .single();
-
-        final String orderId = updated['order_id'];
-        final double unitPrice = (updated['unit_price'] as num).toDouble();
-        final double subtotal = unitPrice * quantity;
-
-        // 2. Acumular total por orden
-        orderTotals[orderId] = (orderTotals[orderId] ?? 0) + subtotal;
-      }
-
-      // 3. Actualizar totales en tabla order
-      for (final entry in orderTotals.entries) {
-        await supabase
-            .from('order')
-            .update({'total': entry.value})
-            .eq('order_id', entry.key);
-      }
-
-      print('✔️ Carrito actualizado correctamente');
-    } catch (e) {
-      print('❌ Error actualizando carrito: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error al guardar los cambios')),
+      _items = updateQuantityCarrito(
+        items: _items,
+        index: index,
+        increment: false,
       );
-    } finally {
-      setState(() {
-        _isSaving = false;
-      });
-    }
+    });
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-
-    // Esto se llama cada vez que la pestaña se vuelve visible
     if (ModalRoute.of(context)?.isCurrent ?? false) {
       cargarProductos();
     }
@@ -120,22 +65,18 @@ class _CarritoState extends State<Carrito> {
   void initState() {
     super.initState();
     final supa = Supabase.instance.client;
-    final userId = supa.auth.currentUser?.id;
+    final orderDatasource = OrderDatasourceImpl(supabaseClient: supa);
+    final orderRepository = OrderRepositoryImpl(datasource: orderDatasource);
+    getUserCart = GetUserCart(repo: orderRepository);
+    calcularTotal = CalcularTotal();
+    updateQuantityCarrito = UpdateQuantityCarrito();
+    updateCarrito = UpdateCarrito(repo: orderRepository);
     cargarProductos();
-
-    if (userId != null) {
-      final orderDatasource = OrderDatasourceImpl(supabaseClient: supa);
-      orderDatasource.getOrderByUserId(userId).then((data) {
-        setState(() {
-          _items = data;
-        });
-      });
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold( 
+    return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xFFFFFFFF),
         title: const Text(
@@ -147,10 +88,7 @@ class _CarritoState extends State<Carrito> {
             icon: const Icon(NicoyaNowIcons.campana),
             onPressed: () {},
           ),
-          const NotificationBell(
-            size: 28,
-            color: Color(0xffd72a23),
-          ),
+          const NotificationBell(size: 28, color: Color(0xffd72a23)),
           const SizedBox(width: 8),
         ],
       ),
@@ -328,8 +266,8 @@ class _CarritoState extends State<Carrito> {
                   ),
                 ),
                 onPressed: () async {
-                  actualizarCarrito();
-                  final total = calcularTotal();
+                  await updateCarrito(_items);
+                  final total = calcularTotal(_items);
                   Navigator.pushNamed(context, Routes.pago, arguments: total);
                   await cargarProductos();
                 },

@@ -6,14 +6,13 @@ import '../datasources/order_datasource.dart';
 class OrderRepositoryImpl implements OrderRepository {
   final OrderDatasource _datasource;
 
-  OrderRepositoryImpl({ required OrderDatasource datasource })
+  OrderRepositoryImpl({required OrderDatasource datasource})
     : _datasource = datasource;
 
-      @override
+  @override
   Future<Order> getOrderById(String orderId) {
     return _datasource.getOrderById(orderId);
   }
-
 
   @override
   Future<List<Order>> getOrdersByMerchantId(String merchantId) async {
@@ -25,9 +24,19 @@ class OrderRepositoryImpl implements OrderRepository {
     }
   }
 
-    @override
+  @override
   Future<void> changeOrderStatus(String orderId, OrderStatus newStatus) async {
     final statusStr = newStatus.toString().split('.').last;
     return _datasource.updateOrderStatus(orderId, statusStr);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getCarritoActual() {
+    return _datasource.getCarritoActual();
+  }
+
+  @override
+  Future<void> updateOrderItems(List<Map<String, dynamic>> items) {
+    return _datasource.updateOrderItems(items);
   }
 }

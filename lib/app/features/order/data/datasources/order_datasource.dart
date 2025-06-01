@@ -8,24 +8,27 @@ abstract class OrderDatasource {
   Future<Order> getOrderById(String orderId);
   Future<void> confirmOrder(String userId);
   Future<void> removeProductFromOrder(String productId);
-   Future<void> updateOrderStatus(String orderId, String newStatus);
+  Future<void> updateOrderStatus(String orderId, String newStatus);
+  Future<List<Map<String, dynamic>>> getCarritoActual();
+  Future<void> updateOrderItems(List<Map<String, dynamic>> items);
 }
 
 class OrderDatasourceImpl implements OrderDatasource {
   final SupabaseClient supabaseClient;
   OrderDatasourceImpl({required this.supabaseClient});
 
-    @override
+  @override
   Future<void> updateOrderStatus(String orderId, String newStatus) async {
     final resp = await supabaseClient
         .from('order')
-        .update({ 'status': newStatus })
+        .update({'status': newStatus})
         .eq('order_id', orderId);
 
     if (resp == null || (resp is Map && resp['error'] != null)) {
-      final errorMsg = resp is Map && resp['error'] != null
-          ? resp['error']['message']
-          : 'Unknown error';
+      final errorMsg =
+          resp is Map && resp['error'] != null
+              ? resp['error']['message']
+              : 'Unknown error';
       throw Exception('Error actualizando estado: $errorMsg');
     }
   }
@@ -206,6 +209,47 @@ class OrderDatasourceImpl implements OrderDatasource {
     if (remainingItems == null || remainingItems.isEmpty) {
       // 6. Si no quedan, eliminar la orden
       await supabaseClient.from('order').delete().eq('order_id', orderId);
+    }
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getCarritoActual() async {
+    final userId = supabaseClient.auth.currentUser?.id;
+
+    if (userId == null) return [];
+
+    return await getOrderByUserId(userId);
+  }
+
+  @override
+  Future<void> updateOrderItems(List<Map<String, dynamic>> items) async {
+    final Map<String, double> orderTotals = {};
+
+    for (final item in items) {
+      final orderItemId = item['order_item_id'];
+      final quantity = item['quantity'];
+      final product = item['product'] as Product;
+
+      final updated =
+          await supabaseClient
+              .from('order_item')
+              .update({'quantity': quantity})
+              .eq('order_item_id', orderItemId)
+              .select('order_id, unit_price')
+              .single();
+
+      final String orderId = updated['order_id'];
+      final double unitPrice = (updated['unit_price'] as num).toDouble();
+      final double subtotal = unitPrice * quantity;
+
+      orderTotals[orderId] = (orderTotals[orderId] ?? 0) + subtotal;
+    }
+
+    for (final entry in orderTotals.entries) {
+      await supabaseClient
+          .from('order')
+          .update({'total': entry.value})
+          .eq('order_id', entry.key);
     }
   }
 }
