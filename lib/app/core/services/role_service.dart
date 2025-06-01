@@ -1,31 +1,17 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:nicoya_now/app/core/utils/role_utils.dart';
 
 class RoleService {
   final SupabaseClient _supabase;
   RoleService(this._supabase);
-
   Future<bool> hasRole(String slug) async {
     try {
       final userId = _supabase.auth.currentUser!.id;
-
-      final roleResult = await _supabase
-          .from('role')
-          .select('role_id')
-          .eq('slug', slug)
-          .single();
-
-      final roleId = roleResult['role_id'];
-
-      final res = await _supabase
-          .from('user_role')
-          .select('role_id')
-          .eq('user_id', userId)
-          .eq('role_id', roleId)
-          .maybeSingle();
-
-      return res != null;
-    } on PostgrestException catch (e) {
-      throw Exception('Error verificando rol: ${e.message}');
+      // Use the safer RoleUtils implementation to avoid SQL errors
+      return await RoleUtils.hasRole(_supabase, userId, slug);
+    } catch (e) {
+      print('Error verificando rol: $e');
+      return false;
     }
   }
   Future<void> addRoleIfNotExists(String slug) async {
@@ -150,23 +136,11 @@ class RoleService {
   }  Future<List<String>> getUserRoles() async {
     try {
       final userId = _supabase.auth.currentUser!.id;
-
-      final rolesResult = await _supabase
-          .from('user_role')
-          .select('role:role_id(slug)')
-          .eq('user_id', userId);
-
-      print('ROLE SERVICE: Fetched roles for user $userId: $rolesResult');
-      if (rolesResult.isEmpty) {
-        print('ROLE SERVICE: No roles found for user $userId');
-        return []; // No asignamos rol por defecto
-      }
-
-      final roles = rolesResult
-          .map<String>((role) => role['role']['slug'] as String)
-          .toList();
-          
-      print('ROLE SERVICE: Returning roles: $roles');
+      
+      // Use the safer RoleUtils approach to get roles
+      final roles = await RoleUtils.getRolesForUser(_supabase, userId);
+      
+      print('ROLE SERVICE: Returning roles from RoleUtils: $roles');
       return roles;
     } catch (e) {
       print('ROLE SERVICE: Error fetching roles: $e');
