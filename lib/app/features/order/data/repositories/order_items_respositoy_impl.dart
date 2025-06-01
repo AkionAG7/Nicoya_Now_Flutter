@@ -14,4 +14,15 @@ class OrderItemsRespositoyImpl implements OrderItemRepository {
     int quantity,
     Address address,
   ) => datasource.addProductToOrder(customerId, product, quantity, address);
+
+  @override
+  Future<void> addProductToOrderWithAddressLookup({
+    required String userId,
+    required Product product,
+    required int quantity,
+  }) => datasource.addProductToOrderWithAddressLookup(
+    userId: userId,
+    product: product,
+    quantity: quantity,
+  );
 }

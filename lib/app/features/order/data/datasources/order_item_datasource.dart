@@ -9,6 +9,12 @@ abstract class OrderItemDatasource {
     int quantity,
     Address address,
   );
+
+  Future<void> addProductToOrderWithAddressLookup({
+    required String userId,
+    required Product product,
+    required int quantity,
+  });
 }
 
 class OrderItemDatasourceImpl implements OrderItemDatasource {
@@ -73,5 +79,37 @@ class OrderItemDatasourceImpl implements OrderItemDatasource {
       'quantity': quantity,
       'unit_price': product.price,
     });
+  }
+
+  @override
+  Future<void> addProductToOrderWithAddressLookup({
+    required String userId,
+    required Product product,
+    required int quantity,
+  }) async {
+    final addressResponse =
+        await supa
+            .from('address')
+            .select()
+            .eq('user_id', userId)
+            .limit(1)
+            .maybeSingle();
+
+    if (addressResponse == null) {
+      throw Exception('No tienes direcciones registradas');
+    }
+
+    final address = Address(
+      address_id: addressResponse['address_id'],
+      user_id: addressResponse['user_id'],
+      street: addressResponse['street'],
+      district: addressResponse['district'],
+      lat: addressResponse['lat'],
+      lng: addressResponse['lng'],
+      note: addressResponse['note'],
+      created_at: DateTime.parse(addressResponse['created_at']),
+    );
+
+    await addProductToOrder(userId, product, quantity, address);
   }
 }

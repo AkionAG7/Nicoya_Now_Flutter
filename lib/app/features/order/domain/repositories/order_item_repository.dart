@@ -9,4 +9,10 @@ abstract class OrderItemRepository {
     int quantity,
     Address address,
   );
+
+  Future<void> addProductToOrderWithAddressLookup({
+    required String userId,
+    required Product product,
+    required int quantity,
+  });
 }
