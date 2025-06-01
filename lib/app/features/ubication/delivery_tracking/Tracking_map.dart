@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:nicoya_now/app/core/constants/map_constants.dart';
 
 class TrackingMap extends StatefulWidget {
   const TrackingMap({super.key});
@@ -14,9 +15,8 @@ class _TrackingMapState extends State<TrackingMap> {
   GoogleMapController? _mapController;
   final Set<Marker> _marcadores = {};
   BitmapDescriptor? _iconoRepartidor;
-
-  // Inicialmente "quemados"
-  LatLng _ubicacionRepartidor = const LatLng(10.15749, -85.44926);
+  // Inicialmente "quemados" - usando constantes centralizadas
+  LatLng _ubicacionRepartidor = const LatLng(MapConstants.defaultLatitude, MapConstants.defaultLongitude);
   LatLng _ubicacionComercio = const LatLng(10.14353, -85.45195);
 
   @override

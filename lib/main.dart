@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:nicoya_now/app/features/driver/presentation/controllers/driver_controller.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:nicoya_now/app/core/di/service_locator.dart';
@@ -45,6 +46,9 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (_) => locator<NotificationService>(),
+        ),
+            ChangeNotifierProvider(
+          create: (_) => locator<DriverController>(),
         ),
       ],
       child: GestureDetector(
