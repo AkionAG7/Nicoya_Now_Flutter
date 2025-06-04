@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nicoya_now/app/features/merchant/data/datasources/merchant_data_source.dart';
 import 'package:nicoya_now/app/features/merchant/data/repositories/merchant_repository_impl.dart';
 import 'package:nicoya_now/app/features/merchant/domain/entities/merchant.dart';
-import 'package:nicoya_now/app/features/merchant/domain/usecases/get_merchantSearch_usecase.dart';
+import 'package:nicoya_now/app/features/merchant/domain/usecases/get_merchant_search_usecase.dart';
 
 import 'package:nicoya_now/app/features/products/data/datasources/products_data_source.dart';
 import 'package:nicoya_now/app/features/products/data/repositories/products_repository_impl.dart';

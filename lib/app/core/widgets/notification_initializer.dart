@@ -6,13 +6,11 @@ import 'package:nicoya_now/app/core/services/notification_service.dart';
 class NotificationInitializer extends StatefulWidget {
   final Widget child;
 
-  const NotificationInitializer({
-    Key? key,
-    required this.child,
-  }) : super(key: key);
+  const NotificationInitializer({super.key, required this.child});
 
   @override
-  State<NotificationInitializer> createState() => _NotificationInitializerState();
+  State<NotificationInitializer> createState() =>
+      _NotificationInitializerState();
 }
 
 class _NotificationInitializerState extends State<NotificationInitializer> {
@@ -25,8 +23,11 @@ class _NotificationInitializerState extends State<NotificationInitializer> {
 
   void _initializeNotifications() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final notificationService = Provider.of<NotificationService>(context, listen: false);
-      
+      final notificationService = Provider.of<NotificationService>(
+        context,
+        listen: false,
+      );
+
       if (Supabase.instance.client.auth.currentUser != null) {
         notificationService.initialize();
       }
@@ -39,7 +40,10 @@ class _NotificationInitializerState extends State<NotificationInitializer> {
       final user = data.session?.user;
 
       if (mounted) {
-        final notificationService = Provider.of<NotificationService>(context, listen: false);
+        final notificationService = Provider.of<NotificationService>(
+          context,
+          listen: false,
+        );
 
         if (event == AuthChangeEvent.signedIn && user != null) {
           // Usuario se logeó - inicializar notificaciones

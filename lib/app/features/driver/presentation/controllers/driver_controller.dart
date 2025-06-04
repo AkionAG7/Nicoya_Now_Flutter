@@ -40,6 +40,7 @@ class DriverController extends ChangeNotifier {
       .onBroadcast(
         event: 'new_assignment',
         callback: (payload) async {
+          //ignore: avoid_print
           print('Received order assignment notification: $payload');
           
           // Extract the orderId from the payload
@@ -47,6 +48,7 @@ class DriverController extends ChangeNotifier {
           final String orderId = rawPayload['order_id']?.toString() ?? '';
           
           if (orderId.isEmpty) {
+            //ignore: avoid_print
             print('Invalid order ID received in notification');
             return;
           }
@@ -58,13 +60,14 @@ class DriverController extends ChangeNotifier {
               .select('*, customer:customer_id(*), merchant:merchant_id(*), delivery_address:delivery_address_id(*)')
               .eq('order_id', orderId)
               .single();
-            
+            //ignore: avoid_print
             print('Received new order assignment: $orderData');
             
             // Add to active orders and notify listeners
             _activeOrders = [..._activeOrders, Map<String, dynamic>.from(orderData)];
             notifyListeners();
           } catch (e) {
+            //ignore: avoid_print
             print('Error fetching order details: $e');
           }
         }
@@ -139,10 +142,11 @@ class DriverController extends ChangeNotifier {
       final userId = _supabase.auth.currentUser?.id;
       
       if (userId == null) {
+        //ignore: avoid_print
         print('No user logged in');
         return;
       }
-      
+      //ignore: avoid_print
       print('Loading active orders for driver: $userId');
       
       // APPROACH 1: Get orders through the view
@@ -153,6 +157,7 @@ class DriverController extends ChangeNotifier {
           .filter('status', 'in', ['pending', 'accepted', 'in_process', 'on_way']);
       
       _activeOrders = List<Map<String, dynamic>>.from(response);
+      //ignore: avoid_print
       print('Orders from current_driver_orders view: ${_activeOrders.length}');
       
       // Check specifically for the problematic order
@@ -160,6 +165,7 @@ class DriverController extends ChangeNotifier {
       final specificOrderExists = _activeOrders.any((order) => order['order_id'] == specificOrderId);
       
       if (!specificOrderExists) {
+        //ignore: avoid_print
         print('Problematic order not found in view results, checking directly');
         
         // First check if there's an assignment for this specific order
@@ -171,6 +177,7 @@ class DriverController extends ChangeNotifier {
             .maybeSingle();
         
         if (assignmentForSpecificOrder != null) {
+          //ignore: avoid_print
           print('Found assignment for problematic order, fetching order details');
           
           // Fetch the order directly
@@ -181,6 +188,7 @@ class DriverController extends ChangeNotifier {
               .maybeSingle();
           
           if (specificOrderResponse != null) {
+            //ignore: avoid_print
             print('Adding problematic order with status: ${specificOrderResponse['status']}');
             
             // Add to active orders and force status to in_process if it's pending
@@ -191,9 +199,11 @@ class DriverController extends ChangeNotifier {
             
             _activeOrders.add(orderWithAssignment);
           } else {
+            //ignore: avoid_print
             print('Could not find the problematic order in the order table');
           }
         } else {
+          //ignore: avoid_print
           print('No assignment found for problematic order for this driver');
         }
       }
@@ -204,7 +214,7 @@ class DriverController extends ChangeNotifier {
           .from('order_assignment')
           .select('order_id')
           .eq('driver_id', userId);
-      
+//ignore: avoid_print
       print('Assignments found for driver: ${assignmentsResponse.length}');
       
       // Get the assigned order IDs
@@ -219,6 +229,7 @@ class DriverController extends ChangeNotifier {
         final missingOrderIds = assignedOrderIds.where((id) => !existingOrderIds.contains(id)).toList();
         
         if (missingOrderIds.isNotEmpty) {
+          //ignore: avoid_print
           print('Found ${missingOrderIds.length} assigned orders not in the view. Fetching them directly.');
           
           // Fetch these orders directly from the orders table
@@ -231,18 +242,21 @@ class DriverController extends ChangeNotifier {
                   .maybeSingle();
               
               if (orderResponse != null) {
+                //ignore: avoid_print
                 print('Adding missing order: $orderId with status: ${orderResponse['status']}');
                 
                 // Mark pending orders with assignments as in_process
                 final Map<String, dynamic> orderWithAssignment = Map<String, dynamic>.from(orderResponse);
                 if (orderWithAssignment['status'] == 'pending') {
                   orderWithAssignment['status'] = 'in_process';
+                  //ignore: avoid_print
                   print('Converted pending order to in_process: $orderId');
                 }
                 
                 _activeOrders.add(orderWithAssignment);
               }
             } catch (e) {
+              //ignore: avoid_print
               print('Error fetching order $orderId: $e');
             }
           }
@@ -262,11 +276,13 @@ class DriverController extends ChangeNotifier {
                 .maybeSingle();
             
             if (assignmentResponse != null) {
+              //ignore: avoid_print
               print('Found assignment for pending order ${order['order_id']}, treating as in_process');
               // If there's an assignment, treat this as in_process
               order['status'] = 'in_process';
             }
           } catch (e) {
+            //ignore: avoid_print
             print('Error checking assignment for order ${order['order_id']}: $e');
           }
         }
@@ -292,6 +308,7 @@ class DriverController extends ChangeNotifier {
           order['picked_up_at'] = assignmentResponse['picked_up_at'];
           order['delivered_at'] = assignmentResponse['delivered_at'];
         } catch (e) {
+          //ignore: avoid_print
           print('No assignment details found for order ${order['order_id']}: $e');
         }
       }
@@ -299,17 +316,21 @@ class DriverController extends ChangeNotifier {
       try {
         await forceCheckSpecificOrder();
       } catch (forceCheckError) {
+        //ignore: avoid_print
         print('Force check failed: $forceCheckError');
       }
       
       // Log the final order list
+      //ignore: avoid_print
       print('Final active orders (${_activeOrders.length}):');
       for (var order in _activeOrders) {
+        //ignore: avoid_print
         print('Order ID: ${order['order_id']}, Status: ${order['status']}');
       }
       
       notifyListeners();
     } catch (e) {
+      //ignore: avoid_print
       print('Error loading active orders: $e');
       
       // Even if the main loading fails, still try the force check as a last resort
@@ -317,6 +338,7 @@ class DriverController extends ChangeNotifier {
         await forceCheckSpecificOrder();
         notifyListeners(); // Notify if we managed to add an order
       } catch (forceCheckError) {
+        //ignore: avoid_print
         print('Force check failed after main loading error: $forceCheckError');
       }
     }
@@ -367,6 +389,7 @@ class DriverController extends ChangeNotifier {
             .eq('driver_id', userId);
       } catch (columnError) {
         // If there's an error about missing columns, log it but don't crash the app
+        //ignore: avoid_print
         print('Warning: Could not update location. Database schema may be missing location columns: $columnError');
         
         // Try to update just the location_update field which might exist
@@ -378,10 +401,12 @@ class DriverController extends ChangeNotifier {
               })
               .eq('driver_id', userId);
         } catch (e) {
+          //ignore: avoid_print
           print('Could not update any location fields: $e');
         }
       }
     } catch (e) {
+      //ignore: avoid_print
       print('Error updating location: $e');
     }
   }
@@ -445,14 +470,17 @@ class DriverController extends ChangeNotifier {
       final List<Map<String, dynamic>> orders = List<Map<String, dynamic>>.from(response);
       
       // Log for debugging
+      //ignore: avoid_print
       print('Fetched ${orders.length} available orders');
       if (orders.isNotEmpty) {
+        //ignore: avoid_print
         print('Sample order: ${orders.first}');
       }
       
       return orders;
     } catch (e) {
       _error = 'Error al obtener pedidos disponibles: $e';
+      //ignore: avoid_print
       print('Error fetching available orders: $e');
       notifyListeners();
       return [];
@@ -584,8 +612,9 @@ class DriverController extends ChangeNotifier {
                   })
                   .eq('order_id', orderId);
             } catch (error) {
+              //ignore: avoid_print
               print('Error updating order status to accepted: $error');
-              throw error;
+              rethrow;
             }
             break;
             
@@ -601,8 +630,9 @@ class DriverController extends ChangeNotifier {
                   })
                   .eq('order_id', orderId);
             } catch (error) {
+              //ignore: avoid_print
               print('Error updating order status to in_process: $error');
-              throw error;
+              rethrow;
             }
             
             // Try to update assignment record with timestamp
@@ -613,6 +643,7 @@ class DriverController extends ChangeNotifier {
                   .eq('order_id', orderId)
                   .eq('driver_id', userId);
             } catch (e) {
+              //ignore: avoid_print
               print('Error updating assignment picked_up_at time: $e');
             }
             break;
@@ -640,8 +671,9 @@ class DriverController extends ChangeNotifier {
                   })
                   .eq('order_id', orderId);
             } catch (error) {
+              //ignore: avoid_print
               print('Error updating order status to delivered: $error');
-              throw error;
+              rethrow;
             }
             
             // Try to update assignment record with delivery timestamp
@@ -652,6 +684,7 @@ class DriverController extends ChangeNotifier {
                   .eq('order_id', orderId)
                   .eq('driver_id', userId);
             } catch (e) {
+              //ignore: avoid_print
               print('Error updating assignment delivered_at time: $e');
             }
             break;
@@ -667,7 +700,9 @@ class DriverController extends ChangeNotifier {
                 .eq('order_id', orderId);
         }
       } catch (statusUpdateError) {
+        //ignore: avoid_print
         print('Error updating order status: $statusUpdateError');
+        //ignore: avoid_print
         print('Trying alternative method for status update...');
           // If we get an enum error, try using numeric status codes instead
         Map<String, int> statusCodes = {
@@ -688,7 +723,7 @@ class DriverController extends ChangeNotifier {
                 'updated_at': DateTime.now().toIso8601String(),
               })
               .eq('order_id', orderId);
-            
+            //ignore: avoid_print
           print('Updated using numeric status code instead of enum');
         } else {
           throw Exception('Could not update order status using any method');
@@ -715,9 +750,11 @@ class DriverController extends ChangeNotifier {
   Future<void> checkSpecificOrder() async {
     try {
       final userId = _supabase.auth.currentUser?.id;
+      //ignore: avoid_print
       print('DEBUG: Current user ID: $userId');
       
       if (userId == null) {
+        //ignore: avoid_print
         print('DEBUG: No hay usuario autenticado');
         return;
       }
@@ -733,13 +770,18 @@ class DriverController extends ChangeNotifier {
             .maybeSingle();
         
         if (orderResponse != null) {
+          //ignore: avoid_print
           print('DEBUG: Specific order found in order table:');
+          //ignore: avoid_print
           print('DEBUG: Order ID: ${orderResponse['order_id']}');
+          //ignore: avoid_print
           print('DEBUG: Order Status: ${orderResponse['status']}');
         } else {
+          //ignore: avoid_print
           print('DEBUG: Specific order not found in order table');
         }
       } catch (e) {
+        //ignore: avoid_print
         print('ERROR checking order table: $e');
         
         // Try a different approach - raw select with fewer columns
@@ -751,11 +793,14 @@ class DriverController extends ChangeNotifier {
               .maybeSingle();
           
           if (rawOrderResponse != null) {
+            //ignore: avoid_print
             print('DEBUG: Order exists in table (minimal query)');
           } else {
+            //ignore: avoid_print
             print('DEBUG: Order definitely does not exist');
           }
         } catch (e2) {
+          //ignore: avoid_print
           print('ERROR with minimal order query: $e2');
         }
       }
@@ -770,9 +815,12 @@ class DriverController extends ChangeNotifier {
             .maybeSingle();
         
         if (assignmentResponse != null) {
+          //ignore: avoid_print
           print('DEBUG: Assignment found for specific order:');
+          //ignore: avoid_print
           print(assignmentResponse);
         } else {
+          //ignore: avoid_print
           print('DEBUG: No assignment found for specific order for this driver');
           
           // Check if there's an assignment for any driver
@@ -783,13 +831,18 @@ class DriverController extends ChangeNotifier {
               .maybeSingle();
           
           if (anyAssignmentResponse != null) {
+            //ignore: avoid_print
             print('DEBUG: Assignment found for another driver:');
+            //ignore: avoid_print
             print('DEBUG: Driver ID: ${anyAssignmentResponse['driver_id']}');
           } else {
+            //ignore: avoid_print
             print('DEBUG: No assignment found for this order for any driver');
+            
           }
         }
       } catch (e) {
+        //ignore: avoid_print
         print('ERROR checking assignments: $e');
       }
       
@@ -802,9 +855,12 @@ class DriverController extends ChangeNotifier {
             .maybeSingle();
         
         if (viewResponse != null) {
+          //ignore: avoid_print
           print('DEBUG: Order found in current_driver_orders view:');
+          //ignore: avoid_print
           print(viewResponse);
         } else {
+          //ignore: avoid_print
           print('DEBUG: Order not found in current_driver_orders view');
           
           // Try a different query on the view
@@ -812,13 +868,15 @@ class DriverController extends ChangeNotifier {
               .from('current_driver_orders')
               .select('order_id, status')
               .limit(10);
-          
+          //ignore: avoid_print
           print('DEBUG: First 10 orders in view:');
           for (var order in allDriverOrders) {
+            //ignore: avoid_print
             print('Order ID: ${order['order_id']}, Status: ${order['status']}');
           }
         }
       } catch (e) {
+        //ignore: avoid_print
         print('ERROR checking view: $e');
         
         // Try a simpler query to test view
@@ -827,14 +885,17 @@ class DriverController extends ChangeNotifier {
               .from('current_driver_orders')
               .select('order_id')
               .limit(1);
-          
+          //ignore: avoid_print
           print('DEBUG: Simple view query succeeded, found ${simpleViewResponse.length} rows');
         } catch (e2) {
+          //ignore: avoid_print
           print('ERROR with simple view query: $e2');
+          //ignore: avoid_print
           print('DEBUG: The view may not be properly configured');
         }
       }
     } catch (e) {
+      //ignore: avoid_print
       print('ERROR checking specific order: $e');
     }
   }
@@ -845,10 +906,11 @@ class DriverController extends ChangeNotifier {
       final userId = _supabase.auth.currentUser?.id;
       
       if (userId == null) {
+        //ignore: avoid_print
         print('DEBUG: No hay usuario autenticado');
         return;
       }
-      
+      //ignore: avoid_print
       print('DEBUG: Verificando asignaciones para el usuario: $userId');
       
       // Consultar todas las órdenes asignadas al usuario
@@ -857,15 +919,18 @@ class DriverController extends ChangeNotifier {
             .from('order_assignment')
             .select('order_id')
             .eq('driver_id', userId);
-        
+        //ignore: avoid_print
         print('DEBUG: Asignaciones encontradas: ${assignmentResponse.length}');
         for (var assignment in assignmentResponse) {
+          //ignore: avoid_print
           print('DEBUG: Pedido asignado: ${assignment['order_id']}');
         }
       } catch (e) {
+        //ignore: avoid_print
         print('ERROR consultando asignaciones: $e');
       }
-      
+
+      //ignore: avoid_print
       print('DEBUG: Verificando pedidos en la vista current_driver_orders');
       
       // Consultar órdenes de todas las categorías - con manejo de errores
@@ -875,23 +940,28 @@ class DriverController extends ChangeNotifier {
             .select('order_id, status')
             .limit(20); // Limitamos a 20 resultados para evitar problemas
         
+        //ignore: avoid_print
         print('DEBUG: Pedidos en la vista: ${allOrdersResponse.length}');
         for (var order in allOrdersResponse) {
+          //ignore: avoid_print
           print('DEBUG: Pedido ${order['order_id']} - Estado: ${order['status']}');
         }
       } catch (e) {
+        //ignore: avoid_print
         print('ERROR consultando la vista: $e');
         
         // Intentar una consulta directa a la tabla de pedidos
         try {
+          //ignore: avoid_print
           print('DEBUG: Intentando consulta directa a la tabla de pedidos');
           final directOrdersResponse = await _supabase
               .from('order')
               .select('order_id, status')
               .limit(20);
-          
+          //ignore: avoid_print
           print('DEBUG: Pedidos en tabla directa: ${directOrdersResponse.length}');
         } catch (e2) {
+          //ignore: avoid_print
           print('ERROR consultando tabla directa: $e2');
         }
       }
@@ -899,6 +969,7 @@ class DriverController extends ChangeNotifier {
       try {
         await loadActiveOrders();
       } catch (e) {
+        //ignore: avoid_print
         print('ERROR cargando pedidos activos: $e');
       }
         // También intentar la verificación forzada del pedido específico
@@ -909,15 +980,19 @@ class DriverController extends ChangeNotifier {
         // Then force check for the order
         await forceCheckSpecificOrder();
       } catch (e) {
+        //ignore: avoid_print
         print('ERROR en verificación forzada: $e');
       }
       
       // Verificar los pedidos cargados
+      //ignore: avoid_print
       print('DEBUG: Pedidos cargados después del filtro: ${_activeOrders.length}');
       for (var order in _activeOrders) {
+        //ignore: avoid_print
         print('DEBUG: Pedido activo ${order['order_id']} - Estado: ${order['status']}');
       }
     } catch (e) {
+      //ignore: avoid_print
       print('ERROR en debug de órdenes: $e');
     }
   }
@@ -928,11 +1003,13 @@ class DriverController extends ChangeNotifier {
       final userId = _supabase.auth.currentUser?.id;
       
       if (userId == null) {
+        //ignore: avoid_print
         print('Cannot check specific order: No user logged in');
         return;
       }
       
       final specificOrderId = 'f50a1fbb-d76b-4c0e-af0e-d20015396591';
+      //ignore: avoid_print
       print('Performing direct database query for order: $specificOrderId');
       
       // Direct approach - first check for an assignment record      
@@ -946,6 +1023,7 @@ class DriverController extends ChangeNotifier {
             .maybeSingle();
             
         if (assignmentQuery != null) {
+          //ignore: avoid_print
           print('Assignment found through direct RPC call');
           
           // Now try to get the order record
@@ -958,6 +1036,7 @@ class DriverController extends ChangeNotifier {
                 .maybeSingle();
                 
             if (orderQuery != null) {
+              //ignore: avoid_print
               print('Order found through direct query, adding to active orders');
               // Get the actual status from the database
               String status = 'in_process'; // Default fallback
@@ -972,6 +1051,7 @@ class DriverController extends ChangeNotifier {
                 // If the status is pending but there's an assignment, treat as in_process
                 if (status == 'pending') status = 'in_process';
               } catch (e) {
+                //ignore: avoid_print
                 print('Error getting order status: $e, using default in_process');
               }
               
@@ -989,14 +1069,17 @@ class DriverController extends ChangeNotifier {
               final alreadyExists = _activeOrders.any((o) => o['order_id'] == specificOrderId);
               if (!alreadyExists) {
                 _activeOrders.add(manualOrder);
+                //ignore: avoid_print
                 print('Manually added order: $specificOrderId');
               }
             }
           } catch (orderErr) {
+            //ignore: avoid_print
             print('Could not get order through RPC: $orderErr');
           }
         }
       } catch (assignErr) {
+        //ignore: avoid_print
         print('Error checking assignment through RPC: $assignErr');
         // Try most basic direct query as last resort
         try {
@@ -1008,6 +1091,7 @@ class DriverController extends ChangeNotifier {
               .maybeSingle();
               
           if (basicAssignmentCheck != null) {
+            //ignore: avoid_print
             print('Assignment confirmed through simple query, manually adding order');
             
             // Add a minimal order representation that will work with the UI
@@ -1024,14 +1108,17 @@ class DriverController extends ChangeNotifier {
             final alreadyExists = _activeOrders.any((o) => o['order_id'] == specificOrderId);
             if (!alreadyExists) {
               _activeOrders.add(fallbackOrder);
+              //ignore: avoid_print
               print('Added fallback order: $specificOrderId');
             }
           }
         } catch (e) {
+          //ignore: avoid_print
           print('Failed basic assignment check: $e');
         }
       }
     } catch (e) {
+      //ignore: avoid_print
       print('Error in force check: $e');
     }
   }
@@ -1042,11 +1129,13 @@ class DriverController extends ChangeNotifier {
       final userId = _supabase.auth.currentUser?.id;
       
       if (userId == null) {
+        //ignore: avoid_print
         print('Cannot update specific order status: No user logged in');
         return;
       }
       
       final specificOrderId = 'f50a1fbb-d76b-4c0e-af0e-d20015396591';
+      //ignore: avoid_print
       print('Checking if specific order status needs to be updated: $specificOrderId');
       
       // Get the order status
@@ -1057,11 +1146,13 @@ class DriverController extends ChangeNotifier {
           .maybeSingle();
           
       if (orderResponse == null) {
+        //ignore: avoid_print
         print('Order not found in database');
         return;
       }
       
       final String currentStatus = orderResponse['status'].toString();
+      //ignore: avoid_print
       print('Current order status in database: $currentStatus');
       
       // Get the assignment data
@@ -1073,6 +1164,7 @@ class DriverController extends ChangeNotifier {
           .maybeSingle();
           
       if (assignmentResponse == null) {
+        //ignore: avoid_print
         print('No assignment found for this order');
         return;
       }
@@ -1089,6 +1181,7 @@ class DriverController extends ChangeNotifier {
       
       // Update order status if needed
       if (currentStatus != targetStatus) {
+        //ignore: avoid_print
         print('Status mismatch detected. Updating from $currentStatus to $targetStatus');
         try {
           await _supabase
@@ -1098,14 +1191,18 @@ class DriverController extends ChangeNotifier {
                 'updated_at': DateTime.now().toIso8601String(),
               })
               .eq('order_id', specificOrderId);
+              //ignore: avoid_print
           print('Successfully updated order status to $targetStatus');
         } catch (e) {
+          //ignore: avoid_print
           print('Error updating order status: $e');
         }
       } else {
+        //ignore: avoid_print
         print('Order status is already consistent with assignment data: $currentStatus');
       }
     } catch (e) {
+      //ignore: avoid_print
       print('Error in force update status: $e');
     }
   }
@@ -1116,11 +1213,13 @@ class DriverController extends ChangeNotifier {
       final userId = _supabase.auth.currentUser?.id;
       
       if (userId == null) {
+        //ignore: avoid_print
         print('Cannot debug specific order: No user logged in');
         return;
       }
       
       final specificOrderId = 'f50a1fbb-d76b-4c0e-af0e-d20015396591';
+      //ignore: avoid_print
       print('\n=== DEBUGGING SPECIFIC ORDER: $specificOrderId ===');
       
       // Check if the order is already in active orders
@@ -1130,21 +1229,27 @@ class DriverController extends ChangeNotifier {
       );
       
       if (existingOrder.isNotEmpty) {
+        //ignore: avoid_print
         print('✅ ORDER FOUND IN ACTIVE ORDERS:');
+        //ignore: avoid_print
         print('Status: ${existingOrder['status']}');
+        //ignore: avoid_print
         print('Customer: ${existingOrder['customer_id']?['name'] ?? 'Unknown'}');
+        //ignore: avoid_print
         print('Merchant: ${existingOrder['merchant_id']?['business_name'] ?? 'Unknown'}');
         
         // Log assignment info if available
         if (existingOrder.containsKey('assigned_at')) {
+          //ignore: avoid_print
           print('Assignment timestamp: ${existingOrder['assigned_at']}');
         } else {
+          //ignore: avoid_print
           print('No assignment data in order object');
         }
         
         return; // Order is already loaded properly
       }
-      
+      //ignore: avoid_print
       print('❌ ORDER NOT FOUND IN ACTIVE ORDERS - Checking database...');
       
       // Get the order record
@@ -1154,13 +1259,18 @@ class DriverController extends ChangeNotifier {
             .select('*')
             .eq('order_id', specificOrderId)
             .single();
-        
+        //ignore: avoid_print
         print('✅ ORDER FOUND IN DATABASE:');
+        //ignore: avoid_print
         print('Status: ${orderRecord['status']}');
+        //ignore: avoid_print
         print('Customer ID: ${orderRecord['customer_id']}');
+        //ignore: avoid_print
         print('Merchant ID: ${orderRecord['merchant_id']}');
+        //ignore: avoid_print
         print('Total: ${orderRecord['total']}');
       } catch (e) {
+        //ignore: avoid_print
         print('❌ ERROR RETRIEVING ORDER FROM DATABASE: $e');
       }
       
@@ -1174,24 +1284,32 @@ class DriverController extends ChangeNotifier {
             .maybeSingle();
             
         if (assignmentRecord != null) {
+          //ignore: avoid_print
           print('✅ ASSIGNMENT RECORD FOUND:');
+          //ignore: avoid_print
           print('Assigned at: ${assignmentRecord['assigned_at']}');
+          //ignore: avoid_print
           print('Picked up at: ${assignmentRecord['picked_up_at']}');
+          //ignore: avoid_print
           print('Delivered at: ${assignmentRecord['delivered_at']}');
           
           // If we found an assignment but the order is not in active orders,
           // there's definitely an issue to fix
+          //ignore: avoid_print
           print('⚠️ ORDER HAS ASSIGNMENT BUT IS MISSING FROM ACTIVE ORDERS');
           await forceCheckSpecificOrder(); // Force check to fix
         } else {
+          //ignore: avoid_print
           print('❌ NO ASSIGNMENT RECORD FOUND FOR THIS ORDER + DRIVER');
         }
       } catch (e) {
+        //ignore: avoid_print
         print('❌ ERROR CHECKING ASSIGNMENT: $e');
       }
-      
+      //ignore: avoid_print
       print('=== END OF DEBUG FOR SPECIFIC ORDER ===\n');
     } catch (e) {
+      //ignore: avoid_print
       print('❌ ERROR IN DEBUG SPECIFIC ORDER: $e');
     }
   }

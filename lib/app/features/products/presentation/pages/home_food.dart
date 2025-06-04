@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:nicoya_now/app/core/enums/ValorVerMas_enum.dart';
+import 'package:nicoya_now/app/core/enums/valor_ver_mas_enum.dart';
 import 'package:nicoya_now/app/features/products/presentation/widgets/home_food_search.dart';
 import 'package:nicoya_now/app/features/products/presentation/widgets/merchant_view.dart';
 import 'package:nicoya_now/app/features/products/presentation/widgets/products_views.dart';

@@ -22,9 +22,9 @@ import 'package:nicoya_now/app/features/products/presentation/pages/search_filte
 import 'package:nicoya_now/app/interface/Forms/ClientForm.dart';
 import 'package:nicoya_now/app/interface/Forms/DeliverForm1.dart';
 import 'package:nicoya_now/app/interface/Forms/DeliverForm2.dart';
-import 'package:nicoya_now/app/interface/SplashWidgets/SplashFT1.dart';
-import 'package:nicoya_now/app/interface/SplashWidgets/SplashFT2.dart';
-import 'package:nicoya_now/app/interface/SplashWidgets/SplashFT3.dart';
+import 'package:nicoya_now/app/interface/SplashWidgets/splash_ft1.dart';
+import 'package:nicoya_now/app/interface/SplashWidgets/splash_ft2.dart';
+import 'package:nicoya_now/app/interface/SplashWidgets/splash_ft3.dart';
 import 'package:nicoya_now/app/features/products/presentation/pages/food_filter.dart';
 import 'package:nicoya_now/app/interface/Widgets/app_start_navigation.dart';
 import 'package:nicoya_now/app/interface/Widgets/bottom_navigator.dart';

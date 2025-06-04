@@ -8,38 +8,39 @@ import 'package:nicoya_now/Icons/nicoya_now_icons_icons.dart';
 import 'package:nicoya_now/app/features/driver/presentation/widgets/active_order_tracking.dart';
 
 class HomeDriverPage extends StatefulWidget {
-  const HomeDriverPage({Key? key}) : super(key: key);
+  const HomeDriverPage({super.key});
 
   @override
-  _HomeDriverPageState createState() => _HomeDriverPageState();
+  HomeDriverPageState createState() => HomeDriverPageState();
 }
 
-class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObserver {
+class HomeDriverPageState extends State<HomeDriverPage>
+    with WidgetsBindingObserver {
   final UbicacionController ubicacionController = UbicacionController();
-  
+
   int _selectedIndex = 0;
   bool _isAvailable = true;
-  
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    
+
     // Request location permissions and initialize
     _initLocationAndPermissions();
-    
+
     // Initialize driver data
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadDriverData();
     });
   }
-  
+
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
-  
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     // Update location when app comes to foreground
@@ -47,7 +48,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
       _updateDriverLocation();
     }
   }
-  
+
   Future<void> _initLocationAndPermissions() async {
     try {
       final permiso = await showDialog<bool>(
@@ -76,54 +77,69 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
         await _updateDriverLocation();
       }
     } catch (e) {
+      //ignore: avoid_print
       print("Error initializing location: $e");
     }
   }
-  
+
   Future<void> _updateDriverLocation() async {
     try {
       final ubicacion = await ubicacionController.obtenerUbicacion();
       if (ubicacion != null) {
-        print("Ubicación obtenida: ${ubicacion.latitude}, ${ubicacion.longitude}");
-        
+        //ignore: avoid_print
+        print(
+          "Ubicación obtenida: ${ubicacion.latitude}, ${ubicacion.longitude}",
+        );
+
         // Update driver location in database
-        final controller = Provider.of<DriverController>(context, listen: false);
-        await controller.updateLocation(ubicacion.latitude!, ubicacion.longitude!);
+        //ingore: use_builder_context_synchronously
+        final controller = Provider.of<DriverController>(
+          context,
+          listen: false,
+        );
+        await controller.updateLocation(
+          ubicacion.latitude!,
+          ubicacion.longitude!,
+        );
       } else {
+        //ignore: avoid_print
         print("No se pudo obtener la ubicación");
       }
     } catch (e) {
+      //ignore: avoid_print
       print("Error updating location: $e");
     }
   }
-  
+
   Future<void> _loadDriverData() async {
     final controller = Provider.of<DriverController>(context, listen: false);
     await controller.loadDriverData();
-    
-    if (controller.currentDriverData != null && 
+
+    if (controller.currentDriverData != null &&
         controller.currentDriverData!.containsKey('is_available')) {
       setState(() {
         _isAvailable = controller.currentDriverData!['is_available'] ?? false;
       });
     }
   }
-  
+
   Future<void> _toggleAvailability() async {
     final newStatus = !_isAvailable;
-    
+
     final controller = Provider.of<DriverController>(context, listen: false);
     await controller.updateAvailability(newStatus);
-    
+
     setState(() {
       _isAvailable = newStatus;
     });
   }
-  
+
   void _signOut() async {
     await Supabase.instance.client.auth.signOut();
     if (mounted) {
-      Navigator.of(context).pushNamedAndRemoveUntil(Routes.preLogin, (_) => false);
+      Navigator.of(
+        context,
+      ).pushNamedAndRemoveUntil(Routes.preLogin, (_) => false);
     }
   }
 
@@ -158,7 +174,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
           if (controller.state == DriverState.loading) {
             return const Center(child: CircularProgressIndicator());
           }
-          
+
           if (controller.state == DriverState.error) {
             return Center(
               child: Column(
@@ -178,7 +194,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
               ),
             );
           }
-          
+
           // Use IndexedStack to maintain state of each tab
           return IndexedStack(
             index: _selectedIndex,
@@ -197,10 +213,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
         currentIndex: _selectedIndex,
         onTap: (index) => setState(() => _selectedIndex = index),
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Inicio',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
           BottomNavigationBarItem(
             icon: Icon(Icons.delivery_dining),
             label: 'Entregas',
@@ -213,20 +226,23 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
       ),
     );
   }
-  
+
   Widget _buildHomeTab(DriverController controller) {
     // Format driver data for display
     final driverData = controller.currentDriverData;
     final String firstName = driverData?['first_name'] ?? '';
     final String vehicleType = driverData?['vehicle_type'] ?? '';
-    
+
     // Check if there are active orders for delivery tracking
     final bool hasActiveOrder = controller.activeOrders.isNotEmpty;
-    
+
     // If there's an active order, show the tracking screen
     if (hasActiveOrder) {
       Map<String, dynamic> activeOrder = controller.activeOrders.first;
-      return ActiveOrderTrackingWidget(controller: controller, activeOrder: activeOrder);
+      return ActiveOrderTrackingWidget(
+        controller: controller,
+        activeOrder: activeOrder,
+      );
     }
 
     // Otherwise show the regular home tab
@@ -292,9 +308,9 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Stats card
             Card(
               elevation: 4,
@@ -326,9 +342,9 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Active orders card (preview)
             Card(
               elevation: 4,
@@ -386,9 +402,10 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
                       ListView.builder(
                         shrinkWrap: true,
                         physics: NeverScrollableScrollPhysics(),
-                        itemCount: controller.activeOrders.length > 2
-                            ? 2
-                            : controller.activeOrders.length,
+                        itemCount:
+                            controller.activeOrders.length > 2
+                                ? 2
+                                : controller.activeOrders.length,
                         itemBuilder: (context, index) {
                           final order = controller.activeOrders[index];
                           return _buildOrderListItem(order);
@@ -416,35 +433,22 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
           ),
         ),
         const SizedBox(height: 4),
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.grey[700],
-          ),
-        ),
+        Text(title, style: TextStyle(fontSize: 14, color: Colors.grey[700])),
       ],
     );
   }
-  
+
   Widget _buildActiveOrdersTab(DriverController controller) {
     if (controller.activeOrders.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.hourglass_empty,
-              size: 72,
-              color: Colors.grey,
-            ),
+            Icon(Icons.hourglass_empty, size: 72, color: Colors.grey),
             const SizedBox(height: 16),
             Text(
               'No hay entregas activas',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey[700],
-              ),
+              style: TextStyle(fontSize: 18, color: Colors.grey[700]),
             ),
             const SizedBox(height: 16),
             ElevatedButton(
@@ -461,7 +465,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
         ),
       );
     }
-    
+
     return RefreshIndicator(
       onRefresh: () => controller.loadActiveOrders(),
       child: ListView.builder(
@@ -474,7 +478,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
       ),
     );
   }
-  
+
   Widget _buildProfileTab(DriverController controller) {
     // Format driver data for display
     final driverData = controller.currentDriverData;
@@ -485,7 +489,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
     final String vehicleType = driverData?['vehicle_type'] ?? '';
     final String licenseNumber = driverData?['license_number'] ?? '';
     final bool isVerified = driverData?['is_verified'] ?? false;
-    
+
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -496,19 +500,12 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
             CircleAvatar(
               backgroundColor: const Color(0xFFE60023),
               radius: 50,
-              child: Icon(
-                Icons.person,
-                size: 60,
-                color: Colors.white,
-              ),
+              child: Icon(Icons.person, size: 60, color: Colors.white),
             ),
             const SizedBox(height: 16),
             Text(
               '$firstName $lastName1 $lastName2',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             Text(
               'Repartidor ${isVerified ? 'Verificado' : 'Pendiente de verificación'}',
@@ -519,7 +516,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
               ),
             ),
             const SizedBox(height: 32),
-            
+
             // Profile details
             Card(
               elevation: 4,
@@ -542,14 +539,17 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
                     _buildProfileField('Teléfono', phone),
                     _buildProfileField('Tipo de vehículo', vehicleType),
                     _buildProfileField('Número de licencia', licenseNumber),
-                    _buildProfileField('Estado', isVerified ? 'Verificado' : 'Pendiente de verificación'),
+                    _buildProfileField(
+                      'Estado',
+                      isVerified ? 'Verificado' : 'Pendiente de verificación',
+                    ),
                   ],
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Account actions
             Card(
               elevation: 4,
@@ -570,7 +570,10 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
                     ),
                     const SizedBox(height: 16),
                     ListTile(
-                      leading: Icon(Icons.help_outline, color: const Color(0xFFE60023)),
+                      leading: Icon(
+                        Icons.help_outline,
+                        color: const Color(0xFFE60023),
+                      ),
                       title: Text('Ayuda'),
                       trailing: Icon(Icons.arrow_forward_ios, size: 16),
                       onTap: () {
@@ -591,57 +594,43 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
       ),
     );
   }
-  
+
   Widget _buildProfileField(String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[700],
-            ),
-          ),
+          Text(label, style: TextStyle(fontSize: 14, color: Colors.grey[700])),
           const SizedBox(height: 4),
           Text(
             value,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
         ],
       ),
     );
   }
-    
+
   Widget _buildOrderListItem(Map<String, dynamic> order) {
     final String orderId = order['order_id'] ?? '';
     final String status = order['status'] ?? '';
     final String customerName = order['customer']?['name'] ?? 'Cliente';
-    
+
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: CircleAvatar(
-        backgroundColor: const Color(0xFFE60023).withOpacity(0.2),
-        child: Icon(
-          Icons.delivery_dining,
-          color: const Color(0xFFE60023),
-        ),
+        backgroundColor: const Color(0xFFE60023).withAlpha(51),
+        child: Icon(Icons.delivery_dining, color: const Color(0xFFE60023)),
       ),
       title: Text(
         'Pedido #${orderId.substring(0, Math.min(8, orderId.length))}',
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-        ),
+        style: TextStyle(fontWeight: FontWeight.bold),
       ),
       subtitle: Text('Cliente: $customerName'),
       trailing: Chip(
         label: Text(_formatStatus(status)),
-        backgroundColor: _getStatusColor(status).withOpacity(0.2),
+        backgroundColor: _getStatusColor(status).withAlpha(51),
         labelStyle: TextStyle(
           color: _getStatusColor(status),
           fontWeight: FontWeight.bold,
@@ -650,28 +639,29 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
       onTap: () {
         // Navigate to order details page
         Navigator.pushNamed(
-          context, 
+          context,
           Routes.driver_order_details,
           arguments: order,
         );
       },
     );
   }
-  
+
   Widget _buildOrderCard(Map<String, dynamic> order) {
     final String orderId = order['order_id'] ?? '';
     final String status = order['status'] ?? '';
     final String customerName = order['customer']?['name'] ?? 'Cliente';
-    final String merchantName = order['merchant']?['business_name'] ?? 'Comercio';
-    final String deliveryAddress = order['delivery_address'] ?? 'Dirección de entrega';
-    final String pickupAddress = order['merchant']?['address'] ?? 'Dirección de recogida';
-    
+    final String merchantName =
+        order['merchant']?['business_name'] ?? 'Comercio';
+    final String deliveryAddress =
+        order['delivery_address'] ?? 'Dirección de entrega';
+    final String pickupAddress =
+        order['merchant']?['address'] ?? 'Dirección de recogida';
+
     return Card(
       elevation: 4,
       margin: const EdgeInsets.only(bottom: 16.0),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -682,14 +672,11 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
               children: [
                 Text(
                   'Pedido #${orderId.substring(0, Math.min(8, orderId.length))}',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 Chip(
                   label: Text(_formatStatus(status)),
-                  backgroundColor: _getStatusColor(status).withOpacity(0.2),
+                  backgroundColor: _getStatusColor(status).withAlpha(51),
                   labelStyle: TextStyle(
                     color: _getStatusColor(status),
                     fontWeight: FontWeight.bold,
@@ -713,7 +700,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
       ),
     );
   }
-  
+
   Widget _buildOrderDetail(String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
@@ -722,28 +709,18 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
         children: [
           Text(
             '$label: ',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 15,
-            ),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
           ),
-          Expanded(
-            child: Text(
-              value,
-              style: TextStyle(
-                fontSize: 15,
-              ),
-            ),
-          ),
+          Expanded(child: Text(value, style: TextStyle(fontSize: 15))),
         ],
       ),
     );
   }
-  
+
   List<Widget> _buildOrderActions(Map<String, dynamic> order) {
     final String status = order['status'] ?? '';
     final String orderId = order['order_id'] ?? '';
-    
+
     switch (status) {
       case 'assigned':
         return [
@@ -760,10 +737,14 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ActiveOrderTrackingWidget(
-                    controller: Provider.of<DriverController>(context, listen: false),
-                    activeOrder: activeOrder,
-                  ),
+                  builder:
+                      (context) => ActiveOrderTrackingWidget(
+                        controller: Provider.of<DriverController>(
+                          context,
+                          listen: false,
+                        ),
+                        activeOrder: activeOrder,
+                      ),
                 ),
               );
             },
@@ -776,7 +757,10 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
               foregroundColor: Colors.white,
             ),
             onPressed: () async {
-              final controller = Provider.of<DriverController>(context, listen: false);
+              final controller = Provider.of<DriverController>(
+                context,
+                listen: false,
+              );
               await controller.updateOrderStatus(orderId, 'picked_up');
             },
           ),
@@ -796,10 +780,14 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ActiveOrderTrackingWidget(
-                    controller: Provider.of<DriverController>(context, listen: false),
-                    activeOrder: activeOrder,
-                  ),
+                  builder:
+                      (context) => ActiveOrderTrackingWidget(
+                        controller: Provider.of<DriverController>(
+                          context,
+                          listen: false,
+                        ),
+                        activeOrder: activeOrder,
+                      ),
                 ),
               );
             },
@@ -812,7 +800,10 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
               foregroundColor: Colors.white,
             ),
             onPressed: () async {
-              final controller = Provider.of<DriverController>(context, listen: false);
+              final controller = Provider.of<DriverController>(
+                context,
+                listen: false,
+              );
               await controller.updateOrderStatus(orderId, 'delivered');
             },
           ),
@@ -832,10 +823,14 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ActiveOrderTrackingWidget(
-                    controller: Provider.of<DriverController>(context, listen: false),
-                    activeOrder: activeOrder,
-                  ),
+                  builder:
+                      (context) => ActiveOrderTrackingWidget(
+                        controller: Provider.of<DriverController>(
+                          context,
+                          listen: false,
+                        ),
+                        activeOrder: activeOrder,
+                      ),
                 ),
               );
             },
@@ -848,7 +843,10 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
               foregroundColor: Colors.white,
             ),
             onPressed: () async {
-              final controller = Provider.of<DriverController>(context, listen: false);
+              final controller = Provider.of<DriverController>(
+                context,
+                listen: false,
+              );
               await controller.updateOrderStatus(orderId, 'delivered');
             },
           ),
@@ -865,7 +863,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
             onPressed: () {
               // Navigate to order details page
               Navigator.pushNamed(
-                context, 
+                context,
                 Routes.driver_order_details,
                 arguments: order,
               );
@@ -874,7 +872,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
         ];
     }
   }
-  
+
   String _formatStatus(String status) {
     switch (status) {
       case 'assigned':
@@ -889,7 +887,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
         return 'Desconocido';
     }
   }
-  
+
   Color _getStatusColor(String status) {
     switch (status) {
       case 'assigned':

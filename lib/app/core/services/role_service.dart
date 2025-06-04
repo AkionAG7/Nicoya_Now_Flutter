@@ -10,21 +10,26 @@ class RoleService {
       // Use the safer RoleUtils implementation to avoid SQL errors
       return await RoleUtils.hasRole(_supabase, userId, slug);
     } catch (e) {
+      //ignore: avoid_print
       print('Error verificando rol: $e');
       return false;
     }
   }
   Future<void> addRoleIfNotExists(String slug) async {
     try {
+      //ignore: avoid_print
       print('ROLE SERVICE: Checking if user already has role: $slug');
       final hasIt = await hasRole(slug);
       if (!hasIt) {
+        //ignore: avoid_print
         print('ROLE SERVICE: User does not have role $slug, adding it');
         await addRoleWithData(slug, {});
       } else {
+        //ignore: avoid_print
         print('ROLE SERVICE: User already has role $slug, skipping');
       }
     } on PostgrestException catch (e) {
+      //ignore: avoid_print
       print('ROLE SERVICE: Error adding role: ${e.message}');
       throw Exception('Error añadiendo rol: ${e.message}');
     }
@@ -92,7 +97,7 @@ class RoleService {
               'is_active': false,
               // We don't include main_address_id or logo_url to avoid null constraint errors
             };
-            
+            //ignore: avoid_print
             print("Creating new merchant record: $merchantData");
             
             await _supabase.from('merchant').upsert(
@@ -111,6 +116,7 @@ class RoleService {
             if (roleData['corporate_name'] != null) updateData['corporate_name'] = roleData['corporate_name'];
             
             if (updateData.isNotEmpty) {
+              //ignore: avoid_print
               print("Updating existing merchant record: $updateData");
               
               await _supabase.from('merchant')
@@ -119,6 +125,7 @@ class RoleService {
             }
           }
         } catch (e) {
+          //ignore: avoid_print
           print('Error al actualizar datos de comerciante: $e');
           rethrow;
         }
@@ -139,10 +146,11 @@ class RoleService {
       
       // Use the safer RoleUtils approach to get roles
       final roles = await RoleUtils.getRolesForUser(_supabase, userId);
-      
+      //ignore: avoid_print
       print('ROLE SERVICE: Returning roles from RoleUtils: $roles');
       return roles;
     } catch (e) {
+      //ignore: avoid_print
       print('ROLE SERVICE: Error fetching roles: $e');
       return []; // No asignamos rol por defecto si hay error
     }

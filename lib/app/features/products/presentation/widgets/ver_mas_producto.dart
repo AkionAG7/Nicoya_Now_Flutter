@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:nicoya_now/app/core/enums/ValorVerMas_enum.dart';
+import 'package:nicoya_now/app/core/enums/valor_ver_mas_enum.dart';
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 
 class VerMasProducto extends StatelessWidget {

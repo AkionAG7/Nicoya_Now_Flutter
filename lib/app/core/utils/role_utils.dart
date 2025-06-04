@@ -30,6 +30,7 @@ class RoleUtils {
 
       return userRoleResult != null;
     } catch (e) {
+      //ignore: avoid_print
       print('Error checking role: $e');
       // If there's an error (likely due to missing columns), 
       // return false rather than crashing
@@ -68,12 +69,14 @@ class RoleUtils {
             roleSlugs.add(roleResult['slug']);
           }
         } catch (e) {
+          //ignore: avoid_print
           print('Error fetching role $roleId: $e');
         }
       }
       
       return roleSlugs;
     } catch (e) {
+      //ignore: avoid_print
       print('Error getting roles: $e');
       // Return empty list instead of crashing
       return [];
@@ -96,6 +99,7 @@ class RoleUtils {
       
       return result;
     } catch (e) {
+      //ignore: avoid_print
       print('Error getting role by slug: $e');
       return null;
     }
@@ -115,6 +119,7 @@ class RoleUtils {
       
       return result != null ? result['role_id']?.toString() : null;
     } catch (e) {
+      //ignore: avoid_print
       print('Error getting role ID by slug: $e');
       return null;
     }
@@ -150,6 +155,7 @@ class RoleUtils {
       // Convertir a una lista tipada correctamente
       return List<Map<String, dynamic>>.from(result);
     } catch (e) {
+      //ignore: avoid_print
       print('Error buscando roles: $e');
       return [];
     }
@@ -170,6 +176,7 @@ class RoleUtils {
           
       return result;
     } catch (e) {
+      //ignore: avoid_print
       print('Error obteniendo rol por tipo: $e');
       return null;
     }

@@ -22,6 +22,7 @@ class AssignmentUtils {  /// Obtiene una asignación por ID de orden y ID de con
       // Utilizar la función de RpcUtils actualizada para hacer la llamada
       return await RpcUtils.getAssignmentById(supabase, formattedDriverId, formattedOrderId);
     } catch (e) {
+      //ignore: avoid_print
       print('Error al obtener asignación por ID: $e');
       
       // En caso de error, intentar un enfoque alternativo con consultas directas
@@ -46,6 +47,7 @@ class AssignmentUtils {  /// Obtiene una asignación por ID de orden y ID de con
         }
         return null;
       } catch (directQueryError) {
+        //ignore: avoid_print
         print('Error en consulta directa: $directQueryError');
         return null;
       }
@@ -77,6 +79,7 @@ class AssignmentUtils {  /// Obtiene una asignación por ID de orden y ID de con
           
       return result;
     } catch (e) {
+      //ignore: avoid_print
       print('Error al obtener asignación para orden $orderId y conductor $driverId: $e');
       return null;
     }
@@ -108,6 +111,7 @@ class AssignmentUtils {  /// Obtiene una asignación por ID de orden y ID de con
           
       return true;
     } catch (e) {
+      //ignore: avoid_print
       print('Error al crear asignación: $e');
       return false;
     }
@@ -138,6 +142,7 @@ class AssignmentUtils {  /// Obtiene una asignación por ID de orden y ID de con
           
       return true;
     } catch (e) {
+      //ignore: avoid_print
       print('Error al actualizar asignación: $e');
       return false;
     }

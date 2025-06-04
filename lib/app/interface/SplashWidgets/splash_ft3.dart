@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:nicoya_now/Icons/nicoya_now_icons_icons.dart';
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 
 class SplashFT3 extends StatelessWidget {
-  const SplashFT3({Key? key}) : super(key: key);
+  const SplashFT3({super.key});
 
   @override
   Widget build(BuildContext context) {

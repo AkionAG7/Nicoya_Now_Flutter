@@ -76,7 +76,9 @@ void setupServiceLocator() {
   );
 
   locator.registerLazySingleton<NetworkInfo>(
-    () => NetworkInfoImpl(connectionChecker: locator<InternetConnectionChecker>()),
+    () => NetworkInfoImpl(
+      connectionChecker: locator<InternetConnectionChecker>(),
+    ),
   );
 
   // ───────────────────────────── Core ──────────────────────────────────
@@ -169,10 +171,14 @@ void setupServiceLocator() {
     )
     // Admin – Merchant
     ..registerLazySingleton<GetAllMerchantsUseCase>(
-      () => GetAllMerchantsUseCase(locator<AdminMerchantRepo.MerchantRepository>()),
+      () => GetAllMerchantsUseCase(
+        locator<AdminMerchantRepo.MerchantRepository>(),
+      ),
     )
     ..registerLazySingleton<ApproveMerchantUseCase>(
-      () => ApproveMerchantUseCase(locator<AdminMerchantRepo.MerchantRepository>()),
+      () => ApproveMerchantUseCase(
+        locator<AdminMerchantRepo.MerchantRepository>(),
+      ),
     )
     // Admin – Driver
     ..registerLazySingleton<GetAllDriversUseCase>(
@@ -208,14 +214,20 @@ void setupServiceLocator() {
     )
     // Products
     ..registerFactory<AddProductsController>(
-      () => AddProductsController(addProductUseCase: locator<AddProductUseCase>()),
+      () => AddProductsController(
+        addProductUseCase: locator<AddProductUseCase>(),
+      ),
     )
     ..registerFactory<EditProductController>(
-      () => EditProductController(updateProductUseCase: locator<UpdateProductUseCase>()),
+      () => EditProductController(
+        updateProductUseCase: locator<UpdateProductUseCase>(),
+      ),
     )
     // Orders
     ..registerFactory<ChangeOrderStatusController>(
-      () => ChangeOrderStatusController(changeStatusUseCase: locator<ChangeOrderStatusUseCase>()),
+      () => ChangeOrderStatusController(
+        changeStatusUseCase: locator<ChangeOrderStatusUseCase>(),
+      ),
     )
     // Admin – Merchant
     ..registerFactory<AdminMerchantController>(

@@ -118,6 +118,7 @@ class AuthController extends ChangeNotifier {
       final result = await _signInUseCase.repository.getMerchantVerificationStatus(userId);
       return result; // is_active debe ser true para considerarse verificado
     } catch (e) {
+      //ignore: avoid_print
       print('Error verificando estado de merchant: $e');
       return false; // En caso de error, asumimos que no está verificado
     }
@@ -129,6 +130,7 @@ class AuthController extends ChangeNotifier {
       final result = await _signInUseCase.repository.getDriverVerificationStatus(userId);
       return result; // is_verified debe ser true para considerarse verificado
     } catch (e) {
+      //ignore: avoid_print
       print('Error verificando estado de driver: $e');
       return false; // En caso de error, asumimos que no está verificado
     }
@@ -149,6 +151,7 @@ class AuthController extends ChangeNotifier {
     notifyListeners();    
     
     try {
+      //ignore: avoid_print
       print('SIGNUP: Registering user without automatic roles');
       _user = await _signUpUseCase.execute(
         email,
@@ -163,9 +166,11 @@ class AuthController extends ChangeNotifier {
       // Para otros tipos de usuarios (merchant, driver) el rol se asignará específicamente
       // en sus propios métodos de registro
       if (addCustomerRole) {
+        //ignore: avoid_print
         print('SIGNUP: Explicitly adding customer role');
         await _roleService.addRoleWithData('customer', {});
       } else {
+        //ignore: avoid_print
         print('SIGNUP: NOT adding customer role automatically');
       }
       
@@ -289,10 +294,12 @@ class AuthController extends ChangeNotifier {
       // Aseguramos que owner_id esté siempre establecido
       merchantData['owner_id'] = _user!.id;      print('ADDING MERCHANT ROLE: Adding merchant role with data $merchantData');
       await _roleService.addRoleWithData('merchant', merchantData);
+      //ignore: avoid_print
       print('ADDING MERCHANT ROLE: Role added successfully');
       
       // Actualizar perfil con datos básicos si es necesario
       if (idNumber != null && idNumber.isNotEmpty) {
+        //ignore: avoid_print
         print('ADDING MERCHANT ROLE: Updating profile with idNumber');
         await _signInUseCase.repository.updateProfile(_user!.id, {
           'id_number': idNumber,
@@ -300,11 +307,13 @@ class AuthController extends ChangeNotifier {
       }
       
       // Refrescamos los datos del usuario para reflejar el nuevo rol
+      //ignore: avoid_print
       print('ADDING MERCHANT ROLE: Refreshing user data');
       await _refreshUserData();
       
       // Log user roles after refresh
       final currentRoles = await _getUserRolesUseCase.execute(_user!.id);
+      //ignore: avoid_print
       print('ADDING MERCHANT ROLE: User roles after refresh: $currentRoles');
       
       _state = AuthState.authenticated;
@@ -370,6 +379,7 @@ class AuthController extends ChangeNotifier {
       // Always set owner_id for merchant roles to prevent null constraint violations
       if (roleType == RoleType.merchant) {
         roleData['owner_id'] = _user!.id;
+        //ignore: avoid_print
         print("Setting owner_id to ${_user!.id} for merchant role");
       }
       

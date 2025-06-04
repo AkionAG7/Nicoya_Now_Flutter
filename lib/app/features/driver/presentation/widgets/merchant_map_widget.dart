@@ -90,7 +90,7 @@ class _MerchantMapWidgetState extends State<MerchantMapWidget> {
         } catch (e2) {
            //ignore: avoid_print
           print('Error with fallback merchant query: $e2');
-          throw e2;
+          rethrow;
         }
       }
       

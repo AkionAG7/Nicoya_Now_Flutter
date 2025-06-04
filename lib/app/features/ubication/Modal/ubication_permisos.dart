@@ -31,9 +31,11 @@ void pedirPermisoUbicacion(BuildContext context) async {
     final ubicacion = await ubicacionController.obtenerUbicacion();
     if (ubicacion != null) {
       // Ubicación obtenida
+      //ignore: avoid_print
       print("Ubicación: ${ubicacion.latitude}, ${ubicacion.longitude}");
     } else {
       // No se pudo obtener la ubicación
+      //ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("No se pudo obtener la ubicación.")),
       );

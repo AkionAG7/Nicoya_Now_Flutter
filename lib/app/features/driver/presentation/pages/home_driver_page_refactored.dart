@@ -13,13 +13,13 @@ import 'package:nicoya_now/app/features/driver/presentation/widgets/active_order
 import 'package:nicoya_now/app/features/driver/presentation/widgets/profile_tab_widget.dart';
 
 class HomeDriverPage extends StatefulWidget {
-  const HomeDriverPage({Key? key}) : super(key: key);
+  const HomeDriverPage({super.key});
 
   @override
-  _HomeDriverPageState createState() => _HomeDriverPageState();
+  HomeDriverPageState createState() => HomeDriverPageState();
 }
 
-class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObserver {
+class HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObserver {
   final LocationManager _locationManager = LocationManager();
   int _selectedIndex = 0;
   bool _isAvailable = true;
@@ -143,6 +143,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
             action: SnackBarAction(
               label: 'Ver logs',
               onPressed: () {
+                //ignore: avoid_print
                 print('Ver logs de depuración');
               },
             ),
@@ -164,12 +165,15 @@ class _HomeDriverPageState extends State<HomeDriverPage> with WidgetsBindingObse
     try {
       final exists = controller.activeOrders.any((order) => order['order_id'] == specificOrderId);
       if (exists) {
+        //ignore: avoid_print
         print('Found specific order $specificOrderId in controller');
       } else {
+        //ignore: avoid_print
         print('Specific order $specificOrderId NOT found in controller');
       }
       return exists;
     } catch (e) {
+      //ignore: avoid_print
       print('Error checking for specific order: $e');
       return false;
     }

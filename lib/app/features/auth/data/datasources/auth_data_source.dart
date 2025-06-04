@@ -188,6 +188,7 @@ class SupabaseAuthDataSource implements AuthDataSource {
           .where((slug) => slug.isNotEmpty)
           .toList();
     } catch (e) {
+      //ignore: avoid_print
       print('Error fetching roles: $e');
       return []; // Return empty list on error
     }
@@ -258,6 +259,7 @@ class SupabaseAuthDataSource implements AuthDataSource {
                 .eq('merchant_id', userId);
           }
         } catch (e) {
+          //ignore: avoid_print
           print("Error creating address: $e");
           // We should not throw here, but continue the process even if address creation fails
           // This avoids breaking the entire role addition flow
@@ -277,6 +279,7 @@ class SupabaseAuthDataSource implements AuthDataSource {
             bool bucketExists = buckets.any((bucket) => bucket.name == 'merchant-assets');
             
             if (!bucketExists) {
+              //ignore: avoid_print
               print("Merchant assets bucket does not exist, creating...");
               try {
                 await _supabaseClient.storage.createBucket(
@@ -285,6 +288,7 @@ class SupabaseAuthDataSource implements AuthDataSource {
                 );
               } catch (bucketError) {
                 // Bucket might have been created by another process
+                //ignore: avoid_print
                 print("Error creating bucket: $bucketError");
               }
             }
@@ -321,9 +325,11 @@ class SupabaseAuthDataSource implements AuthDataSource {
                 .eq('merchant_id', userId);
                 
           } catch (storageError) {
+            //ignore: avoid_print
             print("Storage operation failed: $storageError");
           }
         } catch (e) {
+          //ignore: avoid_print
           print("Error in logo upload process: $e");
           // Continue with the process even if logo upload fails
         }
@@ -348,6 +354,7 @@ class SupabaseAuthDataSource implements AuthDataSource {
           
       return result['is_active'] as bool? ?? false;
     } catch (e) {
+      //ignore: avoid_print
       print("Error checking merchant verification status: $e");
       return false; // En caso de error, asumimos que no está verificado
     }
@@ -364,6 +371,7 @@ class SupabaseAuthDataSource implements AuthDataSource {
           
       return result['is_verified'] as bool? ?? false;
     } catch (e) {
+      //ignore: avoid_print
       print("Error checking driver verification status: $e");
       return false; // En caso de error, asumimos que no está verificado
     }

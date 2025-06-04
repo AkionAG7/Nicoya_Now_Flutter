@@ -3,7 +3,7 @@ import 'package:nicoya_now/app/features/auth/presentation/controllers/auth_contr
 import 'package:provider/provider.dart';
 
 class ClientForm extends StatefulWidget {
-  const ClientForm({Key? key}) : super(key: key);
+  const ClientForm({super.key});
 
   @override
   State<ClientForm> createState() => _ClientFormState();
@@ -14,18 +14,17 @@ class _ClientFormState extends State<ClientForm> {
   final _firstName = TextEditingController();
   final _lastName1 = TextEditingController();
   final _lastName2 = TextEditingController();
-  final _phone     = TextEditingController();
-  final _address   = TextEditingController();
-  final _email     = TextEditingController();
-  final _password  = TextEditingController();
-  final _passConf  = TextEditingController();
+  final _phone = TextEditingController();
+  final _address = TextEditingController();
+  final _email = TextEditingController();
+  final _password = TextEditingController();
+  final _passConf = TextEditingController();
 
-  bool   _loading  = false;
-  bool   _hidePw   = true;
-  bool   _hidePw2  = true;
+  bool _loading = false;
+  bool _hidePw = true;
+  bool _hidePw2 = true;
   String? _error;
 
- 
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
     if (_password.text != _passConf.text) {
@@ -35,12 +34,15 @@ class _ClientFormState extends State<ClientForm> {
 
     setState(() {
       _loading = true;
-      _error   = null;
+      _error = null;
     });
 
     try {
-      final authController = Provider.of<AuthController>(context, listen: false);
-      
+      final authController = Provider.of<AuthController>(
+        context,
+        listen: false,
+      );
+
       final success = await authController.signUp(
         email: _email.text.trim(),
         password: _password.text,
@@ -52,9 +54,9 @@ class _ClientFormState extends State<ClientForm> {
       );
 
       if (!mounted) return;
-      
+
       if (success) {
-        Navigator.pop(context); 
+        Navigator.pop(context);
       } else {
         setState(() => _error = authController.errorMessage);
       }
@@ -83,13 +85,18 @@ class _ClientFormState extends State<ClientForm> {
     super.dispose();
   }
 
-  Widget _text(String label, TextEditingController c,
-      {TextInputType? type, int? maxLen}) {
+  Widget _text(
+    String label,
+    TextEditingController c, {
+    TextInputType? type,
+    int? maxLen,
+  }) {
     return TextFormField(
       controller: c,
       keyboardType: type,
       maxLength: maxLen,
-      buildCounter: (_, {required currentLength, maxLength, required isFocused}) => null,
+      buildCounter:
+          (_, {required currentLength, maxLength, required isFocused}) => null,
       decoration: InputDecoration(labelText: label),
       validator: (v) => v == null || v.trim().isEmpty ? 'Requerido' : null,
     );
@@ -121,18 +128,19 @@ class _ClientFormState extends State<ClientForm> {
                 const SizedBox(height: 20),
                 _text('Segundo apellido', _lastName2, type: TextInputType.name),
                 const SizedBox(height: 20),
-                _text('Teléfono', _phone,
-                    type: TextInputType.phone, maxLen: 8),
+                _text('Teléfono', _phone, type: TextInputType.phone, maxLen: 8),
                 const SizedBox(height: 20),
-                _text('Domicilio', _address,
-                    type: TextInputType.streetAddress),
+                _text('Domicilio', _address, type: TextInputType.streetAddress),
                 const SizedBox(height: 20),
                 TextFormField(
                   controller: _email,
                   keyboardType: TextInputType.emailAddress,
                   decoration: const InputDecoration(labelText: 'Email'),
-                  validator: (v) =>
-                      v != null && v.contains('@') ? null : 'Correo inválido',
+                  validator:
+                      (v) =>
+                          v != null && v.contains('@')
+                              ? null
+                              : 'Correo inválido',
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
@@ -142,12 +150,16 @@ class _ClientFormState extends State<ClientForm> {
                     labelText: 'Contraseña',
                     suffixIcon: IconButton(
                       icon: Icon(
-                          _hidePw ? Icons.visibility_off : Icons.visibility),
+                        _hidePw ? Icons.visibility_off : Icons.visibility,
+                      ),
                       onPressed: () => setState(() => _hidePw = !_hidePw),
                     ),
                   ),
-                  validator: (v) =>
-                      v != null && v.length >= 6 ? null : 'Mínimo 6 caracteres',
+                  validator:
+                      (v) =>
+                          v != null && v.length >= 6
+                              ? null
+                              : 'Mínimo 6 caracteres',
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
@@ -156,19 +168,20 @@ class _ClientFormState extends State<ClientForm> {
                   decoration: InputDecoration(
                     labelText: 'Confirmar contraseña',
                     suffixIcon: IconButton(
-                      icon: Icon(_hidePw2
-                          ? Icons.visibility_off
-                          : Icons.visibility),
+                      icon: Icon(
+                        _hidePw2 ? Icons.visibility_off : Icons.visibility,
+                      ),
                       onPressed: () => setState(() => _hidePw2 = !_hidePw2),
                     ),
                   ),
-                  validator: (v) =>
-                      v == _password.text ? null : 'No coincide',
+                  validator: (v) => v == _password.text ? null : 'No coincide',
                 ),
                 const SizedBox(height: 30),
                 if (_error != null)
-                  Text(_error!,
-                      style: const TextStyle(color: Colors.red, fontSize: 14)),
+                  Text(
+                    _error!,
+                    style: const TextStyle(color: Colors.red, fontSize: 14),
+                  ),
                 const SizedBox(height: 10),
                 SizedBox(
                   width: double.infinity,
@@ -178,41 +191,53 @@ class _ClientFormState extends State<ClientForm> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xffd72a23),
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
-                    child: _loading
-                        ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child:
-                                CircularProgressIndicator(color: Colors.white))
-                        : const Text('Registrar',
-                            style:
-                                TextStyle(fontSize: 18, color: Colors.white)),
+                    child:
+                        _loading
+                            ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                              ),
+                            )
+                            : const Text(
+                              'Registrar',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.white,
+                              ),
+                            ),
                   ),
                 ),
                 const SizedBox(height: 20),
                 // Google sign-up button
                 Consumer<AuthController>(
-                  builder: (context, authController, _) => SizedBox(
-                    width: double.infinity,
-                    height: 55,
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        // Aquí implementarías la lógica para sign-in con Google
-                        // usando el controlador de autenticación
-                      },
-                      icon: const Icon(Icons.login, size: 24),
-                      label: const Text('Google', style: TextStyle(fontSize: 18)),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xffd72a23),
-                        side: const BorderSide(color: Color(0xffd72a23)),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                  builder:
+                      (context, authController, _) => SizedBox(
+                        width: double.infinity,
+                        height: 55,
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            // Aquí implementarías la lógica para sign-in con Google
+                            // usando el controlador de autenticación
+                          },
+                          icon: const Icon(Icons.login, size: 24),
+                          label: const Text(
+                            'Google',
+                            style: TextStyle(fontSize: 18),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xffd72a23),
+                            side: const BorderSide(color: Color(0xffd72a23)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
                 ),
               ],
             ),

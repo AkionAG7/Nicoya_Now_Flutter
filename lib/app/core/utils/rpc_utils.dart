@@ -23,6 +23,7 @@ class RpcUtils {
           ? response 
           : {'data': response};
     } catch (e) {
+      //ignore: avoid_print
       print('Error en llamada RPC a $functionName: $e');
       rethrow; // Propagar el error para que el llamador pueda manejarlo
     }
@@ -55,6 +56,7 @@ class RpcUtils {
         response is Map<String, dynamic> ? response : {'value': response}
       ];
     } catch (e) {
+      //ignore: avoid_print
       print('Error en llamada RPC a $functionName: $e');
       rethrow; // Propagar el error para que el llamador pueda manejarlo
     }
@@ -109,6 +111,7 @@ class RpcUtils {
       
       return result is Map<String, dynamic> ? result : {'data': result};
     } catch (e) {
+      //ignore: avoid_print
       print('Error obteniendo asignación por ID: $e');
       return null;
     }

@@ -4,7 +4,7 @@ import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 import 'package:provider/provider.dart';
 
 class AddRolePage extends StatefulWidget {
-  const AddRolePage({Key? key}) : super(key: key);
+  const AddRolePage({super.key});
 
   @override
   State<AddRolePage> createState() => _AddRolePageState();
@@ -27,28 +27,23 @@ class _AddRolePageState extends State<AddRolePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Agregar nuevo rol'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Agregar nuevo rol'), centerTitle: true),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,            children: [
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 10.0),
                 child: Text(
                   'Para agregar un nuevo rol a tu cuenta, primero verifica tu identidad',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   textAlign: TextAlign.center,
                 ),
               ),
               const SizedBox(height: 20),
-              
+
               // Email field
               TextField(
                 controller: _emailController,
@@ -61,7 +56,7 @@ class _AddRolePageState extends State<AddRolePage> {
                 textInputAction: TextInputAction.next,
               ),
               const SizedBox(height: 15),
-              
+
               // Password field
               TextField(
                 controller: _passwordController,
@@ -84,7 +79,7 @@ class _AddRolePageState extends State<AddRolePage> {
                 textInputAction: TextInputAction.done,
               ),
               const SizedBox(height: 20),
-                // Role selection
+              // Role selection
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 5.0),
                 child: Text(
@@ -96,13 +91,14 @@ class _AddRolePageState extends State<AddRolePage> {
               const SizedBox(height: 10),
               _buildRoleSelection(),
               const SizedBox(height: 30),
-              
+
               // Submit button
               ElevatedButton(
                 onPressed: _isLoading ? null : _verifyAndContinue,
-                child: _isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text('CONTINUAR'),
+                child:
+                    _isLoading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text('CONTINUAR'),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 15),
                 ),
@@ -113,7 +109,7 @@ class _AddRolePageState extends State<AddRolePage> {
       ),
     );
   }
-  
+
   Widget _buildRoleSelection() {
     return Column(
       children: [
@@ -124,7 +120,7 @@ class _AddRolePageState extends State<AddRolePage> {
           'Regístrate como conductor para entregar pedidos',
           Icons.delivery_dining,
         ),
-        
+
         // Merchant role option
         _buildRoleOption(
           RoleType.merchant,
@@ -132,7 +128,7 @@ class _AddRolePageState extends State<AddRolePage> {
           'Regístrate como comercio para vender productos',
           Icons.store,
         ),
-        
+
         // Customer role option
         _buildRoleOption(
           RoleType.customer,
@@ -143,18 +139,20 @@ class _AddRolePageState extends State<AddRolePage> {
       ],
     );
   }
-    Widget _buildRoleOption(
+
+  Widget _buildRoleOption(
     RoleType roleType,
     String title,
     String description,
     IconData icon,
   ) {
     final isSelected = _selectedRoleType == roleType;
-    
+
     return Card(
       elevation: isSelected ? 4 : 1,
       margin: const EdgeInsets.only(bottom: 10),
-      color: isSelected ? Theme.of(context).primaryColor.withOpacity(0.1) : null,
+      color:
+          isSelected ? Theme.of(context).primaryColor.withAlpha(26) : null,
       child: InkWell(
         onTap: () {
           setState(() {
@@ -207,54 +205,54 @@ class _AddRolePageState extends State<AddRolePage> {
       ),
     );
   }
-  
+
   Future<void> _verifyAndContinue() async {
     // Check if all fields are filled
-    if (_emailController.text.isEmpty || 
-        _passwordController.text.isEmpty || 
+    if (_emailController.text.isEmpty ||
+        _passwordController.text.isEmpty ||
         _selectedRoleType == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Por favor completa todos los campos y selecciona un rol'),
+          content: Text(
+            'Por favor completa todos los campos y selecciona un rol',
+          ),
         ),
       );
       return;
     }
-    
+
     setState(() {
       _isLoading = true;
     });
-    
+
     try {
-      final authController = Provider.of<AuthController>(context, listen: false);
-      
+      final authController = Provider.of<AuthController>(
+        context,
+        listen: false,
+      );
+
       // Verify credentials and check if user already has the selected role
       final success = await authController.handleRoleAdditionFlow(
         _emailController.text.trim(),
         _passwordController.text,
         _selectedRoleType!,
       );
-      
+
       if (!mounted) return;
-        if (success) {
+      if (success) {
         // For driver role, go directly to DeliverForm1 to avoid duplicate data entry
         if (_selectedRoleType == RoleType.driver) {
           Navigator.pushNamed(
-            context, 
+            context,
             Routes.deliver_Form1,
-            arguments: {
-              'isAddingRole': true,
-            },
+            arguments: {'isAddingRole': true},
           );
         } else {
           // For other roles, use the generic role form page
           Navigator.pushNamed(
-            context, 
+            context,
             Routes.roleFormPage,
-            arguments: {
-              'roleType': _selectedRoleType!,
-              'isAddingRole': true,
-            },
+            arguments: {'roleType': _selectedRoleType!, 'isAddingRole': true},
           );
         }
       } else {
@@ -267,9 +265,9 @@ class _AddRolePageState extends State<AddRolePage> {
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
     } finally {
       if (mounted) {
         setState(() {

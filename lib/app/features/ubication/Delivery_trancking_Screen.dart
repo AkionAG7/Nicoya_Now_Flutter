@@ -50,8 +50,10 @@ class _DeliveryTrackingScreenState extends State<DeliveryTrackingScreen> {
     if (permiso == true) {
       final ubicacion = await ubicacionController.obtenerUbicacion();
       if (ubicacion != null) {
+        //ignore: avoid_print
         print("Ubicación obtenida: ${ubicacion.latitude}, ${ubicacion.longitude}");
       } else {
+        //ignore: avoid_print
         print("No se pudo obtener la ubicación");
       }
     }

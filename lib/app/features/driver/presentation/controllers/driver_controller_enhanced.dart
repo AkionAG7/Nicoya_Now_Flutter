@@ -120,12 +120,14 @@ class DriverController extends ChangeNotifier {
             order['delivered_at'] = assignmentResponse['delivered_at'];
           }
         } catch (e) {
+          //ignore: avoid_print
           print('Error fetching assignment for order ${order['order_id']}: $e');
         }
       }
       
       notifyListeners();
     } catch (e) {
+      //ignore: avoid_print
       print('Error loading active orders: $e');
     }
   }
@@ -172,6 +174,7 @@ class DriverController extends ChangeNotifier {
           })
           .eq('driver_id', userId);
     } catch (e) {
+      //ignore: avoid_print
       print('Error updating location: $e');
     }
   }

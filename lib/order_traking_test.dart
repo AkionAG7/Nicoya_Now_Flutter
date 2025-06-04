@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:nicoya_now/app/features/ubication/delivery_trancking_Screen.dart';
+import 'package:nicoya_now/app/features/ubication/delivery_trancking_screen.dart';
 
 void main() {
   runApp(const MyApp());

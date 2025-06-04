@@ -64,6 +64,7 @@ class LocationManager {
     try {
       final ubicacion = await ubicacionController.obtenerUbicacion();
       if (ubicacion != null && ubicacion.latitude != null && ubicacion.longitude != null) {
+        //ignore: avoid_print
         print("Ubicación obtenida: ${ubicacion.latitude}, ${ubicacion.longitude}");
         
         // Update driver location in database
@@ -72,9 +73,11 @@ class LocationManager {
         // Notify the callback
         _onLocationUpdate?.call(ubicacion.latitude!, ubicacion.longitude!);
       } else {
+        //ignore: avoid_print
         print("No se pudo obtener la ubicación");
       }
     } catch (e) {
+      //ignore: avoid_print
       print("Error updating location: $e");
     }
   }

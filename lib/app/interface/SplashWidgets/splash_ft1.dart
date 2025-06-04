@@ -4,13 +4,13 @@ import 'package:nicoya_now/Icons/nicoya_now_icons_icons.dart';
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 
 class SplashFT1 extends StatefulWidget {
-  const SplashFT1({Key? key}) : super(key: key);
+  const SplashFT1({super.key});
 
   @override
-  _SplashFT1State createState() => _SplashFT1State();
+  SplashFT1State createState() => SplashFT1State();
 }
 
-class _SplashFT1State extends State<SplashFT1> {
+class SplashFT1State extends State<SplashFT1> {
   late TapGestureRecognizer _tapSkip;
 
   @override

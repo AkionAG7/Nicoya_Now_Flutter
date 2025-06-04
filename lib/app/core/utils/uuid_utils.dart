@@ -34,6 +34,7 @@ class UuidUtils {
       // Si todo falla, devolvemos el original
       return uuidStr;
     } catch (e) {
+      //ignore: avoid_print
       print('Error parseando UUID: $e');
       return uuidStr; // Devolver el original en caso de error
     }

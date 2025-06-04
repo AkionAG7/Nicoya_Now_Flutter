@@ -5,13 +5,14 @@ import 'package:provider/provider.dart';
 
 class RoleFormPage extends StatefulWidget {
   final RoleType roleType;
-  final bool isAddingRole; // true if adding role to existing user, false for new registration
+  final bool
+  isAddingRole; // true if adding role to existing user, false for new registration
 
   const RoleFormPage({
-    Key? key,
+    super.key,
     required this.roleType,
     this.isAddingRole = false,
-  }) : super(key: key);
+  });
 
   @override
   State<RoleFormPage> createState() => _RoleFormPageState();
@@ -21,7 +22,7 @@ class _RoleFormPageState extends State<RoleFormPage> {
   final _formKey = GlobalKey<FormState>();
   final Map<String, dynamic> _formData = {};
   bool _isLoading = false;
-  
+
   @override
   void initState() {
     super.initState();
@@ -31,24 +32,20 @@ class _RoleFormPageState extends State<RoleFormPage> {
       _redirectToRoleForm();
     });
   }
-  
+
   void _redirectToRoleForm() {
     // Immediately redirect to the appropriate form page
     if (widget.roleType == RoleType.driver) {
       Navigator.pushReplacementNamed(
         context,
         Routes.deliver_Form1,
-        arguments: {
-          'isAddingRole': widget.isAddingRole,
-        },
+        arguments: {'isAddingRole': widget.isAddingRole},
       );
     } else if (widget.roleType == RoleType.merchant) {
       Navigator.pushReplacementNamed(
         context,
         Routes.merchantStepBusiness,
-        arguments: {
-          'isAddingRole': widget.isAddingRole,
-        },
+        arguments: {'isAddingRole': widget.isAddingRole},
       );
     }
   }
@@ -56,70 +53,76 @@ class _RoleFormPageState extends State<RoleFormPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_getPageTitle()),
-        centerTitle: true,
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        _getFormDescription(),
-                        style: const TextStyle(fontSize: 16),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 20),
-                      ..._buildFormFields(),
-                      const SizedBox(height: 30),
-                      ElevatedButton(
-                        onPressed: _submitForm,
-                        child: const Text('CONTINUAR'),
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 15),
+      appBar: AppBar(title: Text(_getPageTitle()), centerTitle: true),
+      body:
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          _getFormDescription(),
+                          style: const TextStyle(fontSize: 16),
+                          textAlign: TextAlign.center,
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 20),
+                        ..._buildFormFields(),
+                        const SizedBox(height: 30),
+                        ElevatedButton(
+                          onPressed: _submitForm,
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 15),
+                          ),
+                          child: const Text('CONTINUAR'),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
     );
   }
-  
+
   String _getPageTitle() {
     switch (widget.roleType) {
       case RoleType.driver:
-        return widget.isAddingRole ? 'Agregar rol de Conductor' : 'Datos del Conductor';
+        return widget.isAddingRole
+            ? 'Agregar rol de Conductor'
+            : 'Datos del Conductor';
       case RoleType.merchant:
-        return widget.isAddingRole ? 'Agregar rol de Comercio' : 'Datos del Comercio';
+        return widget.isAddingRole
+            ? 'Agregar rol de Comercio'
+            : 'Datos del Comercio';
       case RoleType.customer:
-        return widget.isAddingRole ? 'Agregar rol de Cliente' : 'Datos del Cliente';
+        return widget.isAddingRole
+            ? 'Agregar rol de Cliente'
+            : 'Datos del Cliente';
     }
   }
 
   String _getFormDescription() {
-    if (widget.roleType == RoleType.merchant || widget.roleType == RoleType.driver) {
+    if (widget.roleType == RoleType.merchant ||
+        widget.roleType == RoleType.driver) {
       return 'Serás redirigido al formulario correspondiente...';
     }
-    
+
     if (widget.isAddingRole) {
       return 'Completa la información adicional requerida para este rol.';
     } else {
       return 'Ingresa los datos solicitados para continuar con tu registro.';
     }
   }
-  
+
   List<Widget> _buildFormFields() {
     // For merchant and driver roles, we're redirecting automatically
     // so we just show a loading indicator
-    if (widget.roleType == RoleType.merchant || widget.roleType == RoleType.driver) {
+    if (widget.roleType == RoleType.merchant ||
+        widget.roleType == RoleType.driver) {
       return [
         const SizedBox(height: 20),
         const Center(child: CircularProgressIndicator()),
@@ -131,19 +134,21 @@ class _RoleFormPageState extends State<RoleFormPage> {
         ),
       ];
     }
-    
+
     // For customer role or other roles, show basic fields
     return [
       TextFormField(
         decoration: const InputDecoration(labelText: 'Nombre'),
-        validator: (value) => (value?.isEmpty ?? true) ? 'Campo requerido' : null,
+        validator:
+            (value) => (value?.isEmpty ?? true) ? 'Campo requerido' : null,
         onSaved: (value) => _formData['name'] = value,
       ),
       const SizedBox(height: 10),
       TextFormField(
         decoration: const InputDecoration(labelText: 'Teléfono'),
         keyboardType: TextInputType.phone,
-        validator: (value) => (value?.isEmpty ?? true) ? 'Campo requerido' : null,
+        validator:
+            (value) => (value?.isEmpty ?? true) ? 'Campo requerido' : null,
         onSaved: (value) => _formData['phone'] = value,
       ),
     ];
@@ -156,29 +161,35 @@ class _RoleFormPageState extends State<RoleFormPage> {
       _redirectToRoleForm();
       return;
     }
-    
+
     if (widget.roleType == RoleType.merchant) {
       _redirectToRoleForm();
       return;
     }
-    
+
     // For customer role, process the minimal form
     if (_formKey.currentState?.validate() ?? false) {
       _formKey.currentState?.save();
       setState(() => _isLoading = true);
 
       try {
-        final authController = Provider.of<AuthController>(context, listen: false);
-        
+        final authController = Provider.of<AuthController>(
+          context,
+          listen: false,
+        );
+
         bool success;
         if (widget.isAddingRole) {
           // Adding a role to an existing user
-          success = await authController.addRoleToCurrentUser(widget.roleType, _formData);
+          success = await authController.addRoleToCurrentUser(
+            widget.roleType,
+            _formData,
+          );
         } else {
           // Este caso debería manejarse por la lógica de registro específica
           success = false;
         }
-        
+
         if (success && mounted) {
           // Navigate to appropriate screen based on role
           Navigator.of(context).pushReplacementNamed(Routes.home_food);

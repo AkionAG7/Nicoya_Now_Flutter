@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SelectUserRolePage extends StatefulWidget {
-  const SelectUserRolePage({Key? key}) : super(key: key);
+  const SelectUserRolePage({super.key});
 
   @override
   State<SelectUserRolePage> createState() => _SelectUserRolePageState();
@@ -43,6 +43,7 @@ class _SelectUserRolePageState extends State<SelectUserRolePage> {
         _isLoading = false;
       });
     } catch (e) {
+      //ignore: avoid_print
       print('Error cargando roles: $e');
       setState(() {
         _availableRoles = ['customer']; // Rol predeterminado como fallback
