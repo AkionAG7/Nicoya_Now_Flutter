@@ -8,26 +8,24 @@ import 'package:nicoya_now/app/features/driver/presentation/utilities/status_for
 class OrderCard extends StatelessWidget {
   final Map<String, dynamic> order;
 
-  const OrderCard({
-    Key? key,
-    required this.order,
-  }) : super(key: key);
+  const OrderCard({super.key, required this.order});
 
   @override
   Widget build(BuildContext context) {
     final String orderId = order['order_id'] ?? '';
     final String status = order['status'] ?? '';
     final String customerName = order['customer']?['name'] ?? 'Cliente';
-    final String merchantName = order['merchant']?['business_name'] ?? 'Comercio';
-    final String deliveryAddress = order['delivery_address'] ?? 'Dirección de entrega';
-    final String pickupAddress = order['merchant']?['address'] ?? 'Dirección de recogida';
-    
+    final String merchantName =
+        order['merchant']?['business_name'] ?? 'Comercio';
+    final String deliveryAddress =
+        order['delivery_address'] ?? 'Dirección de entrega';
+    final String pickupAddress =
+        order['merchant']?['address'] ?? 'Dirección de recogida';
+
     return Card(
       elevation: 4,
       margin: const EdgeInsets.only(bottom: 16.0),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -38,13 +36,13 @@ class OrderCard extends StatelessWidget {
               children: [
                 Text(
                   'Pedido #${StatusFormatter.formatOrderId(orderId)}',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-                Chip(                  label: Text(StatusFormatter.formatStatus(status)),
-                  backgroundColor: StatusFormatter.getStatusColor(status).withOpacity(0.2),
+                Chip(
+                  label: Text(StatusFormatter.formatStatus(status)),
+                  backgroundColor: StatusFormatter.getStatusColor(
+                    status,
+                  ).withAlpha(51),
                   labelStyle: TextStyle(
                     color: StatusFormatter.getStatusColor(status),
                     fontWeight: FontWeight.bold,
@@ -77,29 +75,22 @@ class OrderCard extends StatelessWidget {
         children: [
           Text(
             '$label: ',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 15,
-            ),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
           ),
-          Expanded(
-            child: Text(
-              value,
-              style: TextStyle(
-                fontSize: 15,
-              ),
-            ),
-          ),
+          Expanded(child: Text(value, style: TextStyle(fontSize: 15))),
         ],
       ),
     );
   }
 
-  List<Widget> _buildOrderActions(BuildContext context, Map<String, dynamic> order) {
+  List<Widget> _buildOrderActions(
+    BuildContext context,
+    Map<String, dynamic> order,
+  ) {
     final String status = order['status'] ?? '';
     final String orderId = order['order_id'] ?? '';
     final controller = Provider.of<DriverController>(context, listen: false);
-    
+
     switch (status) {
       // Using 'pending' for orders that would have been 'assigned'
       case 'pending':
@@ -116,15 +107,18 @@ class OrderCard extends StatelessWidget {
               showDialog(
                 context: context,
                 barrierDismissible: false,
-                builder: (context) => const Center(child: CircularProgressIndicator()),
+                builder:
+                    (context) =>
+                        const Center(child: CircularProgressIndicator()),
               );
-              
+
               // Usar el método acceptOrderRPC
               final success = await controller.acceptOrderRPC(orderId);
-              
+
               // Cerrar indicador de carga
+              //ignore: use_build_context_synchronously
               Navigator.of(context).pop();
-              
+
               // Mostrar mensaje de resultado
               if (success && context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -145,16 +139,17 @@ class OrderCard extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ActiveOrderTrackingWidget(
-                    controller: controller,
-                    activeOrder: order,
-                  ),
+                  builder:
+                      (context) => ActiveOrderTrackingWidget(
+                        controller: controller,
+                        activeOrder: order,
+                      ),
                 ),
               );
             },
           ),
         ];
-      
+
       case 'accepted':
         return [
           ElevatedButton.icon(
@@ -169,10 +164,11 @@ class OrderCard extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ActiveOrderTrackingWidget(
-                    controller: controller,
-                    activeOrder: order,
-                  ),
+                  builder:
+                      (context) => ActiveOrderTrackingWidget(
+                        controller: controller,
+                        activeOrder: order,
+                      ),
                 ),
               );
             },
@@ -189,15 +185,18 @@ class OrderCard extends StatelessWidget {
               showDialog(
                 context: context,
                 barrierDismissible: false,
-                builder: (context) => const Center(child: CircularProgressIndicator()),
+                builder:
+                    (context) =>
+                        const Center(child: CircularProgressIndicator()),
               );
-              
+
               // Usar el método markOrderPickedUp
               final success = await controller.markOrderPickedUp(orderId);
-              
+
               // Cerrar indicador de carga
+              //ignore: use_build_context_synchronously
               Navigator.of(context).pop();
-              
+
               // Mostrar mensaje de resultado
               if (success && context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -222,10 +221,11 @@ class OrderCard extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ActiveOrderTrackingWidget(
-                    controller: controller,
-                    activeOrder: order,
-                  ),
+                  builder:
+                      (context) => ActiveOrderTrackingWidget(
+                        controller: controller,
+                        activeOrder: order,
+                      ),
                 ),
               );
             },
@@ -242,15 +242,18 @@ class OrderCard extends StatelessWidget {
               showDialog(
                 context: context,
                 barrierDismissible: false,
-                builder: (context) => const Center(child: CircularProgressIndicator()),
+                builder:
+                    (context) =>
+                        const Center(child: CircularProgressIndicator()),
               );
-              
+
               // Usar el método markOrderDelivered
               final success = await controller.markOrderDelivered(orderId);
-              
+
               // Cerrar indicador de carga
+              //ignore: use_build_context_synchronously
               Navigator.of(context).pop();
-              
+
               // Mostrar mensaje de resultado
               if (success && context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -272,7 +275,7 @@ class OrderCard extends StatelessWidget {
             onPressed: () {
               // Navigate to order details page
               Navigator.pushNamed(
-                context, 
+                context,
                 Routes.driver_order_details,
                 arguments: order,
               );
@@ -281,6 +284,6 @@ class OrderCard extends StatelessWidget {
         ];
     }
   }
-  
-    // Using StatusFormatter utility class instead of local methods
+
+  // Using StatusFormatter utility class instead of local methods
 }

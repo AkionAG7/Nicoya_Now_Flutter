@@ -14,17 +14,17 @@ class HomeTabWidget extends StatefulWidget {
   final Function debugOrdersCallback;
 
   const HomeTabWidget({
-    Key? key,
+    super.key,
     required this.controller,
     required this.isAvailable,
     required this.debugOrdersCallback,
-  }) : super(key: key);
+  });
 
   @override
-  _HomeTabWidgetState createState() => _HomeTabWidgetState();
+  HomeTabWidgetState createState() => HomeTabWidgetState();
 }
 
-class _HomeTabWidgetState extends State<HomeTabWidget> {
+class HomeTabWidgetState extends State<HomeTabWidget> {
   List<Map<String, dynamic>> _availableOrders = [];
   bool _isLoadingAvailableOrders = false;
 
@@ -36,11 +36,11 @@ class _HomeTabWidgetState extends State<HomeTabWidget> {
 
   Future<void> _loadAvailableOrders() async {
     if (!widget.isAvailable) return;
-    
+
     setState(() {
       _isLoadingAvailableOrders = true;
     });
-    
+
     try {
       final availableOrders = await widget.controller.fetchAvailableOrders();
       setState(() {
@@ -48,6 +48,7 @@ class _HomeTabWidgetState extends State<HomeTabWidget> {
         _isLoadingAvailableOrders = false;
       });
     } catch (e) {
+      //ignore: avoid_print
       print('Error al cargar pedidos disponibles: $e');
       setState(() {
         _isLoadingAvailableOrders = false;
@@ -59,28 +60,33 @@ class _HomeTabWidgetState extends State<HomeTabWidget> {
     setState(() {
       _isLoadingAvailableOrders = true;
     });
-    
+
     try {
       final success = await widget.controller.acceptOrderRPC(orderId);
       if (success) {
         // Reload available orders after accepting one
+        //ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Pedido aceptado correctamente')),
         );
         await _loadAvailableOrders();
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al aceptar pedido')),
-        );
+        ScaffoldMessenger.of(
+          //ignore: use_build_context_synchronously
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error al aceptar pedido')));
         setState(() {
           _isLoadingAvailableOrders = false;
         });
       }
     } catch (e) {
+      //ignore: avoid_print
       print('Error al aceptar pedido: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
+
+      ScaffoldMessenger.of(
+        //ignore: use_build_context_synchronously
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
       setState(() {
         _isLoadingAvailableOrders = false;
       });
@@ -93,51 +99,64 @@ class _HomeTabWidgetState extends State<HomeTabWidget> {
     final driverData = widget.controller.currentDriverData;
     final String firstName = driverData?['first_name'] ?? '';
     final String vehicleType = driverData?['vehicle_type'] ?? '';
-      
+
     // Filter orders by status
-    final List<Map<String, dynamic>> assignedOrders = widget.controller.activeOrders
-        .where((order) => order['status'] == 'pending')
-        .toList();
-    
+    final List<Map<String, dynamic>> assignedOrders =
+        widget.controller.activeOrders
+            .where((order) => order['status'] == 'pending')
+            .toList();
+
     // Show orders that are in_process, accepted, pending with assignments, etc.
     // Explicitly include all status types we want to display - with error handling
     List<Map<String, dynamic>> inProgressOrders = [];
-      
+
     try {
-      inProgressOrders = widget.controller.activeOrders
-          .where((order) {
+      inProgressOrders =
+          widget.controller.activeOrders.where((order) {
             try {
               final status = order['status']?.toString() ?? '';
-              
+
               // Include orders with these statuses
-              bool isActiveStatus = status == 'in_process' || 
-                                   status == 'accepted' || 
-                                   status == 'on_way';
-              
+              bool isActiveStatus =
+                  status == 'in_process' ||
+                  status == 'accepted' ||
+                  status == 'on_way';
+
               // Also include pending orders that have assignments
-              bool isPendingWithAssignment = status == 'pending' && 
-                                           order['assigned_at'] != null;
-                                           
-              return isActiveStatus || isPendingWithAssignment || status == 'pending';
+              bool isPendingWithAssignment =
+                  status == 'pending' && order['assigned_at'] != null;
+
+              return isActiveStatus ||
+                  isPendingWithAssignment ||
+                  status == 'pending';
             } catch (e) {
+              //ignore: avoid_print
               print('Error processing order: $e');
               return false;
             }
-          })
-          .toList();
-          
-      print('Active orders: ${widget.controller.activeOrders.length}, In progress: ${inProgressOrders.length}');
+          }).toList();
+      //ignore: avoid_print
+      print(
+        'Active orders: ${widget.controller.activeOrders.length}, In progress: ${inProgressOrders.length}',
+      );
     } catch (e) {
+      //ignore: avoid_print
       print('Error filtering orders: $e');
       // Fall back to empty list if there's an error
       inProgressOrders = [];
     }
-    
+
     // If there's an active in-progress order, show the improved tracking screen
     if (inProgressOrders.isNotEmpty) {
       Map<String, dynamic> activeOrder = inProgressOrders.first;
-      print('Selected order for tracking: ${activeOrder['order_id']}, Status: ${activeOrder['status']}');
-      return ImprovedOrderTrackingWidget(controller: widget.controller, activeOrder: activeOrder);
+      //ignore: avoid_print
+      print(
+        'Selected order for tracking: ${activeOrder['order_id']}, Status: ${activeOrder['status']}',
+      );
+      return ImprovedOrderTrackingWidget(
+        controller: widget.controller,
+        activeOrder: activeOrder,
+      );
     }
 
     // Otherwise show the regular home tab
@@ -195,7 +214,10 @@ class _HomeTabWidgetState extends State<HomeTabWidget> {
                                   : 'Estado: Inactivo',
                               style: TextStyle(
                                 fontSize: 16,
-                                color: widget.isAvailable ? Colors.green : Colors.grey,
+                                color:
+                                    widget.isAvailable
+                                        ? Colors.green
+                                        : Colors.grey,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -206,7 +228,7 @@ class _HomeTabWidgetState extends State<HomeTabWidget> {
                   ),
                 ),
               ),
-              
+
               // Available orders section - NEW SECTION
               if (widget.isAvailable) ...[
                 const SizedBox(height: 24),
@@ -246,54 +268,55 @@ class _HomeTabWidgetState extends State<HomeTabWidget> {
                           ],
                         ),
                         const SizedBox(height: 16),
-                        
+
                         // Show loading indicator or available orders
                         _isLoadingAvailableOrders
-                            ? Center(
-                                child: CircularProgressIndicator(),
-                              )
+                            ? Center(child: CircularProgressIndicator())
                             : _availableOrders.isEmpty
-                                ? Center(
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(vertical: 24.0),
-                                      child: Column(
-                                        children: [
-                                          Icon(
-                                            Icons.info_outline,
-                                            size: 48,
-                                            color: Colors.grey,
-                                          ),
-                                          const SizedBox(height: 12),
-                                          Text(
-                                            'No hay pedidos disponibles en este momento',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              color: Colors.grey[700],
-                                            ),
-                                            textAlign: TextAlign.center,
-                                          ),
-                                        ],
-                                      ),
+                            ? Center(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 24.0,
+                                ),
+                                child: Column(
+                                  children: [
+                                    Icon(
+                                      Icons.info_outline,
+                                      size: 48,
+                                      color: Colors.grey,
                                     ),
-                                  )
-                                : ListView.builder(
-                                    shrinkWrap: true,
-                                    physics: NeverScrollableScrollPhysics(),
-                                    itemCount: _availableOrders.length,
-                                    itemBuilder: (context, index) {
-                                      final order = _availableOrders[index];
-                                      return AvailableOrderCard(
-                                        order: order,
-                                        onAccept: () => _acceptOrder(order['order_id']),
-                                      );
-                                    },
-                                  ),
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      'No hay pedidos disponibles en este momento',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.grey[700],
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                            : ListView.builder(
+                              shrinkWrap: true,
+                              physics: NeverScrollableScrollPhysics(),
+                              itemCount: _availableOrders.length,
+                              itemBuilder: (context, index) {
+                                final order = _availableOrders[index];
+                                return AvailableOrderCard(
+                                  order: order,
+                                  onAccept:
+                                      () => _acceptOrder(order['order_id']),
+                                );
+                              },
+                            ),
                       ],
                     ),
                   ),
                 ),
               ],
-              
+
               // Assigned orders section (if any)
               if (assignedOrders.isNotEmpty) ...[
                 const SizedBox(height: 24),
@@ -310,7 +333,10 @@ class _HomeTabWidgetState extends State<HomeTabWidget> {
                       children: [
                         Row(
                           children: [
-                            Icon(Icons.notification_important, color: Colors.orange),
+                            Icon(
+                              Icons.notification_important,
+                              color: Colors.orange,
+                            ),
                             const SizedBox(width: 8),
                             Text(
                               'Pedidos nuevos asignados',
@@ -323,15 +349,17 @@ class _HomeTabWidgetState extends State<HomeTabWidget> {
                           ],
                         ),
                         const SizedBox(height: 16),
-                        ...assignedOrders.map((order) => AssignedOrderCard(order: order)).toList(),
+                        ...assignedOrders.map(
+                          (order) => AssignedOrderCard(order: order),
+                        ),
                       ],
                     ),
                   ),
                 ),
               ],
-              
+
               const SizedBox(height: 24),
-              
+
               // Map card showing merchant locations
               Card(
                 elevation: 4,
@@ -354,22 +382,27 @@ class _HomeTabWidgetState extends State<HomeTabWidget> {
                     SizedBox(
                       height: 300,
                       child: MerchantMapWidget(
-                        driverLocation: driverData != null && 
-                            driverData['current_latitude'] != null && 
-                            driverData['current_longitude'] != null 
-                            ? LatLng(
-                                double.parse(driverData['current_latitude'].toString()),
-                                double.parse(driverData['current_longitude'].toString()),
-                              ) 
-                            : null,
+                        driverLocation:
+                            driverData != null &&
+                                    driverData['current_latitude'] != null &&
+                                    driverData['current_longitude'] != null
+                                ? LatLng(
+                                  double.parse(
+                                    driverData['current_latitude'].toString(),
+                                  ),
+                                  double.parse(
+                                    driverData['current_longitude'].toString(),
+                                  ),
+                                )
+                                : null,
                       ),
                     ),
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               // Active orders card (preview)
               Card(
                 elevation: 4,
@@ -394,7 +427,10 @@ class _HomeTabWidgetState extends State<HomeTabWidget> {
                           TextButton(
                             onPressed: () {
                               // Change tab to active orders
-                              Provider.of<HomeTabChangeNotifier>(context, listen: false).setSelectedIndex(1);
+                              Provider.of<HomeTabChangeNotifier>(
+                                context,
+                                listen: false,
+                              ).setSelectedIndex(1);
                             },
                             child: Text('Ver todas'),
                           ),
@@ -428,9 +464,10 @@ class _HomeTabWidgetState extends State<HomeTabWidget> {
                         ListView.builder(
                           shrinkWrap: true,
                           physics: NeverScrollableScrollPhysics(),
-                          itemCount: inProgressOrders.length > 2
-                              ? 2
-                              : inProgressOrders.length,
+                          itemCount:
+                              inProgressOrders.length > 2
+                                  ? 2
+                                  : inProgressOrders.length,
                           itemBuilder: (context, index) {
                             final order = inProgressOrders[index];
                             return OrderListItem(order: order);
@@ -440,14 +477,12 @@ class _HomeTabWidgetState extends State<HomeTabWidget> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               ElevatedButton(
                 onPressed: () => widget.debugOrdersCallback(),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                ),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
                 child: const Text(
                   'Depurar pedidos',
                   style: TextStyle(color: Colors.white),

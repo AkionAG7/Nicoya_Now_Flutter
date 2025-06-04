@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:nicoya_now/app/features/driver/presentation/controllers/driver_controller.dart';
-import 'package:nicoya_now/Icons/nicoya_now_icons_icons.dart';
 
 class ProfileTabWidget extends StatelessWidget {
   final DriverController controller;
   final VoidCallback onSignOut;
 
   const ProfileTabWidget({
-    Key? key,
+    super.key,
     required this.controller,
     required this.onSignOut,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +22,7 @@ class ProfileTabWidget extends StatelessWidget {
     final String vehicleType = driverData?['vehicle_type'] ?? '';
     final String licenseNumber = driverData?['license_number'] ?? '';
     final bool isVerified = driverData?['is_verified'] ?? false;
-    
+
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -34,19 +33,12 @@ class ProfileTabWidget extends StatelessWidget {
             CircleAvatar(
               backgroundColor: const Color(0xFFE60023),
               radius: 50,
-              child: Icon(
-                Icons.person,
-                size: 60,
-                color: Colors.white,
-              ),
+              child: Icon(Icons.person, size: 60, color: Colors.white),
             ),
             const SizedBox(height: 16),
             Text(
               '$firstName $lastName1 $lastName2',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             Text(
               'Repartidor ${isVerified ? 'Verificado' : 'Pendiente de verificación'}',
@@ -57,7 +49,7 @@ class ProfileTabWidget extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 32),
-            
+
             // Profile details
             Card(
               elevation: 4,
@@ -80,14 +72,17 @@ class ProfileTabWidget extends StatelessWidget {
                     _buildProfileField('Teléfono', phone),
                     _buildProfileField('Tipo de vehículo', vehicleType),
                     _buildProfileField('Número de licencia', licenseNumber),
-                    _buildProfileField('Estado', isVerified ? 'Verificado' : 'Pendiente de verificación'),
+                    _buildProfileField(
+                      'Estado',
+                      isVerified ? 'Verificado' : 'Pendiente de verificación',
+                    ),
                   ],
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Account actions
             Card(
               elevation: 4,
@@ -108,7 +103,10 @@ class ProfileTabWidget extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     ListTile(
-                      leading: Icon(Icons.help_outline, color: const Color(0xFFE60023)),
+                      leading: Icon(
+                        Icons.help_outline,
+                        color: const Color(0xFFE60023),
+                      ),
                       title: Text('Ayuda'),
                       trailing: Icon(Icons.arrow_forward_ios, size: 16),
                       onTap: () {
@@ -136,20 +134,11 @@ class ProfileTabWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[700],
-            ),
-          ),
+          Text(label, style: TextStyle(fontSize: 14, color: Colors.grey[700])),
           const SizedBox(height: 4),
           Text(
             value,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
         ],
       ),

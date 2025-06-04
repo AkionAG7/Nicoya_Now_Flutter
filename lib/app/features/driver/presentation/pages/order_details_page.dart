@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:nicoya_now/app/features/driver/presentation/controllers/driver_controller.dart';
-import 'package:nicoya_now/Icons/nicoya_now_icons_icons.dart';
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 
 class OrderDetailsPage extends StatefulWidget {
   final Map<String, dynamic> order;
-  
-  const OrderDetailsPage({
-    Key? key,
-    required this.order,
-  }) : super(key: key);
+
+  const OrderDetailsPage({super.key, required this.order});
 
   @override
   State<OrderDetailsPage> createState() => _OrderDetailsPageState();
@@ -18,27 +14,29 @@ class OrderDetailsPage extends StatefulWidget {
 
 class _OrderDetailsPageState extends State<OrderDetailsPage> {
   late Map<String, dynamic> order;
-  
+
   @override
   void initState() {
     super.initState();
     order = widget.order;
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final String status = order['status'] ?? '';
     final customer = order['customer'] ?? {};
     final merchant = order['merchant'] ?? {};
     final items = order['items'] ?? [];
-    
+
     // Format pickup and delivery address
     final pickupAddress = merchant['address'] ?? 'Dirección no disponible';
     final deliveryAddress = customer['address'] ?? 'Dirección no disponible';
-    
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Detalle de Orden #${order['order_id']?.toString().substring(0, 8) ?? ''}'),
+        title: Text(
+          'Detalle de Orden #${order['order_id']?.toString().substring(0, 8) ?? ''}',
+        ),
         backgroundColor: const Color(0xFFE60023),
         foregroundColor: Colors.white,
       ),
@@ -50,9 +48,9 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
             children: [
               // Order Status Card
               _buildStatusCard(status),
-              
+
               const SizedBox(height: 20),
-              
+
               // Locations
               _buildSectionTitle('Ubicaciones'),
               Card(
@@ -77,9 +75,9 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 20),
-              
+
               // Order Items
               _buildSectionTitle('Artículos'),
               Card(
@@ -91,15 +89,23 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                       // Here's a placeholder for demonstration
                       if (items.isEmpty) ...[
                         ListTile(
-                          title: Text('Pedido de ${merchant['business_name'] ?? 'comercio'}'),
-                          subtitle: Text('Ver detalles completos en la aplicación'),
-                          trailing: Text('₡${order['total_amount']?.toString() ?? '0'}'),
+                          title: Text(
+                            'Pedido de ${merchant['business_name'] ?? 'comercio'}',
+                          ),
+                          subtitle: Text(
+                            'Ver detalles completos en la aplicación',
+                          ),
+                          trailing: Text(
+                            '₡${order['total_amount']?.toString() ?? '0'}',
+                          ),
                         ),
                       ] else ...[
                         for (var item in items)
                           ListTile(
                             title: Text(item['product_name'] ?? 'Producto'),
-                            subtitle: Text('Cantidad: ${item['quantity'] ?? 1}'),
+                            subtitle: Text(
+                              'Cantidad: ${item['quantity'] ?? 1}',
+                            ),
                             trailing: Text('₡${item['price'] ?? 0}'),
                           ),
                       ],
@@ -115,7 +121,9 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                             ),
                             Text(
                               '₡${order['total_amount']?.toString() ?? '0'}',
-                              style: const TextStyle(fontWeight: FontWeight.bold),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ],
                         ),
@@ -124,9 +132,9 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 20),
-              
+
               // Action buttons
               _buildActionButtons(order['order_id'] ?? '', status),
             ],
@@ -135,11 +143,11 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
       ),
     );
   }
-  
+
   Widget _buildStatusCard(String status) {
     Color statusColor;
     String statusText;
-    
+
     switch (status) {
       case 'pending':
         statusColor = Colors.orange;
@@ -169,9 +177,9 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
         statusColor = Colors.grey;
         statusText = 'Desconocido';
     }
-    
+
     return Card(
-      color: statusColor.withOpacity(0.2),
+      color: statusColor.withAlpha(51),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Row(
@@ -191,28 +199,33 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
       ),
     );
   }
-  
+
   Widget _buildSectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Text(
         title,
-        style: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-        ),
+        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
       ),
     );
   }
-  
-  Widget _buildLocationItem(String label, String name, String address, IconData icon) {
+
+  Widget _buildLocationItem(
+    String label,
+    String name,
+    String address,
+    IconData icon,
+  ) {
     return ListTile(
       leading: Icon(icon, color: const Color(0xFFE60023)),
       title: Text(name),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+          Text(
+            label,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+          ),
           Text(address),
         ],
       ),
@@ -227,7 +240,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
       ),
     );
   }
-  
+
   Widget _buildActionButtons(String orderId, String status) {
     switch (status) {
       case 'assigned':
@@ -257,8 +270,14 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                   foregroundColor: Colors.white,
                 ),
                 onPressed: () async {
-                  final controller = Provider.of<DriverController>(context, listen: false);
-                  final success = await controller.updateOrderStatus(orderId, 'picked_up');
+                  final controller = Provider.of<DriverController>(
+                    context,
+                    listen: false,
+                  );
+                  final success = await controller.updateOrderStatus(
+                    orderId,
+                    'picked_up',
+                  );
                   if (success && mounted) {
                     setState(() {
                       order['status'] = 'picked_up';
@@ -296,16 +315,26 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                   foregroundColor: Colors.white,
                 ),
                 onPressed: () async {
-                  final controller = Provider.of<DriverController>(context, listen: false);
-                  final success = await controller.updateOrderStatus(orderId, 'delivered');
+                  final controller = Provider.of<DriverController>(
+                    context,
+                    listen: false,
+                  );
+                  final success = await controller.updateOrderStatus(
+                    orderId,
+                    'delivered',
+                  );
                   if (success && mounted) {
                     setState(() {
                       order['status'] = 'delivered';
                     });
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('¡Orden entregada exitosamente!')),
+                      const SnackBar(
+                        content: Text('¡Orden entregada exitosamente!'),
+                      ),
                     );
+
                     Future.delayed(const Duration(seconds: 2), () {
+                      // ignore: use_build_context_synchronously
                       Navigator.pop(context);
                     });
                   }

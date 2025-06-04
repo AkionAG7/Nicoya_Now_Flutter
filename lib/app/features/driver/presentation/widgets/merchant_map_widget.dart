@@ -8,9 +8,9 @@ class MerchantMapWidget extends StatefulWidget {
   final LatLng? driverLocation;
 
   const MerchantMapWidget({
-    Key? key,
+    super.key,
     this.driverLocation,
-  }) : super(key: key);
+  });
 
   @override
   State<MerchantMapWidget> createState() => _MerchantMapWidgetState();
@@ -56,7 +56,7 @@ class _MerchantMapWidgetState extends State<MerchantMapWidget> {
             infoWindow: const InfoWindow(title: 'Mi ubicación'),
           ));
         }
-        
+         //ignore: avoid_print
         print('Merchants found: ${response.length}');
         
         // For now, add sample merchants instead of trying to parse addresses
@@ -64,6 +64,7 @@ class _MerchantMapWidgetState extends State<MerchantMapWidget> {
         _addSampleMerchants();
         
       } catch (e) {
+         //ignore: avoid_print
         print('Error with first merchant query approach: $e');
         
         // Fallback option if the first query fails - try with a different schema
@@ -87,6 +88,7 @@ class _MerchantMapWidgetState extends State<MerchantMapWidget> {
           _addSampleMerchants();
           
         } catch (e2) {
+           //ignore: avoid_print
           print('Error with fallback merchant query: $e2');
           throw e2;
         }
@@ -101,6 +103,7 @@ class _MerchantMapWidgetState extends State<MerchantMapWidget> {
         setState(() {});
       }
     } catch (e) {
+       //ignore: avoid_print
       print('Error loading merchant locations: $e');
       // Add sample data on error
       _addSampleMerchants();

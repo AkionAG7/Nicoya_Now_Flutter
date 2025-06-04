@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Clase utilitaria para realizar diagnósticos sobre órdenes específicas
@@ -20,15 +20,20 @@ class OrderDiagnosticUtils {
           .maybeSingle();
       
       if (orderResponse != null) {
+        // ignore: avoid_print
         print('DEBUG: Orden encontrada en la tabla de órdenes:');
+        // ignore: avoid_print
         print('DEBUG: ID de Orden: ${orderResponse['order_id']}');
+        // ignore: avoid_print
         print('DEBUG: Estado de Orden: ${orderResponse['status']}');
         return orderResponse;
       } else {
+        // ignore: avoid_print
         print('DEBUG: Orden específica no encontrada en la tabla de órdenes');
         return await _tryMinimalOrderQuery(orderId);
       }
     } catch (e) {
+      // ignore: avoid_print
       print('ERROR verificando tabla de órdenes: $e');
       return await _tryMinimalOrderQuery(orderId);
     }
@@ -44,13 +49,16 @@ class OrderDiagnosticUtils {
           .maybeSingle();
       
       if (rawOrderResponse != null) {
+        // ignore: avoid_print
         print('DEBUG: La orden existe en la tabla (consulta mínima)');
         return rawOrderResponse;
       } else {
+        // ignore: avoid_print
         print('DEBUG: La orden definitivamente no existe');
         return null;
       }
     } catch (e) {
+      // ignore: avoid_print
       print('ERROR con consulta mínima de orden: $e');
       return null;
     }
@@ -67,14 +75,18 @@ class OrderDiagnosticUtils {
           .maybeSingle();
       
       if (assignmentResponse != null) {
+        // ignore: avoid_print
         print('DEBUG: Asignación encontrada para orden específica:');
+        // ignore: avoid_print
         print(assignmentResponse);
         return assignmentResponse;
       } else {
+        // ignore: avoid_print
         print('DEBUG: No se encontró asignación para esta orden para este conductor');
         return await checkAnyDriversAssignment(orderId);
       }
     } catch (e) {
+      // ignore: avoid_print
       print('ERROR verificando asignaciones: $e');
       return null;
     }
@@ -90,14 +102,18 @@ class OrderDiagnosticUtils {
           .maybeSingle();
       
       if (anyAssignmentResponse != null) {
+        // ignore: avoid_print
         print('DEBUG: Se encontró asignación para otro conductor:');
+        // ignore: avoid_print
         print('DEBUG: ID de Conductor: ${anyAssignmentResponse['driver_id']}');
         return anyAssignmentResponse;
       } else {
+        // ignore: avoid_print
         print('DEBUG: No se encontró asignación para esta orden para ningún conductor');
         return null;
       }
     } catch (e) {
+      // ignore: avoid_print
       print('ERROR verificando asignación de cualquier conductor: $e');
       return null;
     }
@@ -113,15 +129,19 @@ class OrderDiagnosticUtils {
           .maybeSingle();
       
       if (viewResponse != null) {
+        // ignore: avoid_print
         print('DEBUG: Orden encontrada en la vista current_driver_orders:');
+        // ignore: avoid_print
         print(viewResponse);
         return viewResponse;
       } else {
+        // ignore: avoid_print
         print('DEBUG: Orden no encontrada en la vista current_driver_orders');
         await checkSampleOrdersInView();
         return null;
       }
     } catch (e) {
+      // ignore: avoid_print
       print('ERROR verificando vista: $e');
       await verifyViewExists();
       return null;
@@ -135,14 +155,16 @@ class OrderDiagnosticUtils {
           .from('current_driver_orders')
           .select('order_id, status')
           .limit(10);
-      
+      // ignore: avoid_print
       print('DEBUG: Primeras 10 órdenes en la vista:');
       for (var order in allDriverOrders) {
+        // ignore: avoid_print
         print('ID de Orden: ${order['order_id']}, Estado: ${order['status']}');
       }
       
       return List<Map<String, dynamic>>.from(allDriverOrders);
     } catch (e) {
+      // ignore: avoid_print
       print('ERROR recuperando muestra de órdenes: $e');
       return [];
     }
@@ -155,11 +177,13 @@ class OrderDiagnosticUtils {
           .from('current_driver_orders')
           .select('order_id')
           .limit(1);
-      
+      // ignore: avoid_print
       print('DEBUG: La consulta simple de vista tuvo éxito, encontró ${simpleViewResponse.length} filas');
       return true;
     } catch (e) {
+      // ignore: avoid_print
       print('ERROR con consulta simple de vista: $e');
+      // ignore: avoid_print
       print('DEBUG: La vista puede no estar configurada correctamente');
       return false;
     }
@@ -167,20 +191,24 @@ class OrderDiagnosticUtils {
   
   /// Ejecutar un diagnóstico completo de la orden
   Future<void> runFullDiagnostic(String orderId, String userId) async {
+    // ignore: avoid_print
     print('\n=== INICIANDO DIAGNÓSTICO COMPLETO PARA ORDEN: $orderId ===');
     
     // Verificar existencia en la tabla principal
     final orderExists = await checkOrderExistenceInMainTable(orderId);
+    // ignore: avoid_print
     print('Orden existe en tabla principal: ${orderExists != null}');
     
     // Verificar asignación para este conductor
     final hasAssignment = await checkOrderAssignment(orderId, userId);
+    // ignore: avoid_print
     print('Orden tiene asignación para este conductor: ${hasAssignment != null}');
     
     // Verificar existencia en la vista
     final inView = await checkOrderInView(orderId);
+    // ignore: avoid_print
     print('Orden existe en la vista: ${inView != null}');
-    
+    // ignore: avoid_print
     print('=== FIN DEL DIAGNÓSTICO PARA ORDEN: $orderId ===\n');
   }
 }

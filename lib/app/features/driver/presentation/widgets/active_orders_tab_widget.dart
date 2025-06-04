@@ -5,10 +5,7 @@ import 'package:nicoya_now/app/features/driver/presentation/widgets/order_card.d
 class ActiveOrdersTabWidget extends StatelessWidget {
   final DriverController controller;
 
-  const ActiveOrdersTabWidget({
-    Key? key,
-    required this.controller,
-  }) : super(key: key);
+  const ActiveOrdersTabWidget({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -17,18 +14,11 @@ class ActiveOrdersTabWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.hourglass_empty,
-              size: 72,
-              color: Colors.grey,
-            ),
+            Icon(Icons.hourglass_empty, size: 72, color: Colors.grey),
             const SizedBox(height: 16),
             Text(
               'No hay entregas activas',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey[700],
-              ),
+              style: TextStyle(fontSize: 18, color: Colors.grey[700]),
             ),
             const SizedBox(height: 16),
             ElevatedButton(
@@ -45,7 +35,7 @@ class ActiveOrdersTabWidget extends StatelessWidget {
         ),
       );
     }
-    
+
     return RefreshIndicator(
       onRefresh: () => controller.loadActiveOrders(),
       child: ListView.builder(

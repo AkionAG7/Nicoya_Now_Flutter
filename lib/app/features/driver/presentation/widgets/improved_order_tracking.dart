@@ -6,18 +6,20 @@ import 'package:nicoya_now/app/features/driver/presentation/controllers/driver_c
 class ImprovedOrderTrackingWidget extends StatefulWidget {
   final DriverController controller;
   final Map<String, dynamic> activeOrder;
-  
+
   const ImprovedOrderTrackingWidget({
-    Key? key,
+    super.key,
     required this.controller,
     required this.activeOrder,
-  }) : super(key: key);
+  });
 
   @override
-  State<ImprovedOrderTrackingWidget> createState() => _ImprovedOrderTrackingWidgetState();
+  State<ImprovedOrderTrackingWidget> createState() =>
+      _ImprovedOrderTrackingWidgetState();
 }
 
-class _ImprovedOrderTrackingWidgetState extends State<ImprovedOrderTrackingWidget> {
+class _ImprovedOrderTrackingWidgetState
+    extends State<ImprovedOrderTrackingWidget> {
   GoogleMapController? _mapController;
   final Set<Marker> _markers = {};
   final Set<Polyline> _polylines = {};
@@ -45,31 +47,35 @@ class _ImprovedOrderTrackingWidgetState extends State<ImprovedOrderTrackingWidge
     // Get locations from driver and order data
     final driverData = widget.controller.currentDriverData;
     final orderData = widget.activeOrder;
-    
+
     // Driver location (actual GPS)
     _driverLocation = LatLng(
-      double.parse(driverData?['current_latitude']?.toString() ?? '10.15749'), 
-      double.parse(driverData?['current_longitude']?.toString() ?? '-85.44926')
+      double.parse(driverData?['current_latitude']?.toString() ?? '10.15749'),
+      double.parse(driverData?['current_longitude']?.toString() ?? '-85.44926'),
     );
-    
+
     // Merchant location
     _merchantLocation = LatLng(
-      double.parse(orderData['merchant']?['latitude']?.toString() ?? '10.14353'), 
-      double.parse(orderData['merchant']?['longitude']?.toString() ?? '-85.45195')
+      double.parse(
+        orderData['merchant']?['latitude']?.toString() ?? '10.14353',
+      ),
+      double.parse(
+        orderData['merchant']?['longitude']?.toString() ?? '-85.45195',
+      ),
     );
-    
+
     // Customer location
     _customerLocation = LatLng(
-      double.parse(orderData['delivery_latitude']?.toString() ?? '10.13978'), 
-      double.parse(orderData['delivery_longitude']?.toString() ?? '-85.44389')
+      double.parse(orderData['delivery_latitude']?.toString() ?? '10.13978'),
+      double.parse(orderData['delivery_longitude']?.toString() ?? '-85.44389'),
     );
-    
+
     _updateMarkers();
   }
-  
+
   void _updateCurrentStep() {
     final status = widget.activeOrder['status'];
-    
+
     setState(() {
       switch (status) {
         case 'assigned':
@@ -89,38 +95,47 @@ class _ImprovedOrderTrackingWidgetState extends State<ImprovedOrderTrackingWidge
       }
     });
   }
-  
+
   void _updateMarkers() {
     setState(() {
       _markers.clear();
-      
+
       // Driver marker
-      _markers.add(Marker(
-        markerId: const MarkerId('driver'),
-        position: _driverLocation,
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-        infoWindow: const InfoWindow(title: 'Mi ubicación'),
-      ));
-      
+      _markers.add(
+        Marker(
+          markerId: const MarkerId('driver'),
+          position: _driverLocation,
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+          infoWindow: const InfoWindow(title: 'Mi ubicación'),
+        ),
+      );
+
       // Merchant marker
-      _markers.add(Marker(
-        markerId: const MarkerId('merchant'),
-        position: _merchantLocation,
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
-        infoWindow: InfoWindow(
-          title: widget.activeOrder['merchant']?['business_name'] ?? 'Comercio'
+      _markers.add(
+        Marker(
+          markerId: const MarkerId('merchant'),
+          position: _merchantLocation,
+          icon: BitmapDescriptor.defaultMarkerWithHue(
+            BitmapDescriptor.hueGreen,
+          ),
+          infoWindow: InfoWindow(
+            title:
+                widget.activeOrder['merchant']?['business_name'] ?? 'Comercio',
+          ),
         ),
-      ));
-      
+      );
+
       // Customer marker
-      _markers.add(Marker(
-        markerId: const MarkerId('customer'),
-        position: _customerLocation,
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-        infoWindow: InfoWindow(
-          title: widget.activeOrder['customer']?['name'] ?? 'Cliente'
+      _markers.add(
+        Marker(
+          markerId: const MarkerId('customer'),
+          position: _customerLocation,
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+          infoWindow: InfoWindow(
+            title: widget.activeOrder['customer']?['name'] ?? 'Cliente',
+          ),
         ),
-      ));
+      );
     });
   }
 
@@ -130,8 +145,9 @@ class _ImprovedOrderTrackingWidgetState extends State<ImprovedOrderTrackingWidge
     final now = DateTime.now();
     final deliveryEndTime = now.add(const Duration(minutes: 45));
     final timeFormat = DateFormat('h:mm a');
-    final String timeRange = "${timeFormat.format(now)} - ${timeFormat.format(deliveryEndTime)}";
-    
+    final String timeRange =
+        "${timeFormat.format(now)} - ${timeFormat.format(deliveryEndTime)}";
+
     return Stack(
       children: [
         // Map covering the whole background
@@ -152,7 +168,7 @@ class _ImprovedOrderTrackingWidgetState extends State<ImprovedOrderTrackingWidge
             },
           ),
         ),
-        
+
         // Top status panel - similar to the image
         Positioned(
           top: 65,
@@ -160,7 +176,7 @@ class _ImprovedOrderTrackingWidgetState extends State<ImprovedOrderTrackingWidge
           right: 20,
           child: _buildStatusPanel(timeRange),
         ),
-        
+
         // Bottom driver info panel - similar to the image
         Positioned(
           bottom: 0,
@@ -168,17 +184,13 @@ class _ImprovedOrderTrackingWidgetState extends State<ImprovedOrderTrackingWidge
           right: 0,
           child: _buildDriverInfoPanel(),
         ),
-        
+
         // Back button
-        Positioned(
-          top: 20,
-          left: 16,
-          child: _buildBackButton(),
-        ),
+        Positioned(top: 20, left: 16, child: _buildBackButton()),
       ],
     );
   }
-  
+
   Widget _buildStatusPanel(String timeRange) {
     return Container(
       padding: const EdgeInsets.all(12),
@@ -187,7 +199,7 @@ class _ImprovedOrderTrackingWidgetState extends State<ImprovedOrderTrackingWidge
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withAlpha(51),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -198,20 +210,14 @@ class _ImprovedOrderTrackingWidgetState extends State<ImprovedOrderTrackingWidge
         children: [
           const Text(
             "Tu tiempo de envío",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-            ),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
           ),
           Text(
             "Tiempo estimado $timeRange",
-            style: const TextStyle(
-              color: Colors.grey,
-              fontSize: 11,
-            ),
+            style: const TextStyle(color: Colors.grey, fontSize: 11),
           ),
           const SizedBox(height: 8),
-          
+
           // Progress steps with icons - similar to the image
           Row(
             children: [
@@ -228,7 +234,7 @@ class _ImprovedOrderTrackingWidgetState extends State<ImprovedOrderTrackingWidge
       ),
     );
   }
-  
+
   Widget _buildIconStep(IconData icon, int step) {
     return Icon(
       icon,
@@ -236,7 +242,7 @@ class _ImprovedOrderTrackingWidgetState extends State<ImprovedOrderTrackingWidge
       size: 28,
     );
   }
-  
+
   Widget _buildDashedLine(bool isActive) {
     return Expanded(
       child: Container(
@@ -248,19 +254,22 @@ class _ImprovedOrderTrackingWidgetState extends State<ImprovedOrderTrackingWidge
       ),
     );
   }
-  
+
   Widget _buildDriverInfoPanel() {
     final driverData = widget.controller.currentDriverData;
-    final String driverName = "${driverData?['first_name'] ?? ''} ${driverData?['last_name1'] ?? ''}";
-    final String address = widget.activeOrder['merchant']?['address'] ?? '25 mts del Liceo de Nicoya';
-    
+    final String driverName =
+        "${driverData?['first_name'] ?? ''} ${driverData?['last_name1'] ?? ''}";
+    final String address =
+        widget.activeOrder['merchant']?['address'] ??
+        '25 mts del Liceo de Nicoya';
+
     return Container(
       margin: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withAlpha(77),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -304,17 +313,14 @@ class _ImprovedOrderTrackingWidgetState extends State<ImprovedOrderTrackingWidge
                     ),
                     const Text(
                       "Repartidor",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                      ),
+                      style: TextStyle(color: Colors.white, fontSize: 12),
                     ),
                   ],
                 ),
               ],
             ),
           ),
-          
+
           // White part with address and preparation status
           Container(
             padding: const EdgeInsets.all(16),
@@ -331,7 +337,11 @@ class _ImprovedOrderTrackingWidgetState extends State<ImprovedOrderTrackingWidge
                 // Address section
                 Row(
                   children: const [
-                    Icon(Icons.location_on_outlined, size: 16, color: Colors.grey),
+                    Icon(
+                      Icons.location_on_outlined,
+                      size: 16,
+                      color: Colors.grey,
+                    ),
                     SizedBox(width: 6),
                     Text(
                       "Address",
@@ -348,7 +358,7 @@ class _ImprovedOrderTrackingWidgetState extends State<ImprovedOrderTrackingWidge
                   ),
                 ),
                 const Divider(height: 20),
-                
+
                 // Preparation status
                 Row(
                   children: const [
@@ -375,7 +385,7 @@ class _ImprovedOrderTrackingWidgetState extends State<ImprovedOrderTrackingWidge
       ),
     );
   }
-  
+
   Widget _buildBackButton() {
     return GestureDetector(
       onTap: () {
@@ -389,7 +399,7 @@ class _ImprovedOrderTrackingWidgetState extends State<ImprovedOrderTrackingWidge
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withAlpha(51),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),

@@ -6,10 +6,10 @@ class AvailableOrderCard extends StatelessWidget {
   final VoidCallback onAccept;
 
   const AvailableOrderCard({
-    Key? key,
+    super.key,
     required this.order,
     required this.onAccept,
-  }) : super(key: key);
+  });
   @override
   Widget build(BuildContext context) {
     // Extract order information safely from the structure of available_orders_view
@@ -25,7 +25,7 @@ class AvailableOrderCard extends StatelessWidget {
     final customer = order['customer'];
     final String firstName = customer != null ? customer['first_name']?.toString() ?? '' : '';
     final String lastName = customer != null ? customer['last_name']?.toString() ?? '' : '';
-    final String customerName = (firstName + ' ' + lastName).trim().isEmpty ? 'Cliente' : '$firstName $lastName';
+    final String customerName = ('$firstName $lastName').trim().isEmpty ? 'Cliente' : '$firstName $lastName';
     
     // Address info
     final deliveryAddress = order['delivery_address'];

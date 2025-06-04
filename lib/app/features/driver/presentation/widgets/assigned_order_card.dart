@@ -8,9 +8,9 @@ class AssignedOrderCard extends StatelessWidget {
   final Map<String, dynamic> order;
 
   const AssignedOrderCard({
-    Key? key,
+    super.key,
     required this.order,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
