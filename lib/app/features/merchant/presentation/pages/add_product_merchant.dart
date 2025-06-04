@@ -9,7 +9,7 @@ import 'package:nicoya_now/app/features/products/data/datasources/products_data_
 
 class AddProductPage extends StatefulWidget {
   final String merchantId;
-  const AddProductPage({Key? key, required this.merchantId}) : super(key: key);
+  const AddProductPage({super.key, required this.merchantId});
 
   @override
   State<AddProductPage> createState() => _AgregarProductoPageState();
@@ -53,19 +53,30 @@ class _AgregarProductoPageState extends State<AddProductPage> {
   }
 
   Future<void> _guardarProducto() async {
-    if (!_formKey.currentState!.validate() || _categoriaId == null || _imagen == null) return;
+    if (!_formKey.currentState!.validate() ||
+        _categoriaId == null ||
+        _imagen == null) {
+      return;
+    }
 
     setState(() => _loading = true);
 
     try {
       final uuid = const Uuid().v4();
-      final imagePath = 'merchant-assets/${widget.merchantId}/$uuid-${_imagen!.name}';
+      final imagePath =
+          'merchant-assets/${widget.merchantId}/$uuid-${_imagen!.name}';
 
       await supabase.storage
           .from('merchant-assets')
-          .upload(imagePath, File(_imagen!.path!), fileOptions: const FileOptions(upsert: true));
+          .upload(
+            imagePath,
+            File(_imagen!.path!),
+            fileOptions: const FileOptions(upsert: true),
+          );
 
-      final imageUrl = supabase.storage.from('merchant-assets').getPublicUrl(imagePath);
+      final imageUrl = supabase.storage
+          .from('merchant-assets')
+          .getPublicUrl(imagePath);
 
       final product = Product(
         product_id: uuid,
@@ -83,8 +94,12 @@ class _AgregarProductoPageState extends State<AddProductPage> {
 
       if (mounted) Navigator.pop(context);
     } catch (e) {
+      //ignore: avoid_print
       print('Error al guardar producto: $e');
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      ScaffoldMessenger.of(
+        //ignore: use_build_context_synchronously
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -104,16 +119,23 @@ class _AgregarProductoPageState extends State<AddProductPage> {
               const SizedBox(height: 10),
               _buildTextField(_descripcionCtrl, 'Descripción'),
               const SizedBox(height: 10),
-              _buildTextField(_precioCtrl, 'Precio', keyboardType: TextInputType.number),
+              _buildTextField(
+                _precioCtrl,
+                'Precio',
+                keyboardType: TextInputType.number,
+              ),
               const SizedBox(height: 10),
               DropdownButtonFormField<String>(
                 value: _categoriaId,
-                items: _categorias
-                    .map((cat) => DropdownMenuItem<String>(
-                          value: cat['category_id'].toString(),
-                          child: Text(cat['name'].toString()),
-                        ))
-                    .toList(),
+                items:
+                    _categorias
+                        .map(
+                          (cat) => DropdownMenuItem<String>(
+                            value: cat['category_id'].toString(),
+                            child: Text(cat['name'].toString()),
+                          ),
+                        )
+                        .toList(),
                 onChanged: (v) => setState(() => _categoriaId = v),
                 decoration: const InputDecoration(
                   labelText: 'Categoría de producto',
@@ -123,7 +145,9 @@ class _AgregarProductoPageState extends State<AddProductPage> {
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _seleccionarImagen,
-                child: Text(_imagen != null ? _imagen!.name : 'Seleccionar imagen'),
+                child: Text(
+                  _imagen != null ? _imagen!.name : 'Seleccionar imagen',
+                ),
               ),
               const SizedBox(height: 30),
               Row(
@@ -138,14 +162,22 @@ class _AgregarProductoPageState extends State<AddProductPage> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: _loading ? null : _guardarProducto,
-                      style: ElevatedButton.styleFrom(backgroundColor: const Color(0xffd72a23)),
-                      child: _loading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text('Confirmar', style: TextStyle(color: Colors.white)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xffd72a23),
+                      ),
+                      child:
+                          _loading
+                              ? const CircularProgressIndicator(
+                                color: Colors.white,
+                              )
+                              : const Text(
+                                'Confirmar',
+                                style: TextStyle(color: Colors.white),
+                              ),
                     ),
                   ),
                 ],
-              )
+              ),
             ],
           ),
         ),
@@ -153,7 +185,11 @@ class _AgregarProductoPageState extends State<AddProductPage> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, {TextInputType? keyboardType}) {
+  Widget _buildTextField(
+    TextEditingController controller,
+    String label, {
+    TextInputType? keyboardType,
+  }) {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,

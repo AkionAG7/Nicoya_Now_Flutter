@@ -5,15 +5,16 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 class OrderDetailPage extends StatelessWidget {
   final String orderId;
-  const OrderDetailPage({required this.orderId, Key? key}) : super(key: key);
+  const OrderDetailPage({required this.orderId, super.key});
 
   /// Carga datos de la orden incluyendo dirección y productos
   Future<Map<String, dynamic>> _loadData() async {
     final client = Supabase.instance.client;
 
-    final result = await client
-        .from('order')
-        .select('''
+    final result =
+        await client
+            .from('order')
+            .select('''
           order_id,
           customer_id,
           merchant_id,
@@ -27,8 +28,8 @@ class OrderDetailPage extends StatelessWidget {
             product:product_id ( name, price )
           )
         ''')
-        .eq('order_id', orderId)
-        .maybeSingle();
+            .eq('order_id', orderId)
+            .maybeSingle();
 
     if (result == null) throw Exception('No se encontró la orden $orderId');
     return Map<String, dynamic>.from(result as Map);
@@ -39,34 +40,44 @@ class OrderDetailPage extends StatelessWidget {
     BuildContext context,
     String newStatus,
   ) async {
-    debugPrint('>>> _updateOrderStatus llamado con orderId = $orderId y newStatus = $newStatus');
+    debugPrint(
+      '>>> _updateOrderStatus llamado con orderId = $orderId y newStatus = $newStatus',
+    );
     try {
-      final res = await Supabase.instance.client
-          .from('order')
-          .update({ 'status': newStatus })
-          .eq('order_id', orderId)
-          .select();
+      final res =
+          await Supabase.instance.client
+              .from('order')
+              .update({'status': newStatus})
+              .eq('order_id', orderId)
+              .select();
 
       // res is a PostgrestList (List<dynamic>)
       final updatedRows = res as List<dynamic>?;
       if (updatedRows == null || updatedRows.isEmpty) {
+        //ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('La orden no fue encontrada o no se pudo actualizar.'),
+            content: Text(
+              'La orden no fue encontrada o no se pudo actualizar.',
+            ),
           ),
         );
         return;
       }
 
-      final updatedStatus = (updatedRows.first as Map<String, dynamic>)['status'];
+      final updatedStatus =
+          (updatedRows.first as Map<String, dynamic>)['status'];
+      //ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Estado actualizado a "$updatedStatus"')),
       );
+      //ignore: use_build_context_synchronously
       Navigator.of(context).pop();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Excepción: $e')),
-      );
+      ScaffoldMessenger.of(
+        //ignore: use_build_context_synchronously
+        context,
+      ).showSnackBar(SnackBar(content: Text('Excepción: $e')));
     }
   }
 
@@ -85,8 +96,10 @@ class OrderDetailPage extends StatelessWidget {
           }
 
           final data = snap.data!;
-          final street = (data['delivery_address'] as Map<String, dynamic>?)?['street']
-              as String? ?? '-';
+          final street =
+              (data['delivery_address'] as Map<String, dynamic>?)?['street']
+                  as String? ??
+              '-';
           final items = data['items'] as List<dynamic>? ?? [];
           final currentStatus = data['status'] as String? ?? 'pending';
 
@@ -141,7 +154,7 @@ class OrderDetailPage extends StatelessWidget {
                     '\$${(prod['price'] as num).toDouble().toStringAsFixed(2)}',
                   ),
                 );
-              }).toList(),
+              }),
 
               const SizedBox(height: 24),
               const Divider(height: 32),
@@ -191,18 +204,21 @@ class OrderDetailPage extends StatelessWidget {
                 ),
               ] else ...[
                 ElevatedButton(
-                    onPressed: currentStatus == 'pending' || currentStatus == 'accepted' || currentStatus == 'in_process'
-                        ? () {
+                  onPressed:
+                      currentStatus == 'pending' ||
+                              currentStatus == 'accepted' ||
+                              currentStatus == 'in_process'
+                          ? () {
                             // Cambia a "cancelled"
                             _updateOrderStatus(context, 'cancelled');
                           }
-                        : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      minimumSize: const Size(120, 40),
-                    ),
-                    child: const Text('Cancelar'),
+                          : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    minimumSize: const Size(120, 40),
                   ),
+                  child: const Text('Cancelar'),
+                ),
                 const SizedBox.shrink(),
               ],
             ],

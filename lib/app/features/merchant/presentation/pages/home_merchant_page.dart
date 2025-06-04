@@ -11,7 +11,7 @@ import 'package:nicoya_now/Icons/nicoya_now_icons_icons.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HomeMerchantPage extends StatefulWidget {
-  const HomeMerchantPage({Key? key}) : super(key: key);
+  const HomeMerchantPage({super.key});
 
   @override
   State<HomeMerchantPage> createState() => _HomeMerchantPageState();
@@ -42,11 +42,12 @@ class _HomeMerchantPageState extends State<HomeMerchantPage> {
 
   Future<void> _checkVerificationStatus() async {
     try {
-      final result = await Supabase.instance.client
-          .from('merchant')
-          .select('is_active')
-          .eq('merchant_id', _merchantId)
-          .single();
+      final result =
+          await Supabase.instance.client
+              .from('merchant')
+              .select('is_active')
+              .eq('merchant_id', _merchantId)
+              .single();
       setState(() {
         _isVerified = result['is_active'] ?? false;
         _isLoading = false;
@@ -66,47 +67,47 @@ class _HomeMerchantPageState extends State<HomeMerchantPage> {
       }
     }
   }
-  
+
   Widget _buildOrdersTab() {
-  if (_orderController.loading) {
-    return const Center(child: CircularProgressIndicator());
+    if (_orderController.loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_orderController.error != null) {
+      return Center(child: Text('Error: ${_orderController.error}'));
+    }
+    final orders = _orderController.orders;
+    if (orders.isEmpty) {
+      return const Center(child: Text('No hay pedidos'));
+    }
+    return ListView.builder(
+      itemCount: orders.length,
+      itemBuilder: (ctx, i) {
+        final o = orders[i];
+        return ListTile(
+          leading: const Icon(Icons.shopping_bag),
+          title: Text('Pedido'),
+          subtitle: Text('Total: \$${o.total.toStringAsFixed(2)}'),
+          trailing: Text(
+            o.status.toString().split('.').last.toUpperCase(),
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          onTap: () {
+            // 1) Navegamos a OrderDetailPage
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => OrderDetailPage(orderId: o.order_id),
+              ),
+            )
+            // 2) Cuando regrese (pop), volvemos a cargar la lista de pedidos:
+            .then((_) {
+              _orderController.loadOrders(_merchantId);
+            });
+          },
+        );
+      },
+    );
   }
-  if (_orderController.error != null) {
-    return Center(child: Text('Error: ${_orderController.error}'));
-  }
-  final orders = _orderController.orders;
-  if (orders.isEmpty) {
-    return const Center(child: Text('No hay pedidos'));
-  }
-  return ListView.builder(
-    itemCount: orders.length,
-    itemBuilder: (ctx, i) {
-      final o = orders[i];
-      return ListTile(
-        leading: const Icon(Icons.shopping_bag),
-        title: Text('Pedido'),
-        subtitle: Text('Total: \$${o.total.toStringAsFixed(2)}'),
-        trailing: Text(
-          o.status.toString().split('.').last.toUpperCase(),
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        onTap: () {
-          // 1) Navegamos a OrderDetailPage
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => OrderDetailPage(orderId: o.order_id),
-            ),
-          )
-          // 2) Cuando regrese (pop), volvemos a cargar la lista de pedidos:
-          .then((_) {
-            _orderController.loadOrders(_merchantId);
-          });
-        },
-      );
-    },
-  );
-}
 
   String _getAppBarTitle() {
     switch (_selectedIndex) {
@@ -124,14 +125,14 @@ class _HomeMerchantPageState extends State<HomeMerchantPage> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     if (!_isVerified) {
       return const Scaffold(
         body: Center(
-          child: Text('Tu cuenta de comerciante está pendiente de verificación'),
+          child: Text(
+            'Tu cuenta de comerciante está pendiente de verificación',
+          ),
         ),
       );
     }
@@ -140,23 +141,17 @@ class _HomeMerchantPageState extends State<HomeMerchantPage> {
       _buildOrdersTab(),
       MerchantProductsPage(merchantId: _merchantId),
       const MerchantSettingsPage(),
-    ]; 
-    
+    ];
+
     return Scaffold(
       appBar: AppBar(
         title: Text(_getAppBarTitle()),
         backgroundColor: const Color(0xFFE60023),
         foregroundColor: Colors.white,
-        actions: const [
-          NotificationBell(),
-          SizedBox(width: 16),
-        ],
+        actions: const [NotificationBell(), SizedBox(width: 16)],
       ),
       body: SafeArea(
-        child: IndexedStack(
-          index: _selectedIndex,
-          children: pages,
-        ),
+        child: IndexedStack(index: _selectedIndex, children: pages),
       ),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: const Color(0xFFE60023),

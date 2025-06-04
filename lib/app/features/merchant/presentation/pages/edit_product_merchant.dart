@@ -9,7 +9,7 @@ import 'package:nicoya_now/app/features/products/domain/entities/products.dart';
 class EditProductPage extends StatefulWidget {
   final Product product;
 
-  const EditProductPage({Key? key, required this.product}) : super(key: key);
+  const EditProductPage({super.key, required this.product});
 
   @override
   State<EditProductPage> createState() => _EditProductPageState();
@@ -56,54 +56,62 @@ class _EditProductPageState extends State<EditProductPage> {
     }
   }
 
- Future<void> _actualizarProducto() async {
-  if (!_formKey.currentState!.validate()) return;
+  Future<void> _actualizarProducto() async {
+    if (!_formKey.currentState!.validate()) return;
 
-  setState(() => _loading = true);
-  String imageUrl = widget.product.image_url ?? '';
+    setState(() => _loading = true);
+    String imageUrl = widget.product.image_url ?? '';
 
-  try {
-    if (_newImage != null) {
-      final imagePath = 'merchant-assets/${widget.product.merchant_id}/${widget.product.product_id}-${_newImage!.name}';
-      await supabase.storage
-          .from('merchant-assets')
-          .upload(imagePath, File(_newImage!.path!), fileOptions: const FileOptions(upsert: true));
-      imageUrl = supabase.storage.from('merchant-assets').getPublicUrl(imagePath);
-    }
+    try {
+      if (_newImage != null) {
+        final imagePath =
+            'merchant-assets/${widget.product.merchant_id}/${widget.product.product_id}-${_newImage!.name}';
+        await supabase.storage
+            .from('merchant-assets')
+            .upload(
+              imagePath,
+              File(_newImage!.path!),
+              fileOptions: const FileOptions(upsert: true),
+            );
+        imageUrl = supabase.storage
+            .from('merchant-assets')
+            .getPublicUrl(imagePath);
+      }
 
-    final updatedProduct = Product(
-      product_id: widget.product.product_id,
-      merchant_id: widget.product.merchant_id,
-      name: _nameCtrl.text.trim(),
-      description: _descCtrl.text.trim(),
-      price: double.parse(_priceCtrl.text),
-      image_url: imageUrl,
-      is_activate: true,
-      created_at: widget.product.created_at,
-      category_id: _categoriaId!,
-    );
-
-    await productsDataSource.updateProduct(updatedProduct);
-
-    if (!mounted) return;
-
-    Navigator.pop(context); // ✅ Cierra la pantalla correctamente
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Producto actualizado exitosamente')),
-    );
-  } catch (e) {
-    print('Error al actualizar producto: $e');
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al actualizar: $e')),
+      final updatedProduct = Product(
+        product_id: widget.product.product_id,
+        merchant_id: widget.product.merchant_id,
+        name: _nameCtrl.text.trim(),
+        description: _descCtrl.text.trim(),
+        price: double.parse(_priceCtrl.text),
+        image_url: imageUrl,
+        is_activate: true,
+        created_at: widget.product.created_at,
+        category_id: _categoriaId!,
       );
-    }
-  } finally {
-    if (mounted) {
-      setState(() => _loading = false);
+
+      await productsDataSource.updateProduct(updatedProduct);
+
+      if (!mounted) return;
+
+      Navigator.pop(context); // ✅ Cierra la pantalla correctamente
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Producto actualizado exitosamente')),
+      );
+    } catch (e) {
+      //ignore: avoid_print
+      print('Error al actualizar producto: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error al actualizar: $e')));
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _loading = false);
+      }
     }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -119,16 +127,21 @@ class _EditProductPageState extends State<EditProductPage> {
               const SizedBox(height: 10),
               _buildField(_descCtrl, 'Descripción'),
               const SizedBox(height: 10),
-              _buildField(_priceCtrl, 'Precio', keyboardType: TextInputType.number),
+              _buildField(
+                _priceCtrl,
+                'Precio',
+                keyboardType: TextInputType.number,
+              ),
               const SizedBox(height: 10),
               DropdownButtonFormField<String>(
                 value: _categoriaId,
-                items: _categorias.map((cat) {
-                  return DropdownMenuItem<String>(
-                    value: cat['category_id'],
-                    child: Text(cat['name']),
-                  );
-                }).toList(),
+                items:
+                    _categorias.map((cat) {
+                      return DropdownMenuItem<String>(
+                        value: cat['category_id'],
+                        child: Text(cat['name']),
+                      );
+                    }).toList(),
                 onChanged: (v) => setState(() => _categoriaId = v),
                 decoration: const InputDecoration(
                   labelText: 'Categoría',
@@ -138,7 +151,9 @@ class _EditProductPageState extends State<EditProductPage> {
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _seleccionarImagen,
-                child: Text(_newImage != null ? _newImage!.name : 'Cambiar imagen'),
+                child: Text(
+                  _newImage != null ? _newImage!.name : 'Cambiar imagen',
+                ),
               ),
               const SizedBox(height: 30),
               Row(
@@ -153,14 +168,22 @@ class _EditProductPageState extends State<EditProductPage> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: _loading ? null : _actualizarProducto,
-                      style: ElevatedButton.styleFrom(backgroundColor: const Color(0xffd72a23)),
-                      child: _loading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text('Actualizar', style: TextStyle(color: Colors.white)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xffd72a23),
+                      ),
+                      child:
+                          _loading
+                              ? const CircularProgressIndicator(
+                                color: Colors.white,
+                              )
+                              : const Text(
+                                'Actualizar',
+                                style: TextStyle(color: Colors.white),
+                              ),
                     ),
                   ),
                 ],
-              )
+              ),
             ],
           ),
         ),
@@ -168,7 +191,11 @@ class _EditProductPageState extends State<EditProductPage> {
     );
   }
 
-  Widget _buildField(TextEditingController controller, String label, {TextInputType? keyboardType}) {
+  Widget _buildField(
+    TextEditingController controller,
+    String label, {
+    TextInputType? keyboardType,
+  }) {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,

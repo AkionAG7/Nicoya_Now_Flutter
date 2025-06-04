@@ -15,8 +15,8 @@ class MerchantStepPassword extends StatefulWidget {
 
 class _MerchantStepPasswordState extends State<MerchantStepPassword> {
   final _fKey = GlobalKey<FormState>();
-  final _pw   = TextEditingController();
-  final _pw2  = TextEditingController();
+  final _pw = TextEditingController();
+  final _pw2 = TextEditingController();
   bool _hide1 = true, _hide2 = true;
   @override
   Widget build(BuildContext context) {
@@ -33,13 +33,13 @@ class _MerchantStepPasswordState extends State<MerchantStepPassword> {
             child: Column(
               children: [
                 MerchantFields(
-                  group      : MerchantFieldGroup.password,
-                  pw         : _pw,
-                  pwConfirm  : _pw2,
-                  hidePw     : _hide1,
-                  hidePw2    : _hide2,
-                  togglePw   : () => setState(() => _hide1 = !_hide1),
-                  togglePw2  : () => setState(() => _hide2 = !_hide2),
+                  group: MerchantFieldGroup.password,
+                  pw: _pw,
+                  pwConfirm: _pw2,
+                  hidePw: _hide1,
+                  hidePw2: _hide2,
+                  togglePw: () => setState(() => _hide1 = !_hide1),
+                  togglePw2: () => setState(() => _hide2 = !_hide2),
                 ),
 
                 const Spacer(),
@@ -51,65 +51,81 @@ class _MerchantStepPasswordState extends State<MerchantStepPassword> {
                     style: FilledButton.styleFrom(
                       backgroundColor: const Color(0xffd72a23),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8))),                    onPressed: ctrl.state == MerchantRegistrationState.loading
-                        ? null
-                        : () async {
-                            if (!_fKey.currentState!.validate()) return;
-                            
-                            try {
-                              // Mostrar un indicador de carga
-                              setState(() {});
-                              
-                              final ok = await ctrl.finishRegistration(
-                                password: _pw.text,
-                                authController: authController,
-                              );
-                              
-                              if (!mounted) return;
-                              
-                              if (ok) {
-                                // Show success message
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Cuenta creada exitosamente'),
-                                    backgroundColor: Colors.green,
-                                  ),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    onPressed:
+                        ctrl.state == MerchantRegistrationState.loading
+                            ? null
+                            : () async {
+                              if (!_fKey.currentState!.validate()) return;
+
+                              try {
+                                // Mostrar un indicador de carga
+                                setState(() {});
+
+                                final ok = await ctrl.finishRegistration(
+                                  password: _pw.text,
+                                  authController: authController,
                                 );
-                                  // Navigate to the merchant pending page as verification is required
-                                Navigator.pushNamedAndRemoveUntil(
-                                  context,
-                                  Routes.merchantPending,
-                                  (_) => false,
-                                );
-                              } else {
-                                // Show error message with more details
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      ctrl.errorMessage ??
-                                          'Ocurrió un error inesperado',
+
+                                if (!mounted) return;
+
+                                if (ok) {
+                                  // Show success message
+                                  //ignore: use_build_context_synchronously
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Cuenta creada exitosamente',
+                                      ),
+                                      backgroundColor: Colors.green,
                                     ),
-                                    backgroundColor: Colors.red,
-                                    duration: const Duration(seconds: 5),
-                                  ),
-                                );
+                                  );
+                                  // Navigate to the merchant pending page as verification is required
+                                  Navigator.pushNamedAndRemoveUntil(
+                                    //ignore: use_build_context_synchronously
+                                    context,
+                                    Routes.merchantPending,
+                                    (_) => false,
+                                  );
+                                } else {
+                                  // Show error message with more details
+                                  //ignore: use_build_context_synchronously
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        ctrl.errorMessage ??
+                                            'Ocurrió un error inesperado',
+                                      ),
+                                      backgroundColor: Colors.red,
+                                      duration: const Duration(seconds: 5),
+                                    ),
+                                  );
+                                }
+                              } catch (e) {
+                                // Capturar y mostrar cualquier error inesperado
+                                if (mounted) {
+                                  //ignore: use_build_context_synchronously
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Error: ${e.toString()}'),
+                                      backgroundColor: Colors.red,
+                                      duration: const Duration(seconds: 7),
+                                    ),
+                                  );
+                                }
                               }
-                            } catch (e) {
-                              // Capturar y mostrar cualquier error inesperado
-                              if (mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('Error: ${e.toString()}'),
-                                    backgroundColor: Colors.red,
-                                    duration: const Duration(seconds: 7),
-                                  ),
-                                );                              }
-                            }
-                          },
-                    child: ctrl.state == MerchantRegistrationState.loading
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text('Registrar',
-                            style: TextStyle(fontSize: 20)),
+                            },
+                    child:
+                        ctrl.state == MerchantRegistrationState.loading
+                            ? const CircularProgressIndicator(
+                              color: Colors.white,
+                            )
+                            : const Text(
+                              'Registrar',
+                              style: TextStyle(fontSize: 20),
+                            ),
                   ),
                 ),
               ],

@@ -6,17 +6,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class MerchantSettingsPage extends StatelessWidget {
-  const MerchantSettingsPage({Key? key}) : super(key: key);
+  const MerchantSettingsPage({super.key});
 
   /// Carga datos del merchant y del perfil del usuario logueado
   Future<Map<String, dynamic>> _loadData() async {
-    final supa   = Supabase.instance.client;
+    final supa = Supabase.instance.client;
     final userId = supa.auth.currentUser!.id;
 
     // 1) Merchant con su dirección relacional
-    final m = await supa
-        .from('merchant')
-        .select('''
+    final m =
+        await supa
+            .from('merchant')
+            .select('''
           merchant_id,
           owner_id,
           legal_id,
@@ -27,27 +28,28 @@ class MerchantSettingsPage extends StatelessWidget {
           created_at,
           main_address:main_address_id ( street )
         ''')
-        .eq('owner_id', userId)
-        .maybeSingle();
+            .eq('owner_id', userId)
+            .maybeSingle();
     if (m == null) throw Exception('No existe merchant para $userId');
 
     // 2) Perfil para teléfono, cédula física, etc.
-    final p = await supa
-        .from('profile')
-        .select('phone, id_number')
-        .eq('user_id', userId)
-        .maybeSingle();
+    final p =
+        await supa
+            .from('profile')
+            .select('phone, id_number')
+            .eq('user_id', userId)
+            .maybeSingle();
 
     return {
       'merchant': Map<String, dynamic>.from(m as Map),
-      'profile' : p == null ? {} : Map<String, dynamic>.from(p as Map),
-      'email'   : supa.auth.currentUser!.email ?? '',
+      'profile': p == null ? {} : Map<String, dynamic>.from(p as Map),
+      'email': supa.auth.currentUser!.email ?? '',
     };
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(   
+    return Scaffold(
       body: FutureBuilder<Map<String, dynamic>>(
         future: _loadData(),
         builder: (ctx, snap) {
@@ -58,17 +60,18 @@ class MerchantSettingsPage extends StatelessWidget {
             return Center(child: Text('Error: ${snap.error}'));
           }
 
-          final data     = snap.data!;
+          final data = snap.data!;
           final merchant = data['merchant'] as Map<String, dynamic>;
-          final profile  = data['profile']  as Map<String, dynamic>;
-          final email    = data['email']    as String;
+          final profile = data['profile'] as Map<String, dynamic>;
+          final email = data['email'] as String;
 
           final addressData = merchant['main_address'] as Map<String, dynamic>?;
 
           // decide cuál cédula mostrar
-          final cedula = (merchant['legal_id'] as String?)?.isNotEmpty == true
-              ? merchant['legal_id'] as String
-              : (profile['id_number'] as String? ?? '-');
+          final cedula =
+              (merchant['legal_id'] as String?)?.isNotEmpty == true
+                  ? merchant['legal_id'] as String
+                  : (profile['id_number'] as String? ?? '-');
 
           return ListView(
             padding: const EdgeInsets.all(16),
@@ -153,34 +156,36 @@ class MerchantSettingsPage extends StatelessWidget {
               ListTile(
                 leading: const Icon(Icons.calendar_today),
                 title: Text(
-                  DateTime.parse(merchant['created_at'] as String)
-                      .toLocal()
-                      .toString(),
+                  DateTime.parse(
+                    merchant['created_at'] as String,
+                  ).toLocal().toString(),
                 ),
                 subtitle: const Text('Creado en'),
               ),
 
               const SizedBox(height: 24),
               // Cerrar sesión
-            TextButton.icon(
-  onPressed: () async {
-    // 1) Cerrar sesión en Supabase
-    await Supabase.instance.client.auth.signOut();
+              TextButton.icon(
+                onPressed: () async {
+                  // 1) Cerrar sesión en Supabase
+                  await Supabase.instance.client.auth.signOut();
 
-    // 2) (Opcional) Limpiar SharedPreferences si guardas algo de sesión
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
+                  // 2) (Opcional) Limpiar SharedPreferences si guardas algo de sesión
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.clear();
 
-    // 3) Navegar al login y eliminar todo el historial de pantallas
-    Navigator.of(context)
-      .pushNamedAndRemoveUntil(Routes.preLogin, (route) => false);
-  },
-  icon: const Icon(Icons.logout, color: Colors.red),
-  label: const Text(
-    'Cerrar sesión',
-    style: TextStyle(color: Colors.red),
-  ),
-),
+                  // 3) Navegar al login y eliminar todo el historial de pantallas
+                  Navigator.of(
+                    //ignore: use_build_context_synchronously
+                    context,
+                  ).pushNamedAndRemoveUntil(Routes.preLogin, (route) => false);
+                },
+                icon: const Icon(Icons.logout, color: Colors.red),
+                label: const Text(
+                  'Cerrar sesión',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
             ],
           );
         },

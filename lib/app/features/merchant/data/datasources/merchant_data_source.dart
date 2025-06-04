@@ -24,7 +24,6 @@ abstract class MerchantDataSource {
   Future<List<Merchant>> fetchAllMerchants();
   Future<Merchant> getMerchantByOwner(String ownerId);
   Future<List<Merchant>> fetchMerchantSearch(String query);
-  
 }
 
 class SupabaseMerchantDataSource implements MerchantDataSource {
@@ -123,9 +122,11 @@ class SupabaseMerchantDataSource implements MerchantDataSource {
     required String password,
     required String phone,
     required AuthController authController,
-    String? cedula,  }) async {
+    String? cedula,
+  }) async {
+    //ignore: avoid_print
     print('MERCHANT REGISTER: Starting merchant registration process');
-    
+
     // Primero creamos el usuario con su rol de merchant
     final success = await authController.signUpMerchant(
       email: email,
@@ -135,63 +136,68 @@ class SupabaseMerchantDataSource implements MerchantDataSource {
       lastName2: lastName2,
       phone: phone,
       idNumber: cedula,
-      businessName: businessName,  // Ahora pasamos explícitamente el nombre del negocio
-      corporateName: corporateName,  // Y el nombre corporativo
+      businessName:
+          businessName, // Ahora pasamos explícitamente el nombre del negocio
+      corporateName: corporateName, // Y el nombre corporativo
     );
 
     if (!success) {
+      //ignore: avoid_print
       print('MERCHANT REGISTER: Failed to create merchant account');
       throw AuthException('No se pudo crear la cuenta de comerciante');
     }
-    
+    //ignore: avoid_print
     print('MERCHANT REGISTER: Successfully created merchant account and role');
 
     final uid = authController.user!.id;
-      try {      // Check if a merchant record already exists
-      final existingMerchant = await _supa
-          .from('merchant')
-          .select()
-          .eq('merchant_id', uid)
-          .maybeSingle();
-          
+    try {
+      // Check if a merchant record already exists
+      final existingMerchant =
+          await _supa
+              .from('merchant')
+              .select()
+              .eq('merchant_id', uid)
+              .maybeSingle();
+
       if (existingMerchant != null) {
         // If it exists, update the data and continue with the process
-        await _supa.from('merchant')
-          .update({
-            'legal_id': legalId,
-            'business_name': businessName,
-            'corporate_name': corporateName,
-            'owner_id': uid, // Ensure owner_id is always set
-          })
-          .eq('merchant_id', uid);
+        await _supa
+            .from('merchant')
+            .update({
+              'legal_id': legalId,
+              'business_name': businessName,
+              'corporate_name': corporateName,
+              'owner_id': uid, // Ensure owner_id is always set
+            })
+            .eq('merchant_id', uid);
       }
-      
+
       // Create address record with proper error handling
       String addressId;
       try {
-        final addr = await _supa
-            .from('address')
-            .insert({
-              'user_id': uid, 
-              'street': address, 
-              'district': ''
-            })
-            .select('address_id')
-            .single();
+        final addr =
+            await _supa
+                .from('address')
+                .insert({'user_id': uid, 'street': address, 'district': ''})
+                .select('address_id')
+                .single();
         addressId = addr['address_id'] as String;
+        //ignore: avoid_print
         print("Created address with ID: $addressId");
       } catch (e) {
+        //ignore: avoid_print
         print("Error creating address: $e");
         // Create a default address in case of failure
-        final defaultAddr = await _supa
-            .from('address')
-            .insert({
-              'user_id': uid, 
-              'street': 'Dirección pendiente', 
-              'district': ''
-            })
-            .select('address_id')
-            .single();
+        final defaultAddr =
+            await _supa
+                .from('address')
+                .insert({
+                  'user_id': uid,
+                  'street': 'Dirección pendiente',
+                  'district': '',
+                })
+                .select('address_id')
+                .single();
         addressId = defaultAddr['address_id'] as String;
       }
 
@@ -215,44 +221,53 @@ class SupabaseMerchantDataSource implements MerchantDataSource {
               File(logoPath),
               fileOptions: const FileOptions(upsert: true),
             );
-      }      final publicUrl = _supa.storage
+      }
+      final publicUrl = _supa.storage
           .from('merchant-assets')
-          .getPublicUrl(path);      // If we already verified that it exists, update the missing info
+          .getPublicUrl(
+            path,
+          ); // If we already verified that it exists, update the missing info
       if (existingMerchant != null) {
+        //ignore: avoid_print
         print("Updating existing merchant with logo and address");
-        final row = await _supa
-              .from('merchant')
-              .update({
-                'logo_url': publicUrl,
-                'main_address_id': addressId,
-                'owner_id': uid, // Ensure owner_id is always set
-              })
-              .eq('merchant_id', uid)
-              .select()
-              .single();
-        return row;
-      } else {      // If it doesn't exist, insert it completely
-        print("Creating new merchant record with all details");
-        final row = await _supa
-              .from('merchant')
-              .upsert(
-                {  // Use upsert to avoid duplicate key errors
-                  'merchant_id': uid,
-                  'owner_id': uid, // Ensure owner_id is explicitly set
-                  'legal_id': legalId,
-                  'business_name': businessName,
-                  'corporate_name': corporateName,
+        final row =
+            await _supa
+                .from('merchant')
+                .update({
                   'logo_url': publicUrl,
                   'main_address_id': addressId,
-                  'is_active': false,
-                },
-                onConflict: 'merchant_id' // Especificar la columna para resolver conflictos
-              )
-              .select()
-              .single();
+                  'owner_id': uid, // Ensure owner_id is always set
+                })
+                .eq('merchant_id', uid)
+                .select()
+                .single();
+        return row;
+      } else {
+        // If it doesn't exist, insert it completely
+        //ignore: avoid_print
+        print("Creating new merchant record with all details");
+        final row =
+            await _supa
+                .from('merchant')
+                .upsert(
+                  {
+                    // Use upsert to avoid duplicate key errors
+                    'merchant_id': uid,
+                    'owner_id': uid, // Ensure owner_id is explicitly set
+                    'legal_id': legalId,
+                    'business_name': businessName,
+                    'corporate_name': corporateName,
+                    'logo_url': publicUrl,
+                    'main_address_id': addressId,
+                    'is_active': false,
+                  },
+                  onConflict:
+                      'merchant_id', // Especificar la columna para resolver conflictos
+                )
+                .select()
+                .single();
         return row;
       }
-
     } catch (e) {
       // If merchant setup fails, we should handle cleanup appropriately
       // Note: AuthController has already created the user and assigned the role
