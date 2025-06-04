@@ -4,12 +4,7 @@ import '../../../../../app/core/error/failures.dart';
 import '../../domain/entities/merchant/merchant.dart';
 import '../../domain/usecases/merchant/merchant_usecases.dart';
 
-enum AdminMerchantState {
-  initial,
-  loading,
-  loaded,
-  error,
-}
+enum AdminMerchantState { initial, loading, loaded, error }
 
 /// Controller for managing merchants in the admin panel
 class AdminMerchantController extends ChangeNotifier {
@@ -29,56 +24,75 @@ class AdminMerchantController extends ChangeNotifier {
   AdminMerchantState get state => _state;
   List<Merchant> get merchants => _merchants;
   String? get error => _error;
+
   /// Load all merchants from the database
   Future<void> loadMerchants() async {
+    //ignore: avoid_print
     print('AdminMerchantController: Starting to load merchants');
     _state = AdminMerchantState.loading;
     _error = null;
     notifyListeners();
 
     try {
+      //ignore: avoid_print
       print('AdminMerchantController: Calling getAllMerchantsUseCase');
       final result = await _getAllMerchantsUseCase.call();
-      
+      //ignore: avoid_print
       print('AdminMerchantController: Got result from use case: $result');
       result.fold(
         (failure) {
-          print('AdminMerchantController: Got failure: ${failure.runtimeType} - ${failure.message}');
+          //ignore: avoid_print
+          print(
+            'AdminMerchantController: Got failure: ${failure.runtimeType} - ${failure.message}',
+          );
           _error = _getFailureMessage(failure);
           _state = AdminMerchantState.error;
         },
         (merchants) {
-          print('AdminMerchantController: Got ${merchants.length} merchants: $merchants');
+          //ignore: avoid_print
+          print(
+            'AdminMerchantController: Got ${merchants.length} merchants: $merchants',
+          );
           _merchants = merchants;
           _state = AdminMerchantState.loaded;
         },
       );
     } catch (e) {
+      //ignore: avoid_print
       print('AdminMerchantController: Caught unexpected error: $e');
       _error = 'Error inesperado: $e';
       _state = AdminMerchantState.error;
     }
-
-    print('AdminMerchantController: Final state is $_state, error: $_error, merchants count: ${_merchants.length}');
+    //ignore: avoid_print
+    print(
+      'AdminMerchantController: Final state is $_state, error: $_error, merchants count: ${_merchants.length}',
+    );
     notifyListeners();
   }
+
   /// Filter merchants by search query and status
   List<Merchant> getFilteredMerchants(String query, {bool? isApproved}) {
     List<Merchant> filteredList = _merchants;
-    
+
     // First filter by approval status if specified
     if (isApproved != null) {
-      filteredList = filteredList.where((merchant) => merchant.isVerified == isApproved).toList();
+      filteredList =
+          filteredList
+              .where((merchant) => merchant.isVerified == isApproved)
+              .toList();
     }
-    
+
     // Then filter by search query if provided
     if (query.isNotEmpty) {
-      filteredList = filteredList.where((merchant) {
-        return merchant.businessName.toLowerCase().contains(query.toLowerCase()) ||
-               merchant.merchantId.toLowerCase().contains(query.toLowerCase());
-      }).toList();
+      filteredList =
+          filteredList.where((merchant) {
+            return merchant.businessName.toLowerCase().contains(
+                  query.toLowerCase(),
+                ) ||
+                merchant.merchantId.toLowerCase().contains(query.toLowerCase());
+          }).toList();
     }
-    
+
     return filteredList;
   }
 
@@ -115,7 +129,9 @@ class AdminMerchantController extends ChangeNotifier {
         },
         (approvedMerchant) {
           // Update the merchant in the local list
-          final index = _merchants.indexWhere((m) => m.merchantId == merchantId);
+          final index = _merchants.indexWhere(
+            (m) => m.merchantId == merchantId,
+          );
           if (index != -1) {
             _merchants[index] = approvedMerchant;
             notifyListeners();

@@ -18,18 +18,27 @@ class AdminMerchantRepositoryImpl implements MerchantRepository {
   });
   @override
   Future<Either<Failure, List<Merchant>>> getAllMerchants() async {
+    //ignore: avoid_print
     print('AdminMerchantRepositoryImpl: Checking network connection');
     if (await networkInfo.isConnected) {
       try {
-        print('AdminMerchantRepositoryImpl: Network is connected, getting merchants from data source');
+        //ignore: avoid_print
+        print(
+          'AdminMerchantRepositoryImpl: Network is connected, getting merchants from data source',
+        );
         final merchants = await remoteDataSource.getAllMerchants();
-        print('AdminMerchantRepositoryImpl: Got ${merchants.length} merchants from data source');
+        //ignore: avoid_print
+        print(
+          'AdminMerchantRepositoryImpl: Got ${merchants.length} merchants from data source',
+        );
         return Right(merchants);
       } catch (e) {
+        //ignore: avoid_print
         print('AdminMerchantRepositoryImpl: Error getting merchants: $e');
         return Left(ServerFailure(e.toString()));
       }
     } else {
+      //ignore: avoid_print
       print('AdminMerchantRepositoryImpl: No network connection');
       return Left(NetworkFailure());
     }
@@ -82,7 +91,9 @@ class AdminMerchantRepositoryImpl implements MerchantRepository {
     if (await networkInfo.isConnected) {
       try {
         final merchantModel = MerchantModel.fromEntity(merchant);
-        final createdMerchant = await remoteDataSource.createMerchant(merchantModel);
+        final createdMerchant = await remoteDataSource.createMerchant(
+          merchantModel,
+        );
         return Right(createdMerchant);
       } catch (e) {
         return Left(ServerFailure(e.toString()));
@@ -97,7 +108,9 @@ class AdminMerchantRepositoryImpl implements MerchantRepository {
     if (await networkInfo.isConnected) {
       try {
         final merchantModel = MerchantModel.fromEntity(merchant);
-        final updatedMerchant = await remoteDataSource.updateMerchant(merchantModel);
+        final updatedMerchant = await remoteDataSource.updateMerchant(
+          merchantModel,
+        );
         return Right(updatedMerchant);
       } catch (e) {
         return Left(ServerFailure(e.toString()));

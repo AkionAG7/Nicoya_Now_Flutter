@@ -37,7 +37,9 @@ class MerchantModel extends Merchant {
             : DateTime.now(),
       );
     } catch (e) {
+      //ignore: avoid_print
       print('Error in MerchantModel.fromJson: $e');
+      //ignore: avoid_print
       print('JSON data: $json');
       rethrow;
     }

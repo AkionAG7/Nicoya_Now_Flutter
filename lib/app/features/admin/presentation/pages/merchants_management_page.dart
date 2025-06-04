@@ -9,15 +9,17 @@ class MerchantsManagementPage extends StatefulWidget {
   const MerchantsManagementPage({super.key});
 
   @override
-  State<MerchantsManagementPage> createState() => _MerchantsManagementPageState();
+  State<MerchantsManagementPage> createState() =>
+      _MerchantsManagementPageState();
 }
 
-class _MerchantsManagementPageState extends State<MerchantsManagementPage> with SingleTickerProviderStateMixin {
+class _MerchantsManagementPageState extends State<MerchantsManagementPage>
+    with SingleTickerProviderStateMixin {
   late AdminMerchantController _controller;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   late TabController _tabController;
-  
+
   @override
   void initState() {
     super.initState();
@@ -25,14 +27,19 @@ class _MerchantsManagementPageState extends State<MerchantsManagementPage> with 
     _controller.loadMerchants();
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(_handleTabChange);
-    
+
     // Add a delayed debug print to check controller state
     Future.delayed(const Duration(seconds: 3), () {
+      //ignore: avoid_print
       print("DEBUG CONTROLLER STATE AFTER 3s: ");
+      //ignore: avoid_print
       print("State: ${_controller.state}");
+      //ignore: avoid_print
       print("Error: ${_controller.error}");
+      //ignore: avoid_print
       print("Merchants count: ${_controller.merchants.length}");
       if (_controller.merchants.isNotEmpty) {
+        //ignore: avoid_print
         print("First merchant: ${_controller.merchants.first}");
       }
     });
@@ -65,21 +72,18 @@ class _MerchantsManagementPageState extends State<MerchantsManagementPage> with 
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            
+
             // Tab bar for filtering by approval status
             TabBar(
               controller: _tabController,
-              tabs: const [
-                Tab(text: 'Por Aprobar'),
-                Tab(text: 'Aprobados'),
-              ],
+              tabs: const [Tab(text: 'Por Aprobar'), Tab(text: 'Aprobados')],
               labelColor: const Color(0xFFE60023),
               unselectedLabelColor: Colors.grey,
               indicatorColor: const Color(0xFFE60023),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Filtros o búsqueda
             TextField(
               controller: _searchController,
@@ -96,9 +100,9 @@ class _MerchantsManagementPageState extends State<MerchantsManagementPage> with 
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Lista de comerciantes
             Expanded(
               child: Consumer<AdminMerchantController>(
@@ -125,13 +129,20 @@ class _MerchantsManagementPageState extends State<MerchantsManagementPage> with 
                           // Debug button
                           ElevatedButton(
                             onPressed: () {
+                              //ignore: avoid_print
                               print("DEBUG CONTROLLER INFO:");
+                              //ignore: avoid_print
                               print("State: ${controller.state}");
+                              //ignore: avoid_print
                               print("Error: ${controller.error}");
-                              print("Merchants count: ${controller.merchants.length}");
-                              
+                              //ignore: avoid_print
+                              print(
+                                "Merchants count: ${controller.merchants.length}",
+                              );
+
                               // Print raw network response
-                              locator<AdminMerchantController>().loadMerchants();
+                              locator<AdminMerchantController>()
+                                  .loadMerchants();
                             },
                             child: const Text('Debug Info (Check Console)'),
                           ),
@@ -139,23 +150,25 @@ class _MerchantsManagementPageState extends State<MerchantsManagementPage> with 
                       ),
                     );
                   }
-                  
+
                   // Use tab index to determine approval status filter
-                  final isApproved = _tabController.index == 1; // 0=pending, 1=approved
+                  final isApproved =
+                      _tabController.index == 1; // 0=pending, 1=approved
                   final filteredMerchants = controller.getFilteredMerchants(
-                    _searchQuery, 
+                    _searchQuery,
                     isApproved: isApproved,
                   );
-                  
+
                   if (filteredMerchants.isEmpty) {
                     return Center(
-                      child: Text(isApproved 
-                        ? 'No se encontraron comerciantes aprobados' 
-                        : 'No se encontraron comerciantes pendientes de aprobación'
+                      child: Text(
+                        isApproved
+                            ? 'No se encontraron comerciantes aprobados'
+                            : 'No se encontraron comerciantes pendientes de aprobación',
                       ),
                     );
                   }
-                  
+
                   return RefreshIndicator(
                     onRefresh: () => controller.refresh(),
                     child: ListView.builder(
@@ -164,8 +177,14 @@ class _MerchantsManagementPageState extends State<MerchantsManagementPage> with 
                         final merchant = filteredMerchants[index];
                         return MerchantListItem(
                           name: merchant.businessName,
-                          status: merchant.isVerified ? 'Aprobado' : 'Pendiente',
-                          onApprove: () => _showApprovalDialog(context, merchant.businessName, merchant.merchantId),
+                          status:
+                              merchant.isVerified ? 'Aprobado' : 'Pendiente',
+                          onApprove:
+                              () => _showApprovalDialog(
+                                context,
+                                merchant.businessName,
+                                merchant.merchantId,
+                              ),
                           isApproved: merchant.isVerified,
                         );
                       },
@@ -180,46 +199,55 @@ class _MerchantsManagementPageState extends State<MerchantsManagementPage> with 
     );
   }
 
-  void _showApprovalDialog(BuildContext context, String merchantName, String merchantId) {
+  void _showApprovalDialog(
+    BuildContext context,
+    String merchantName,
+    String merchantId,
+  ) {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
-    
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Aprobar $merchantName'),
-        content: const Text('¿Estás seguro de que deseas aprobar este comercio?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+      builder:
+          (context) => AlertDialog(
+            title: Text('Aprobar $merchantName'),
+            content: const Text(
+              '¿Estás seguro de que deseas aprobar este comercio?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancelar'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  Navigator.pop(context);
+
+                  // Llamar al método de aprobación del controlador
+                  try {
+                    await _controller.approveMerchant(merchantId);
+                    scaffoldMessenger.showSnackBar(
+                      SnackBar(
+                        content: Text('$merchantName ha sido aprobado'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  } catch (e) {
+                    scaffoldMessenger.showSnackBar(
+                      SnackBar(
+                        content: Text('Error al aprobar $merchantName: $e'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFE60023),
+                ),
+                child: const Text('Aprobar'),
+              ),
+            ],
           ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              
-              // Llamar al método de aprobación del controlador
-              try {
-                await _controller.approveMerchant(merchantId);
-                scaffoldMessenger.showSnackBar(
-                  SnackBar(
-                    content: Text('$merchantName ha sido aprobado'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-              } catch (e) {
-                scaffoldMessenger.showSnackBar(
-                  SnackBar(
-                    content: Text('Error al aprobar $merchantName: $e'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE60023)),
-            child: const Text('Aprobar'),
-          ),
-        ],
-      ),
     );
   }
 }

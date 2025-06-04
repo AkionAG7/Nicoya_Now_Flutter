@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:nicoya_now/app/features/ubication/delivery_tracking/Top_status_panel.dart';
-import 'package:nicoya_now/app/features/ubication/delivery_tracking/Tracking_map.dart';
+import 'package:nicoya_now/app/features/ubication/delivery_tracking/top_status_panel.dart';
+import 'package:nicoya_now/app/features/ubication/delivery_tracking/tracking_map.dart';
 import 'package:nicoya_now/app/features/ubication/delivery_tracking/bottom_delivery_infro.dart';
 import 'package:nicoya_now/app/features/ubication/delivery_tracking/delivery_status.dart';
 import 'package:nicoya_now/app/features/ubication/delivery_tracking/ubication_controller.dart';

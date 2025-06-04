@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 // Importamos las dependencias necesarias
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
-import 'package:nicoya_now/app/core/constants/map_constants.dart';
 
 // Creamos un archivo de prueba simplificado que no dependa del DriverController
 
@@ -24,7 +23,7 @@ class OrderTrackingTestApp extends StatelessWidget {
 }
 
 class OrderTrackingTestPage extends StatefulWidget {
-  const OrderTrackingTestPage({Key? key}) : super(key: key);
+  const OrderTrackingTestPage({super.key});
 
   @override
   State<OrderTrackingTestPage> createState() => _OrderTrackingTestPageState();
@@ -42,15 +41,12 @@ class _OrderTrackingTestPageState extends State<OrderTrackingTestPage> {
       'latitude': '10.14353',
       'longitude': '-85.45195',
     },
-    'customer': {
-      'name': 'Juan Pérez',
-      'phone': '+506 8765 4321',
-    },
+    'customer': {'name': 'Juan Pérez', 'phone': '+506 8765 4321'},
     'delivery_address': 'Barrio La Virginia, casa verde',
     'delivery_latitude': '10.13978',
     'delivery_longitude': '-85.44389',
   };
-  
+
   // Datos del repartidor de ejemplo
   final Map<String, dynamic> sampleDriverData = {
     'first_name': 'Akion',
@@ -84,17 +80,18 @@ class SimplifiedTrackingWidget extends StatefulWidget {
   final Map<String, dynamic> orderData;
   final int currentStep;
   final Function(int) onStepChanged;
-  
+
   const SimplifiedTrackingWidget({
-    Key? key,
+    super.key,
     required this.driverData,
     required this.orderData,
     required this.currentStep,
     required this.onStepChanged,
-  }) : super(key: key);
+  });
 
   @override
-  State<SimplifiedTrackingWidget> createState() => _SimplifiedTrackingWidgetState();
+  State<SimplifiedTrackingWidget> createState() =>
+      _SimplifiedTrackingWidgetState();
 }
 
 class _SimplifiedTrackingWidgetState extends State<SimplifiedTrackingWidget> {
@@ -123,54 +120,65 @@ class _SimplifiedTrackingWidgetState extends State<SimplifiedTrackingWidget> {
     // Get locations from driver and order data
     final driverData = widget.driverData;
     final orderData = widget.orderData;
-    
+
     // Driver location (actual GPS)
     _driverLocation = LatLng(
       double.parse(driverData['current_latitude'].toString()),
-      double.parse(driverData['current_longitude'].toString())
+      double.parse(driverData['current_longitude'].toString()),
     );
-    
+
     // Merchant location
     _merchantLocation = LatLng(
       double.parse(orderData['merchant']['latitude'].toString()),
-      double.parse(orderData['merchant']['longitude'].toString())
+      double.parse(orderData['merchant']['longitude'].toString()),
     );
-    
+
     // Customer location
     _customerLocation = LatLng(
       double.parse(orderData['delivery_latitude'].toString()),
-      double.parse(orderData['delivery_longitude'].toString())
+      double.parse(orderData['delivery_longitude'].toString()),
     );
-    
+
     _updateMarkers();
   }
-    void _updateMarkers() {
+
+  void _updateMarkers() {
     setState(() {
       _markers.clear();
-      
+
       // Driver marker
-      _markers.add(Marker(
-        markerId: const MarkerId('driver'),
-        position: _driverLocation,
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-        infoWindow: const InfoWindow(title: 'Mi ubicación'),
-      ));
-      
+      _markers.add(
+        Marker(
+          markerId: const MarkerId('driver'),
+          position: _driverLocation,
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+          infoWindow: const InfoWindow(title: 'Mi ubicación'),
+        ),
+      );
+
       // Merchant marker
-      _markers.add(Marker(
-        markerId: const MarkerId('merchant'),
-        position: _merchantLocation,
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
-        infoWindow: InfoWindow(title: widget.orderData['merchant']['business_name']),
-      ));
-      
+      _markers.add(
+        Marker(
+          markerId: const MarkerId('merchant'),
+          position: _merchantLocation,
+          icon: BitmapDescriptor.defaultMarkerWithHue(
+            BitmapDescriptor.hueGreen,
+          ),
+          infoWindow: InfoWindow(
+            title: widget.orderData['merchant']['business_name'],
+          ),
+        ),
+      );
+
       // Customer marker
-      _markers.add(Marker(
-        markerId: const MarkerId('customer'),
-        position: _customerLocation,
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-        infoWindow: InfoWindow(title: widget.orderData['customer']['name']),
-      ));
+      _markers.add(
+        Marker(
+          markerId: const MarkerId('customer'),
+          position: _customerLocation,
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+          infoWindow: InfoWindow(title: widget.orderData['customer']['name']),
+        ),
+      );
     });
   }
 
@@ -180,8 +188,9 @@ class _SimplifiedTrackingWidgetState extends State<SimplifiedTrackingWidget> {
     final now = DateTime.now();
     final deliveryEndTime = now.add(const Duration(minutes: 45));
     final timeFormat = DateFormat('h:mm a');
-    final String timeRange = "${timeFormat.format(now)} - ${timeFormat.format(deliveryEndTime)}";
-    
+    final String timeRange =
+        "${timeFormat.format(now)} - ${timeFormat.format(deliveryEndTime)}";
+
     return Stack(
       children: [
         // Map covering the whole background
@@ -202,7 +211,7 @@ class _SimplifiedTrackingWidgetState extends State<SimplifiedTrackingWidget> {
             },
           ),
         ),
-        
+
         // Top status panel - similar to the image
         Positioned(
           top: 65,
@@ -210,7 +219,7 @@ class _SimplifiedTrackingWidgetState extends State<SimplifiedTrackingWidget> {
           right: 20,
           child: _buildStatusPanel(timeRange),
         ),
-        
+
         // Bottom driver info panel - similar to the image
         Positioned(
           bottom: 0,
@@ -218,17 +227,13 @@ class _SimplifiedTrackingWidgetState extends State<SimplifiedTrackingWidget> {
           right: 0,
           child: _buildDriverInfoPanel(),
         ),
-        
+
         // Back button
-        Positioned(
-          top: 20,
-          left: 16,
-          child: _buildBackButton(),
-        ),
+        Positioned(top: 20, left: 16, child: _buildBackButton()),
       ],
     );
   }
-  
+
   Widget _buildStatusPanel(String timeRange) {
     return Container(
       padding: const EdgeInsets.all(12),
@@ -237,7 +242,7 @@ class _SimplifiedTrackingWidgetState extends State<SimplifiedTrackingWidget> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withAlpha(51),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -248,20 +253,14 @@ class _SimplifiedTrackingWidgetState extends State<SimplifiedTrackingWidget> {
         children: [
           const Text(
             "Tu tiempo de envío",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-            ),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
           ),
           Text(
             "Tiempo estimado $timeRange",
-            style: const TextStyle(
-              color: Colors.grey,
-              fontSize: 11,
-            ),
+            style: const TextStyle(color: Colors.grey, fontSize: 11),
           ),
           const SizedBox(height: 8),
-          
+
           // Progress steps with icons - similar to the image
           Row(
             children: [
@@ -278,7 +277,7 @@ class _SimplifiedTrackingWidgetState extends State<SimplifiedTrackingWidget> {
       ),
     );
   }
-  
+
   Widget _buildIconStep(IconData icon, int step) {
     return Icon(
       icon,
@@ -286,7 +285,7 @@ class _SimplifiedTrackingWidgetState extends State<SimplifiedTrackingWidget> {
       size: 28,
     );
   }
-  
+
   Widget _buildDashedLine(bool isActive) {
     return Expanded(
       child: Container(
@@ -298,18 +297,20 @@ class _SimplifiedTrackingWidgetState extends State<SimplifiedTrackingWidget> {
       ),
     );
   }
-  
+
   Widget _buildDriverInfoPanel() {
-    final String driverName = "${widget.driverData['first_name']} ${widget.driverData['last_name1']}";
-    final String address = widget.orderData['merchant']['address'] ?? '25 mts del Liceo de Nicoya';
-    
+    final String driverName =
+        "${widget.driverData['first_name']} ${widget.driverData['last_name1']}";
+    final String address =
+        widget.orderData['merchant']['address'] ?? '25 mts del Liceo de Nicoya';
+
     return Container(
       margin: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withAlpha(77),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -353,17 +354,14 @@ class _SimplifiedTrackingWidgetState extends State<SimplifiedTrackingWidget> {
                     ),
                     const Text(
                       "Repartidor",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                      ),
+                      style: TextStyle(color: Colors.white, fontSize: 12),
                     ),
                   ],
                 ),
               ],
             ),
           ),
-          
+
           // White part with address and preparation status
           Container(
             padding: const EdgeInsets.all(16),
@@ -380,7 +378,11 @@ class _SimplifiedTrackingWidgetState extends State<SimplifiedTrackingWidget> {
                 // Address section
                 Row(
                   children: const [
-                    Icon(Icons.location_on_outlined, size: 16, color: Colors.grey),
+                    Icon(
+                      Icons.location_on_outlined,
+                      size: 16,
+                      color: Colors.grey,
+                    ),
                     SizedBox(width: 6),
                     Text(
                       "Address",
@@ -397,7 +399,7 @@ class _SimplifiedTrackingWidgetState extends State<SimplifiedTrackingWidget> {
                   ),
                 ),
                 const Divider(height: 20),
-                
+
                 // Preparation status
                 Row(
                   children: const [
@@ -417,7 +419,7 @@ class _SimplifiedTrackingWidgetState extends State<SimplifiedTrackingWidget> {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                
+
                 // Action buttons for different steps
                 const SizedBox(height: 12),
                 Row(
@@ -432,7 +434,10 @@ class _SimplifiedTrackingWidgetState extends State<SimplifiedTrackingWidget> {
                       },
                     ),
                     _buildActionButton(
-                      icon: widget.currentStep < 4 ? Icons.arrow_forward : Icons.check_circle,
+                      icon:
+                          widget.currentStep < 4
+                              ? Icons.arrow_forward
+                              : Icons.check_circle,
                       label: widget.currentStep < 4 ? "Siguiente" : "Finalizar",
                       color: const Color(0xFFE60023),
                       onTap: () {
@@ -450,7 +455,7 @@ class _SimplifiedTrackingWidgetState extends State<SimplifiedTrackingWidget> {
       ),
     );
   }
-  
+
   Widget _buildActionButton({
     required IconData icon,
     required String label,
@@ -473,7 +478,7 @@ class _SimplifiedTrackingWidgetState extends State<SimplifiedTrackingWidget> {
       ),
     );
   }
-  
+
   Widget _buildBackButton() {
     return GestureDetector(
       onTap: () {
@@ -487,7 +492,7 @@ class _SimplifiedTrackingWidgetState extends State<SimplifiedTrackingWidget> {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black..withAlpha(51),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),

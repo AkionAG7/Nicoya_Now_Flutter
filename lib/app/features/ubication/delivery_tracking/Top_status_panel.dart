@@ -55,17 +55,11 @@ class _TopStatusPanelState extends State<TopStatusPanel> {
         children: [
           const Text(
             "Tu tiempo de envío",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-            ),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
           ),
           Text(
             "Tiempo estimado $rangoTiempo",
-            style: const TextStyle(
-              color: Colors.grey,
-              fontSize: 11,
-            ),
+            style: const TextStyle(color: Colors.grey, fontSize: 11),
           ),
           const SizedBox(height: 8),
 

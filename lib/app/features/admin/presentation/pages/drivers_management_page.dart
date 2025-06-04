@@ -28,11 +28,16 @@ class _DriversManagementPageState extends State<DriversManagementPage> with Sing
     
     // Add a delayed debug print to check controller state
     Future.delayed(const Duration(seconds: 3), () {
+      //ignore: avoid_print
       print("DEBUG DRIVER CONTROLLER STATE AFTER 3s: ");
+      //ignore: avoid_print
       print("State: ${_controller.state}");
+      //ignore: avoid_print
       print("Error: ${_controller.error}");
+      //ignore: avoid_print
       print("Drivers count: ${_controller.drivers.length}");
       if (_controller.drivers.isNotEmpty) {
+        //ignore: avoid_print
         print("First driver: ${_controller.drivers.first}");
       }
     });
@@ -125,9 +130,13 @@ class _DriversManagementPageState extends State<DriversManagementPage> with Sing
                           // Debug button
                           ElevatedButton(
                             onPressed: () {
+                              //ignore: avoid_print
                               print("DEBUG DRIVER CONTROLLER INFO:");
+                              //ignore: avoid_print
                               print("State: ${controller.state}");
+                              //ignore: avoid_print
                               print("Error: ${controller.error}");
+                              //ignore: avoid_print
                               print("Drivers count: ${controller.drivers.length}");
                               
                               // Print raw network response

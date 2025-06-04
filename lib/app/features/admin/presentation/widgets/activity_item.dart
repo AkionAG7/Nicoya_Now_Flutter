@@ -19,7 +19,7 @@ class ActivityItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: CircleAvatar(
-        backgroundColor: const Color(0xFFE60023).withOpacity(0.2),
+        backgroundColor: const Color(0xFFE60023).withAlpha(51),
         child: Icon(icon, color: const Color(0xFFE60023)),
       ),
       title: Text(title),

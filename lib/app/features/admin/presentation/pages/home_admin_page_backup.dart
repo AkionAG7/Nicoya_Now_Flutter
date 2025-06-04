@@ -43,7 +43,8 @@ class _HomeAdminPageState extends State<HomeAdminPage> {
           title: const Text('Panel de Administración'),
           backgroundColor: const Color(0xFFE60023),
           foregroundColor: Colors.white,
-        ),        body: SafeArea(
+        ),
+        body: SafeArea(
           child: IndexedStack(
             index: _selectedIndex,
             children: const [
@@ -95,7 +96,7 @@ class _AdminDashboardPage extends StatelessWidget {
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 24),
-          
+
           // Estadísticas en tarjetas
           Row(
             children: [
@@ -132,14 +133,14 @@ class _AdminDashboardPage extends StatelessWidget {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 32),
           const Text(
             'Actividad reciente',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          
+
           // Lista de actividades recientes
           Expanded(
             child: ListView(
@@ -176,15 +177,17 @@ class _MerchantsManagementPage extends StatefulWidget {
   const _MerchantsManagementPage();
 
   @override
-  State<_MerchantsManagementPage> createState() => _MerchantsManagementPageState();
+  State<_MerchantsManagementPage> createState() =>
+      _MerchantsManagementPageState();
 }
 
-class _MerchantsManagementPageState extends State<_MerchantsManagementPage> with SingleTickerProviderStateMixin {
+class _MerchantsManagementPageState extends State<_MerchantsManagementPage>
+    with SingleTickerProviderStateMixin {
   late AdminMerchantController _controller;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   late TabController _tabController;
-  
+
   @override
   void initState() {
     super.initState();
@@ -192,14 +195,19 @@ class _MerchantsManagementPageState extends State<_MerchantsManagementPage> with
     _controller.loadMerchants();
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(_handleTabChange);
-    
+
     // Add a delayed debug print to check controller state
     Future.delayed(const Duration(seconds: 3), () {
+      //ignore: avoid_print
       print("DEBUG CONTROLLER STATE AFTER 3s: ");
+      //ignore: avoid_print
       print("State: ${_controller.state}");
+      //ignore: avoid_print
       print("Error: ${_controller.error}");
+      //ignore: avoid_print
       print("Merchants count: ${_controller.merchants.length}");
       if (_controller.merchants.isNotEmpty) {
+        //ignore: avoid_print
         print("First merchant: ${_controller.merchants.first}");
       }
     });
@@ -232,21 +240,18 @@ class _MerchantsManagementPageState extends State<_MerchantsManagementPage> with
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            
+
             // Tab bar for filtering by approval status
             TabBar(
               controller: _tabController,
-              tabs: const [
-                Tab(text: 'Por Aprobar'),
-                Tab(text: 'Aprobados'),
-              ],
+              tabs: const [Tab(text: 'Por Aprobar'), Tab(text: 'Aprobados')],
               labelColor: const Color(0xFFE60023),
               unselectedLabelColor: Colors.grey,
               indicatorColor: const Color(0xFFE60023),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Filtros o búsqueda
             TextField(
               controller: _searchController,
@@ -263,9 +268,9 @@ class _MerchantsManagementPageState extends State<_MerchantsManagementPage> with
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Lista de comerciantes
             Expanded(
               child: Consumer<AdminMerchantController>(
@@ -273,7 +278,7 @@ class _MerchantsManagementPageState extends State<_MerchantsManagementPage> with
                   if (controller.state == AdminMerchantState.loading) {
                     return const Center(child: CircularProgressIndicator());
                   }
-                    if (controller.state == AdminMerchantState.error) {
+                  if (controller.state == AdminMerchantState.error) {
                     return Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -292,13 +297,20 @@ class _MerchantsManagementPageState extends State<_MerchantsManagementPage> with
                           // Debug button
                           ElevatedButton(
                             onPressed: () {
+                              //ignore: avoid_print
                               print("DEBUG CONTROLLER INFO:");
+                              //ignore: avoid_print
                               print("State: ${controller.state}");
+                              //ignore: avoid_print
                               print("Error: ${controller.error}");
-                              print("Merchants count: ${controller.merchants.length}");
-                              
+                              //ignore: avoid_print
+                              print(
+                                "Merchants count: ${controller.merchants.length}",
+                              );
+
                               // Print raw network response
-                              locator<AdminMerchantController>().loadMerchants();
+                              locator<AdminMerchantController>()
+                                  .loadMerchants();
                             },
                             child: const Text('Debug Info (Check Console)'),
                           ),
@@ -306,23 +318,25 @@ class _MerchantsManagementPageState extends State<_MerchantsManagementPage> with
                       ),
                     );
                   }
-                  
+
                   // Use tab index to determine approval status filter
-                  final isApproved = _tabController.index == 1; // 0=pending, 1=approved
+                  final isApproved =
+                      _tabController.index == 1; // 0=pending, 1=approved
                   final filteredMerchants = controller.getFilteredMerchants(
-                    _searchQuery, 
+                    _searchQuery,
                     isApproved: isApproved,
                   );
-                  
+
                   if (filteredMerchants.isEmpty) {
                     return Center(
-                      child: Text(isApproved 
-                        ? 'No se encontraron comerciantes aprobados' 
-                        : 'No se encontraron comerciantes pendientes de aprobación'
+                      child: Text(
+                        isApproved
+                            ? 'No se encontraron comerciantes aprobados'
+                            : 'No se encontraron comerciantes pendientes de aprobación',
                       ),
                     );
                   }
-                    return RefreshIndicator(
+                  return RefreshIndicator(
                     onRefresh: () => controller.refresh(),
                     child: ListView.builder(
                       itemCount: filteredMerchants.length,
@@ -330,8 +344,14 @@ class _MerchantsManagementPageState extends State<_MerchantsManagementPage> with
                         final merchant = filteredMerchants[index];
                         return _MerchantListItem(
                           name: merchant.businessName,
-                          status: merchant.isVerified ? 'Aprobado' : 'Pendiente',
-                          onApprove: () => _showApprovalDialog(context, merchant.businessName, merchant.merchantId),
+                          status:
+                              merchant.isVerified ? 'Aprobado' : 'Pendiente',
+                          onApprove:
+                              () => _showApprovalDialog(
+                                context,
+                                merchant.businessName,
+                                merchant.merchantId,
+                              ),
                           isApproved: merchant.isVerified,
                         );
                       },
@@ -346,46 +366,55 @@ class _MerchantsManagementPageState extends State<_MerchantsManagementPage> with
     );
   }
 
-  void _showApprovalDialog(BuildContext context, String merchantName, String merchantId) {
+  void _showApprovalDialog(
+    BuildContext context,
+    String merchantName,
+    String merchantId,
+  ) {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
-    
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Aprobar $merchantName'),
-        content: const Text('¿Estás seguro de que deseas aprobar este comercio?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+      builder:
+          (context) => AlertDialog(
+            title: Text('Aprobar $merchantName'),
+            content: const Text(
+              '¿Estás seguro de que deseas aprobar este comercio?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancelar'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  Navigator.pop(context);
+
+                  // Llamar al método de aprobación del controlador
+                  try {
+                    await _controller.approveMerchant(merchantId);
+                    scaffoldMessenger.showSnackBar(
+                      SnackBar(
+                        content: Text('$merchantName ha sido aprobado'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  } catch (e) {
+                    scaffoldMessenger.showSnackBar(
+                      SnackBar(
+                        content: Text('Error al aprobar $merchantName: $e'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFE60023),
+                ),
+                child: const Text('Aprobar'),
+              ),
+            ],
           ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              
-              // Llamar al método de aprobación del controlador
-              try {
-                await _controller.approveMerchant(merchantId);
-                scaffoldMessenger.showSnackBar(
-                  SnackBar(
-                    content: Text('$merchantName ha sido aprobado'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-              } catch (e) {
-                scaffoldMessenger.showSnackBar(
-                  SnackBar(
-                    content: Text('Error al aprobar $merchantName: $e'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE60023)),
-            child: const Text('Aprobar'),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -398,12 +427,13 @@ class _DriversManagementPage extends StatefulWidget {
   State<_DriversManagementPage> createState() => _DriversManagementPageState();
 }
 
-class _DriversManagementPageState extends State<_DriversManagementPage> with SingleTickerProviderStateMixin {
+class _DriversManagementPageState extends State<_DriversManagementPage>
+    with SingleTickerProviderStateMixin {
   late AdminDriverController _controller;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   late TabController _tabController;
-  
+
   @override
   void initState() {
     super.initState();
@@ -411,14 +441,19 @@ class _DriversManagementPageState extends State<_DriversManagementPage> with Sin
     _controller.loadDrivers();
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(_handleTabChange);
-    
+
     // Add a delayed debug print to check controller state
     Future.delayed(const Duration(seconds: 3), () {
+      //ignore: avoid_print
       print("DEBUG DRIVER CONTROLLER STATE AFTER 3s: ");
+      //ignore: avoid_print
       print("State: ${_controller.state}");
+      //ignore: avoid_print
       print("Error: ${_controller.error}");
+      //ignore: avoid_print
       print("Drivers count: ${_controller.drivers.length}");
       if (_controller.drivers.isNotEmpty) {
+        //ignore: avoid_print
         print("First driver: ${_controller.drivers.first}");
       }
     });
@@ -451,21 +486,18 @@ class _DriversManagementPageState extends State<_DriversManagementPage> with Sin
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            
+
             // Tab bar for filtering by approval status
             TabBar(
               controller: _tabController,
-              tabs: const [
-                Tab(text: 'Por Aprobar'),
-                Tab(text: 'Aprobados'),
-              ],
+              tabs: const [Tab(text: 'Por Aprobar'), Tab(text: 'Aprobados')],
               labelColor: const Color(0xFFE60023),
               unselectedLabelColor: Colors.grey,
               indicatorColor: const Color(0xFFE60023),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Filtros o búsqueda
             TextField(
               controller: _searchController,
@@ -482,9 +514,9 @@ class _DriversManagementPageState extends State<_DriversManagementPage> with Sin
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Lista de repartidores
             Expanded(
               child: Consumer<AdminDriverController>(
@@ -492,7 +524,7 @@ class _DriversManagementPageState extends State<_DriversManagementPage> with Sin
                   if (controller.state == AdminDriverState.loading) {
                     return const Center(child: CircularProgressIndicator());
                   }
-                    if (controller.state == AdminDriverState.error) {
+                  if (controller.state == AdminDriverState.error) {
                     return Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -511,11 +543,17 @@ class _DriversManagementPageState extends State<_DriversManagementPage> with Sin
                           // Debug button
                           ElevatedButton(
                             onPressed: () {
+                              //ignore: avoid_print
                               print("DEBUG DRIVER CONTROLLER INFO:");
+                              //ignore: avoid_print
                               print("State: ${controller.state}");
+                              //ignore: avoid_print
                               print("Error: ${controller.error}");
-                              print("Drivers count: ${controller.drivers.length}");
-                              
+                              //ignore: avoid_print
+                              print(
+                                "Drivers count: ${controller.drivers.length}",
+                              );
+
                               // Print raw network response
                               locator<AdminDriverController>().loadDrivers();
                             },
@@ -525,23 +563,25 @@ class _DriversManagementPageState extends State<_DriversManagementPage> with Sin
                       ),
                     );
                   }
-                  
+
                   // Use tab index to determine approval status filter
-                  final isApproved = _tabController.index == 1; // 0=pending, 1=approved
+                  final isApproved =
+                      _tabController.index == 1; // 0=pending, 1=approved
                   final filteredDrivers = controller.getFilteredDrivers(
-                    _searchQuery, 
+                    _searchQuery,
                     isApproved: isApproved,
                   );
-                  
+
                   if (filteredDrivers.isEmpty) {
                     return Center(
-                      child: Text(isApproved 
-                        ? 'No se encontraron repartidores aprobados' 
-                        : 'No se encontraron repartidores pendientes de aprobación'
+                      child: Text(
+                        isApproved
+                            ? 'No se encontraron repartidores aprobados'
+                            : 'No se encontraron repartidores pendientes de aprobación',
                       ),
                     );
                   }
-                    return RefreshIndicator(
+                  return RefreshIndicator(
                     onRefresh: () => controller.refresh(),
                     child: ListView.builder(
                       itemCount: filteredDrivers.length,
@@ -552,8 +592,16 @@ class _DriversManagementPageState extends State<_DriversManagementPage> with Sin
                           vehicleType: driver.vehicleType,
                           licenseNumber: driver.licenseNumber ?? 'N/A',
                           status: driver.isVerified ? 'Aprobado' : 'Pendiente',
-                          onApprove: () => _showDriverApprovalDialog(context, driver.driverId),
-                          onReject: () => _showDriverRejectionDialog(context, driver.driverId),
+                          onApprove:
+                              () => _showDriverApprovalDialog(
+                                context,
+                                driver.driverId,
+                              ),
+                          onReject:
+                              () => _showDriverRejectionDialog(
+                                context,
+                                driver.driverId,
+                              ),
                           isApproved: driver.isVerified,
                           docsUrl: driver.docsUrl,
                         );
@@ -571,105 +619,117 @@ class _DriversManagementPageState extends State<_DriversManagementPage> with Sin
 
   void _showDriverApprovalDialog(BuildContext context, String driverId) {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
-    
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Aprobar Repartidor'),
-        content: const Text('¿Estás seguro de que deseas aprobar este repartidor?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+      builder:
+          (context) => AlertDialog(
+            title: Text('Aprobar Repartidor'),
+            content: const Text(
+              '¿Estás seguro de que deseas aprobar este repartidor?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancelar'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  Navigator.pop(context);
+
+                  // Llamar al método de aprobación del controlador
+                  try {
+                    final success = await _controller.approveDriver(driverId);
+                    if (success) {
+                      scaffoldMessenger.showSnackBar(
+                        const SnackBar(
+                          content: Text('Repartidor aprobado exitosamente'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    } else {
+                      scaffoldMessenger.showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Error al aprobar repartidor: ${_controller.error}',
+                          ),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    scaffoldMessenger.showSnackBar(
+                      SnackBar(
+                        content: Text('Error al aprobar repartidor: $e'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFE60023),
+                ),
+                child: const Text('Aprobar'),
+              ),
+            ],
           ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              
-              // Llamar al método de aprobación del controlador
-              try {
-                final success = await _controller.approveDriver(driverId);
-                if (success) {
-                  scaffoldMessenger.showSnackBar(
-                    const SnackBar(
-                      content: Text('Repartidor aprobado exitosamente'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                } else {
-                  scaffoldMessenger.showSnackBar(
-                    SnackBar(
-                      content: Text('Error al aprobar repartidor: ${_controller.error}'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              } catch (e) {
-                scaffoldMessenger.showSnackBar(
-                  SnackBar(
-                    content: Text('Error al aprobar repartidor: $e'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE60023)),
-            child: const Text('Aprobar'),
-          ),
-        ],
-      ),
     );
   }
 
   void _showDriverRejectionDialog(BuildContext context, String driverId) {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
-    
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Rechazar Repartidor'),
-        content: const Text('¿Estás seguro de que deseas rechazar este repartidor?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+      builder:
+          (context) => AlertDialog(
+            title: Text('Rechazar Repartidor'),
+            content: const Text(
+              '¿Estás seguro de que deseas rechazar este repartidor?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancelar'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  Navigator.pop(context);
+
+                  // Llamar al método de rechazo del controlador
+                  try {
+                    final success = await _controller.rejectDriver(driverId);
+                    if (success) {
+                      scaffoldMessenger.showSnackBar(
+                        const SnackBar(
+                          content: Text('Repartidor rechazado'),
+                          backgroundColor: Colors.orange,
+                        ),
+                      );
+                    } else {
+                      scaffoldMessenger.showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Error al rechazar repartidor: ${_controller.error}',
+                          ),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    scaffoldMessenger.showSnackBar(
+                      SnackBar(
+                        content: Text('Error al rechazar repartidor: $e'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                child: const Text('Rechazar'),
+              ),
+            ],
           ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              
-              // Llamar al método de rechazo del controlador
-              try {
-                final success = await _controller.rejectDriver(driverId);
-                if (success) {
-                  scaffoldMessenger.showSnackBar(
-                    const SnackBar(
-                      content: Text('Repartidor rechazado'),
-                      backgroundColor: Colors.orange,
-                    ),
-                  );
-                } else {
-                  scaffoldMessenger.showSnackBar(
-                    SnackBar(
-                      content: Text('Error al rechazar repartidor: ${_controller.error}'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              } catch (e) {
-                scaffoldMessenger.showSnackBar(
-                  SnackBar(
-                    content: Text('Error al rechazar repartidor: $e'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Rechazar'),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -698,7 +758,7 @@ class _StatCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.2),
+              color: Colors.grey.withAlpha(51),
               spreadRadius: 1,
               blurRadius: 4,
               offset: const Offset(0, 2),
@@ -712,8 +772,20 @@ class _StatCard extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-                Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ],
             ),
           ],
@@ -741,7 +813,7 @@ class _ActivityItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: CircleAvatar(
-        backgroundColor: const Color(0xFFE60023).withOpacity(0.2),
+        backgroundColor: const Color(0xFFE60023).withAlpha(51),
         child: Icon(icon, color: const Color(0xFFE60023)),
       ),
       title: Text(title),
@@ -771,21 +843,20 @@ class _MerchantListItem extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       elevation: 2,
       child: ListTile(
-        leading: const CircleAvatar(
-          child: Icon(Icons.store),
-        ),
+        leading: const CircleAvatar(child: Icon(Icons.store)),
         title: Text(name),
         subtitle: Text('Estado: $status'),
-        trailing: isApproved
-            ? const Icon(Icons.verified, color: Colors.green)
-            : ElevatedButton(
-                onPressed: onApprove,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFE60023),
-                  foregroundColor: Colors.white,
+        trailing:
+            isApproved
+                ? const Icon(Icons.verified, color: Colors.green)
+                : ElevatedButton(
+                  onPressed: onApprove,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFE60023),
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text('Aprobar'),
                 ),
-                child: const Text('Aprobar'),
-              ),
       ),
     );
   }
@@ -820,7 +891,10 @@ class _DriverListItem extends StatelessWidget {
       elevation: 2,
       child: ExpansionTile(
         leading: CircleAvatar(
-          backgroundColor: isApproved ? Colors.green.withOpacity(0.2) : Colors.orange.withOpacity(0.2),
+          backgroundColor:
+              isApproved
+                  ? Colors.green.withAlpha(51)
+                  : Colors.orange.withAlpha(51),
           child: Icon(
             Icons.delivery_dining,
             color: isApproved ? Colors.green : Colors.orange,
@@ -829,28 +903,26 @@ class _DriverListItem extends StatelessWidget {
         title: Text('ID: $driverId'),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Vehículo: $vehicleType'),
-            Text('Estado: $status'),
-          ],
+          children: [Text('Vehículo: $vehicleType'), Text('Estado: $status')],
         ),
-        trailing: isApproved
-            ? const Icon(Icons.verified, color: Colors.green)
-            : Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    onPressed: onReject,
-                    icon: const Icon(Icons.close, color: Colors.red),
-                    tooltip: 'Rechazar',
-                  ),
-                  IconButton(
-                    onPressed: onApprove,
-                    icon: const Icon(Icons.check, color: Colors.green),
-                    tooltip: 'Aprobar',
-                  ),
-                ],
-              ),
+        trailing:
+            isApproved
+                ? const Icon(Icons.verified, color: Colors.green)
+                : Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      onPressed: onReject,
+                      icon: const Icon(Icons.close, color: Colors.red),
+                      tooltip: 'Rechazar',
+                    ),
+                    IconButton(
+                      onPressed: onApprove,
+                      icon: const Icon(Icons.check, color: Colors.green),
+                      tooltip: 'Aprobar',
+                    ),
+                  ],
+                ),
         children: [
           Padding(
             padding: const EdgeInsets.all(16.0),
@@ -934,9 +1006,7 @@ class _DriverListItem extends StatelessWidget {
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
-          Expanded(
-            child: Text(value),
-          ),
+          Expanded(child: Text(value)),
         ],
       ),
     );
