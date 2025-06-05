@@ -39,12 +39,16 @@ class HomeTabWidgetState extends State<HomeTabWidget> {
 
     setState(() {
       _isLoadingAvailableOrders = true;
-    });
-
-    try {
+    });    try {
       final availableOrders = await widget.controller.fetchAvailableOrders();
+      
+      // Filtrar explícitamente para solo mostrar pedidos con estado 'in_process'
+      final filteredOrders = availableOrders.where((order) => 
+        order['status'] == 'in_process'
+      ).toList();
+      
       setState(() {
-        _availableOrders = availableOrders;
+        _availableOrders = filteredOrders;
         _isLoadingAvailableOrders = false;
       });
     } catch (e) {
@@ -54,39 +58,40 @@ class HomeTabWidgetState extends State<HomeTabWidget> {
         _isLoadingAvailableOrders = false;
       });
     }
-  }
-
-  Future<void> _acceptOrder(String orderId) async {
+  }  Future<void> _acceptOrder(String orderId) async {
     setState(() {
       _isLoadingAvailableOrders = true;
     });
 
     try {
-      final success = await widget.controller.acceptOrderRPC(orderId);
+      // Usar el nuevo método acceptOrder que llama a la función RPC accept_order
+      final success = await widget.controller.acceptOrder(orderId);
+      
       if (success) {
-        // Reload available orders after accepting one
+        // Forzar la recarga de los pedidos activos para actualizar la UI
+        await widget.controller.loadActiveOrders();
+        
+        // Mostrar mensaje de éxito
         //ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Pedido aceptado correctamente')),
+          const SnackBar(content: Text('Pedido aceptado correctamente')),
         );
-        await _loadAvailableOrders();
-      } else {
-        ScaffoldMessenger.of(
-          //ignore: use_build_context_synchronously
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error al aceptar pedido')));
+        
+        // Forzar actualización de la UI para mostrar el mapa de seguimiento
         setState(() {
           _isLoadingAvailableOrders = false;
         });
+      } else {
+        throw Exception('No se pudo aceptar el pedido');
       }
     } catch (e) {
       //ignore: avoid_print
       print('Error al aceptar pedido: $e');
 
-      ScaffoldMessenger.of(
-        //ignore: use_build_context_synchronously
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      //ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
       setState(() {
         _isLoadingAvailableOrders = false;
       });
@@ -114,21 +119,18 @@ class HomeTabWidgetState extends State<HomeTabWidget> {
       inProgressOrders =
           widget.controller.activeOrders.where((order) {
             try {
-              final status = order['status']?.toString() ?? '';
-
-              // Include orders with these statuses
+              final status = order['status']?.toString() ?? '';              // Include orders with these statuses
               bool isActiveStatus =
                   status == 'in_process' ||
                   status == 'accepted' ||
                   status == 'on_way';
 
-              // Also include pending orders that have assignments
+              // Include pending orders that have assignments - but they should be visible as "in_process" not as "pending"
               bool isPendingWithAssignment =
                   status == 'pending' && order['assigned_at'] != null;
 
-              return isActiveStatus ||
-                  isPendingWithAssignment ||
-                  status == 'pending';
+              // Only include in_process, accepted, on_way status, and pending with assignments
+              return isActiveStatus || isPendingWithAssignment;
             } catch (e) {
               //ignore: avoid_print
               print('Error processing order: $e');
@@ -144,15 +146,20 @@ class HomeTabWidgetState extends State<HomeTabWidget> {
       print('Error filtering orders: $e');
       // Fall back to empty list if there's an error
       inProgressOrders = [];
-    }
-
-    // If there's an active in-progress order, show the improved tracking screen
+    }    // If there's an active in-progress order, show the improved tracking screen
     if (inProgressOrders.isNotEmpty) {
-      Map<String, dynamic> activeOrder = inProgressOrders.first;
+      // Priorizar pedidos en ruta ("on_way") sobre otros
+      Map<String, dynamic> activeOrder = inProgressOrders.firstWhere(
+        (order) => order['status'] == 'on_way',
+        orElse: () => inProgressOrders.first,
+      );
+      
       //ignore: avoid_print
       print(
         'Selected order for tracking: ${activeOrder['order_id']}, Status: ${activeOrder['status']}',
       );
+      
+      // Mostrar el widget de seguimiento
       return ImprovedOrderTrackingWidget(
         controller: widget.controller,
         activeOrder: activeOrder,

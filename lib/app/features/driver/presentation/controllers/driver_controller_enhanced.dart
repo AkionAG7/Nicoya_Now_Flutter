@@ -91,7 +91,7 @@ class DriverController extends ChangeNotifier {
       final response = await _supabase
           .from('current_driver_orders')
           .select('*, customer:customer_id(*), merchant:merchant_id(*), delivery_address:delivery_address_id(*)')
-          .filter('status', 'in', ['assigned', 'picked_up', 'on_the_way']);
+          .filter('status', 'in', ['assigned', 'picked_up', 'on_way']);
       
       _activeOrders = List<Map<String, dynamic>>.from(response);
       

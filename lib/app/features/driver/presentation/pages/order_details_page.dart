@@ -142,9 +142,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
         ),
       ),
     );
-  }
-
-  Widget _buildStatusCard(String status) {
+  }  Widget _buildStatusCard(String status) {
     Color statusColor;
     String statusText;
 
@@ -152,6 +150,10 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
       case 'pending':
         statusColor = Colors.orange;
         statusText = 'Pendiente';
+        break;
+      case 'in_process':
+        statusColor = Colors.amber;
+        statusText = 'Disponible para aceptar';
         break;
       case 'assigned':
         statusColor = Colors.blue;
@@ -161,7 +163,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
         statusColor = Colors.purple;
         statusText = 'Recogido';
         break;
-      case 'on_the_way':
+      case 'on_way':
         statusColor = Colors.indigo;
         statusText = 'En camino';
         break;
@@ -239,10 +241,58 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
         },
       ),
     );
-  }
-
-  Widget _buildActionButtons(String orderId, String status) {
+  }  Widget _buildActionButtons(String orderId, String status) {
     switch (status) {
+      case 'in_process':
+        return Row(
+          children: [
+            Expanded(
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.navigation),
+                label: const Text('Navegar'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: () {
+                  // Open map navigation
+                  Navigator.pushNamed(context, Routes.order_Success);
+                },
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.local_shipping),
+                label: const Text('Aceptar pedido'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFE60023),
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: () async {
+                  final controller = Provider.of<DriverController>(
+                    context,
+                    listen: false,
+                  );
+                  final success = await controller.updateOrderStatus(
+                    orderId,
+                    'on_way',
+                  );
+                  if (success && mounted) {
+                    setState(() {
+                      order['status'] = 'on_way';
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Pedido aceptado correctamente'),
+                      ),
+                    );
+                  }
+                },
+              ),
+            ),
+          ],
+        );
       case 'assigned':
         return Row(
           children: [
@@ -263,8 +313,8 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
             const SizedBox(width: 10),
             Expanded(
               child: ElevatedButton.icon(
-                icon: const Icon(Icons.check),
-                label: const Text('Recoger'),
+                icon: const Icon(Icons.local_shipping),
+                label: const Text('En Camino'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFE60023),
                   foregroundColor: Colors.white,
@@ -273,14 +323,12 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                   final controller = Provider.of<DriverController>(
                     context,
                     listen: false,
-                  );
-                  final success = await controller.updateOrderStatus(
+                  );                  final success = await controller.updateOrderStatus(
                     orderId,
-                    'picked_up',
-                  );
-                  if (success && mounted) {
+                    'on_way',
+                  );                  if (success && mounted) {
                     setState(() {
-                      order['status'] = 'picked_up';
+                      order['status'] = 'on_way';
                     });
                   }
                 },
@@ -288,7 +336,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
             ),
           ],
         );
-      case 'picked_up':
+      case 'on_way':
         return Row(
           children: [
             Expanded(

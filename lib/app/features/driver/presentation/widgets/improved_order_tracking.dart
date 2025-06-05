@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:nicoya_now/app/features/driver/presentation/controllers/driver_controller.dart';
@@ -29,12 +30,15 @@ class _ImprovedOrderTrackingWidgetState
   late LatLng _driverLocation;
   late LatLng _merchantLocation;
   late LatLng _customerLocation;
-
   @override
   void initState() {
     super.initState();
     _initLocations();
     _updateCurrentStep();
+    
+    // Registro para ayudar a la depuración
+    print('ImprovedOrderTrackingWidget inicializado con pedido: ${widget.activeOrder['order_id']}');
+    print('Estado del pedido: ${widget.activeOrder['status']}');
   }
 
   @override
@@ -71,20 +75,26 @@ class _ImprovedOrderTrackingWidgetState
     );
 
     _updateMarkers();
-  }
-
-  void _updateCurrentStep() {
-    final status = widget.activeOrder['status'];
+  }  void _updateCurrentStep() {
+    final status = widget.activeOrder['status']?.toString() ?? '';
+    
+    print('Actualizando paso de seguimiento basado en status: $status');
 
     setState(() {
       switch (status) {
         case 'assigned':
           currentStep = 1;
           break;
-        case 'picked_up':
-          currentStep = 2;
+        case 'pending':
+          currentStep = 1;
           break;
-        case 'on_the_way':
+        case 'accepted':
+          currentStep = 1;
+          break;
+        case 'in_process':
+          currentStep = 1;
+          break;
+        case 'on_way':
           currentStep = 3;
           break;
         case 'delivered':
@@ -92,6 +102,7 @@ class _ImprovedOrderTrackingWidgetState
           break;
         default:
           currentStep = 1;
+          print('Estado no reconocido: $status, configurando paso 1');
       }
     });
   }
@@ -175,9 +186,7 @@ class _ImprovedOrderTrackingWidgetState
           left: 20,
           right: 20,
           child: _buildStatusPanel(timeRange),
-        ),
-
-        // Bottom driver info panel - similar to the image
+        ),        // Bottom driver info panel - similar to the image
         Positioned(
           bottom: 0,
           left: 0,
@@ -187,6 +196,22 @@ class _ImprovedOrderTrackingWidgetState
 
         // Back button
         Positioned(top: 20, left: 16, child: _buildBackButton()),
+        
+        // Action buttons for order tracking
+        Positioned(
+          bottom: 80,
+          left: 0,
+          right: 0,
+          child: _buildActionButtons(),
+        ),
+
+        // Action buttons for order tracking
+        Positioned(
+          bottom: 80,
+          left: 0,
+          right: 0,
+          child: _buildActionButtons(),
+        ),
       ],
     );
   }
@@ -253,15 +278,33 @@ class _ImprovedOrderTrackingWidgetState
         ),
       ),
     );
+  }  String _getCustomerAddress() {
+    // Extract delivery address with safe type handling
+    final dynamic deliveryAddressData = widget.activeOrder['delivery_address'];
+    
+    if (deliveryAddressData is Map) {
+      // If it's a map, try to get the address field or street field
+      return deliveryAddressData['address']?.toString() ?? 
+             deliveryAddressData['street']?.toString() ??
+             'Dirección de entrega';
+    } else if (deliveryAddressData is String) {
+      // If it's already a string
+      return deliveryAddressData;
+    } else {
+      // Default fallback
+      return 'Dirección de entrega';
+    }
   }
 
   Widget _buildDriverInfoPanel() {
     final driverData = widget.controller.currentDriverData;
     final String driverName =
-        "${driverData?['first_name'] ?? ''} ${driverData?['last_name1'] ?? ''}";
-    final String address =
-        widget.activeOrder['merchant']?['address'] ??
-        '25 mts del Liceo de Nicoya';
+        "${driverData?['first_name']?.toString() ?? ''} ${driverData?['last_name1']?.toString() ?? ''}";    
+      // Get customer address using safe extraction
+    final String customerAddress = _getCustomerAddress();
+    
+    // We no longer need the merchant address for this panel
+    // as we're using the customer address instead
 
     return Container(
       margin: const EdgeInsets.all(16),
@@ -349,9 +392,8 @@ class _ImprovedOrderTrackingWidgetState
                     ),
                   ],
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  address,
+                const SizedBox(height: 4),                Text(
+                  customerAddress,
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -385,7 +427,6 @@ class _ImprovedOrderTrackingWidgetState
       ),
     );
   }
-
   Widget _buildBackButton() {
     return GestureDetector(
       onTap: () {
@@ -412,5 +453,97 @@ class _ImprovedOrderTrackingWidgetState
         ),
       ),
     );
+  }  Widget _buildActionButtons() {
+    final String status = widget.activeOrder['status']?.toString() ?? '';
+    final String orderId = widget.activeOrder['order_id']?.toString() ?? '';
+
+    if (status == 'on_way') {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        margin: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              spreadRadius: 1,
+              blurRadius: 10,
+              offset: const Offset(0, 1),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ElevatedButton.icon(
+              icon: const Icon(Icons.check_circle),
+              label: const Text('Marcar como entregado'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFE60023),
+                foregroundColor: Colors.white,
+                minimumSize: const Size.fromHeight(50),
+              ),
+              onPressed: () async {
+                // Mostrar diálogo de confirmación
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Confirmar entrega'),
+                    content: const Text('¿Has entregado este pedido al cliente?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text('Cancelar'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text('Confirmar'),
+                      ),
+                    ],
+                  ),
+                );                if (confirm == true) {
+                  try {
+                    // Marcar el pedido como entregado
+                    final success = await widget.controller.updateOrderStatus(orderId, 'delivered');
+                    
+                    if (success) {
+                      // Reload active orders to ensure UI is updated
+                      await widget.controller.loadActiveOrders();
+                      
+                      // Mostrar mensaje de éxito
+                      // ignore: use_build_context_synchronously
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('¡Pedido entregado correctamente!')),
+                      );
+                      
+                      // Volver a la pantalla principal después de un breve retraso
+                      Future.delayed(const Duration(seconds: 2), () {
+                        // ignore: use_build_context_synchronously
+                        Navigator.pop(context);
+                      });
+                    } else {
+                      // Show error message if update failed
+                      // ignore: use_build_context_synchronously
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Error al marcar el pedido como entregado')),
+                      );
+                    }
+                  } catch (e) {
+                    // Handle any exceptions
+                    // ignore: use_build_context_synchronously
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error: $e')),
+                    );
+                  }
+                }
+              },
+            ),
+          ],
+        ),
+      );
+    }
+    
+    return const SizedBox.shrink();
   }
 }

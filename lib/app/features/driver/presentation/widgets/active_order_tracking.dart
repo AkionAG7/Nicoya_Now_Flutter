@@ -74,20 +74,24 @@ class _ActiveOrderTrackingWidgetState extends State<ActiveOrderTrackingWidget> {
     );
 
     _updateMarkers();
-  }
-
-  void _updateCurrentStep() {
-    final status = widget.activeOrder['status'];
+  }  void _updateCurrentStep() {
+    final status = widget.activeOrder['status']?.toString() ?? '';
 
     setState(() {
       switch (status) {
         case 'assigned':
           currentStep = 1;
           break;
-        case 'picked_up':
-          currentStep = 2;
+        case 'pending':
+          currentStep = 1;
           break;
-        case 'on_the_way':
+        case 'accepted':
+          currentStep = 1;
+          break;
+        case 'in_process':
+          currentStep = 1;
+          break;
+        case 'on_way':
           currentStep = 3;
           break;
         case 'delivered':
@@ -98,28 +102,25 @@ class _ActiveOrderTrackingWidgetState extends State<ActiveOrderTrackingWidget> {
       }
     });
   }
-
   void _advanceStep() {
     // This is just for demo purposes
     if (currentStep < 4) {
       setState(() {
         currentStep++;
-      });
-
-      // Update order status in database based on current step
+      });      // Update order status in database based on current step
       String newStatus;
       switch (currentStep) {
-        case 2:
-          newStatus = 'picked_up';
+        case 2: // Skip this step since picked_up doesn't exist
+          newStatus = 'on_way'; // Go directly to on_way
           break;
         case 3:
-          newStatus = 'on_the_way';
+          newStatus = 'on_way';
           break;
         case 4:
           newStatus = 'delivered';
           break;
         default:
-          newStatus = 'assigned';
+          newStatus = 'in_process';
       }
 
       widget.controller.updateOrderStatus(
@@ -281,16 +282,27 @@ class _ActiveOrderTrackingWidgetState extends State<ActiveOrderTrackingWidget> {
         ),
       ),
     );
-  }
-
-  Widget _buildDeliveryInfo() {
-    final String orderId = widget.activeOrder['order_id'] ?? '';
+  }  Widget _buildDeliveryInfo() {
+    final String orderId = widget.activeOrder['order_id']?.toString() ?? '';
     final String merchantName =
-        widget.activeOrder['merchant']?['business_name'] ?? 'Comercio';
+        widget.activeOrder['merchant']?['business_name']?.toString() ?? 'Comercio';
     final String customerName =
-        widget.activeOrder['customer']?['name'] ?? 'Cliente';
-    final String address =
-        widget.activeOrder['delivery_address'] ?? 'Dirección de entrega';
+        widget.activeOrder['customer']?['name']?.toString() ?? 'Cliente';
+    
+    // Extract delivery address with safe type handling
+    final dynamic deliveryAddressData = widget.activeOrder['delivery_address'];
+    String address;
+    
+    if (deliveryAddressData is Map) {
+      // If it's a map, try to get the address field
+      address = deliveryAddressData['address']?.toString() ?? 'Dirección de entrega';
+    } else if (deliveryAddressData is String) {
+      // If it's already a string
+      address = deliveryAddressData;
+    } else {
+      // Default fallback
+      address = 'Dirección de entrega';
+    }
     final String status = _getStatusTitle();
 
     final driverData = widget.controller.currentDriverData;
@@ -491,14 +503,34 @@ class _ActiveOrderTrackingWidgetState extends State<ActiveOrderTrackingWidget> {
         ],
       ),
     );
-  }
-
-  List<Widget> _buildActionButtons() {
-    final String status = widget.activeOrder['status'] ?? 'assigned';
-    final String orderId = widget.activeOrder['order_id'] ?? '';
+  }  List<Widget> _buildActionButtons() {
+    final String status = widget.activeOrder['status']?.toString() ?? 'assigned';
+    final String orderId = widget.activeOrder['order_id']?.toString() ?? '';
 
     switch (status) {
+      case 'in_process':
+        return [
+          _buildActionButton(
+            icon: Icons.call,
+            label: 'Llamar',
+            color: Colors.blue,
+            onTap: () {
+              // Implementation for calling
+            },
+          ),
+          _buildActionButton(
+            icon: Icons.local_shipping,
+            label: 'Aceptar',
+            color: const Color(0xFFE60023),
+            onTap: () async {
+              await widget.controller.updateOrderStatus(orderId, 'on_way');
+              _updateCurrentStep();
+            },
+          ),
+        ];
       case 'assigned':
+      case 'pending':
+      case 'accepted':
         return [
           _buildActionButton(
             icon: Icons.call,
@@ -509,36 +541,16 @@ class _ActiveOrderTrackingWidgetState extends State<ActiveOrderTrackingWidget> {
             },
           ),
           _buildActionButton(
-            icon: Icons.check,
-            label: 'Recoger',
+            icon: Icons.local_shipping,
+            label: 'En Camino',
             color: const Color(0xFFE60023),
             onTap: () async {
-              await widget.controller.updateOrderStatus(orderId, 'picked_up');
+              await widget.controller.updateOrderStatus(orderId, 'on_way');
               _updateCurrentStep();
             },
           ),
         ];
-      case 'picked_up':
-        return [
-          _buildActionButton(
-            icon: Icons.call,
-            label: 'Llamar',
-            color: Colors.blue,
-            onTap: () {
-              // Implementation for calling
-            },
-          ),
-          _buildActionButton(
-            icon: Icons.delivery_dining,
-            label: 'En camino',
-            color: const Color(0xFFE60023),
-            onTap: () async {
-              await widget.controller.updateOrderStatus(orderId, 'on_the_way');
-              _updateCurrentStep();
-            },
-          ),
-        ];
-      case 'on_the_way':
+      case 'on_way':
         return [
           _buildActionButton(
             icon: Icons.call,
@@ -632,13 +644,17 @@ class _ActiveOrderTrackingWidgetState extends State<ActiveOrderTrackingWidget> {
       ),
     );
   }
-
   String _getStatusTitle() {
     switch (currentStep) {
       case 1:
-        return 'Pedido aceptado';
+        final status = widget.activeOrder['status']?.toString() ?? '';
+        if (status == 'in_process') {
+          return 'Disponible';
+        } else {
+          return 'Pedido aceptado';
+        }
       case 2:
-        return 'Recogiendo';
+        return 'En preparación';
       case 3:
         return 'En camino';
       case 4:
