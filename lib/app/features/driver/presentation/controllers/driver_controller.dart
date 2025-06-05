@@ -152,8 +152,7 @@ class DriverController extends ChangeNotifier {
       // APPROACH 1: Get orders through the view
       // This uses the current_driver_orders view to get more complete information
       final response = await _supabase
-          .from('current_driver_orders')
-          .select('*, customer:customer_id(*), merchant:merchant_id(*), delivery_address:delivery_address_id(*)')
+          .from('current_driver_orders')          .select('*, customer:customer_id(*), merchant:merchant_id(*), delivery_address:delivery_address_id(*)')
           .filter('status', 'in', ['pending', 'accepted', 'in_process', 'on_way']);
       
       _activeOrders = List<Map<String, dynamic>>.from(response);
@@ -538,8 +537,7 @@ class DriverController extends ChangeNotifier {
       );
       
       // Update local order status
-      final orderIndex = _activeOrders.indexWhere((order) => order['order_id'] == orderId);
-      if (orderIndex != -1) {
+      final orderIndex = _activeOrders.indexWhere((order) => order['order_id'] == orderId);      if (orderIndex != -1) {
         _activeOrders[orderIndex]['status'] = 'on_way';
         notifyListeners();
       }
@@ -646,9 +644,7 @@ class DriverController extends ChangeNotifier {
               //ignore: avoid_print
               print('Error updating assignment picked_up_at time: $e');
             }
-            break;
-            
-          case 'on_way':
+            break;          case 'on_way':
             // For on_way status, use a direct update for the order
             await _supabase
                 .from('order')
@@ -707,8 +703,7 @@ class DriverController extends ChangeNotifier {
           // If we get an enum error, try using numeric status codes instead
         Map<String, int> statusCodes = {
           'pending': 0,
-          // 'assigned' no longer exists in the enum, only using valid enum values
-          'accepted': 2,
+          // 'assigned' no longer exists in the enum, only using valid enum values          'accepted': 2,
           'in_process': 3,
           'on_way': 4,
           'delivered': 5,

@@ -71,20 +71,24 @@ class _ImprovedOrderTrackingWidgetState
     );
 
     _updateMarkers();
-  }
-
-  void _updateCurrentStep() {
-    final status = widget.activeOrder['status'];
+  }  void _updateCurrentStep() {
+    final status = widget.activeOrder['status']?.toString() ?? '';
 
     setState(() {
       switch (status) {
         case 'assigned':
           currentStep = 1;
           break;
-        case 'picked_up':
-          currentStep = 2;
+        case 'pending':
+          currentStep = 1;
           break;
-        case 'on_the_way':
+        case 'accepted':
+          currentStep = 1;
+          break;
+        case 'in_process':
+          currentStep = 1;
+          break;
+        case 'on_way':
           currentStep = 3;
           break;
         case 'delivered':
@@ -253,15 +257,33 @@ class _ImprovedOrderTrackingWidgetState
         ),
       ),
     );
+  }  String _getCustomerAddress() {
+    // Extract delivery address with safe type handling
+    final dynamic deliveryAddressData = widget.activeOrder['delivery_address'];
+    
+    if (deliveryAddressData is Map) {
+      // If it's a map, try to get the address field or street field
+      return deliveryAddressData['address']?.toString() ?? 
+             deliveryAddressData['street']?.toString() ??
+             'Dirección de entrega';
+    } else if (deliveryAddressData is String) {
+      // If it's already a string
+      return deliveryAddressData;
+    } else {
+      // Default fallback
+      return 'Dirección de entrega';
+    }
   }
 
   Widget _buildDriverInfoPanel() {
     final driverData = widget.controller.currentDriverData;
     final String driverName =
-        "${driverData?['first_name'] ?? ''} ${driverData?['last_name1'] ?? ''}";
-    final String address =
-        widget.activeOrder['merchant']?['address'] ??
-        '25 mts del Liceo de Nicoya';
+        "${driverData?['first_name']?.toString() ?? ''} ${driverData?['last_name1']?.toString() ?? ''}";    
+      // Get customer address using safe extraction
+    final String customerAddress = _getCustomerAddress();
+    
+    // We no longer need the merchant address for this panel
+    // as we're using the customer address instead
 
     return Container(
       margin: const EdgeInsets.all(16),
@@ -349,9 +371,8 @@ class _ImprovedOrderTrackingWidgetState
                     ),
                   ],
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  address,
+                const SizedBox(height: 4),                Text(
+                  customerAddress,
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -385,7 +406,6 @@ class _ImprovedOrderTrackingWidgetState
       ),
     );
   }
-
   Widget _buildBackButton() {
     return GestureDetector(
       onTap: () {

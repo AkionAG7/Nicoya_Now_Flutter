@@ -804,11 +804,10 @@ class HomeDriverPageState extends State<HomeDriverPage>
                 context,
                 listen: false,
               );
-              await controller.updateOrderStatus(orderId, 'delivered');
-            },
+              await controller.updateOrderStatus(orderId, 'delivered');            },
           ),
         ];
-      case 'on_the_way':
+      case 'on_way':
         return [
           ElevatedButton.icon(
             icon: Icon(Icons.navigation),
@@ -878,8 +877,7 @@ class HomeDriverPageState extends State<HomeDriverPage>
       case 'assigned':
         return 'Asignado';
       case 'picked_up':
-        return 'Recogido';
-      case 'on_the_way':
+        return 'Recogido';      case 'on_way':
         return 'En camino';
       case 'delivered':
         return 'Entregado';
@@ -891,10 +889,9 @@ class HomeDriverPageState extends State<HomeDriverPage>
   Color _getStatusColor(String status) {
     switch (status) {
       case 'assigned':
-        return Colors.orange;
-      case 'picked_up':
+        return Colors.orange;      case 'picked_up':
         return Colors.blue;
-      case 'on_the_way':
+      case 'on_way':
         return Colors.purple;
       case 'delivered':
         return Colors.green;

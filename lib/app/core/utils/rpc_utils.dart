@@ -116,4 +116,29 @@ class RpcUtils {
       return null;
     }
   }
+  
+  /// Verifica si un pedido debe mostrarse como "in_process" basado en su estado y asignaciones
+  /// 
+  /// [order]: Los datos del pedido a verificar
+  /// [driverId]: El ID del conductor actual
+  /// 
+  /// Retorna true si el pedido debe tratarse como "in_process", false en caso contrario
+  static bool shouldShowAsInProcess(Map<String, dynamic> order, String driverId) {
+    // Si ya está en in_process, retornar true
+    if (order['status'] == 'in_process') {
+      return true;
+    }
+    
+    // Si está pendiente y tiene una asignación para este conductor, retornar true
+    if (order['status'] == 'pending') {
+      // Verificar si hay una asignación directamente en el objeto
+      if (order['assigned_at'] != null && 
+          order['driver_id']?.toString() == driverId) {
+        return true;
+      }
+    }
+    
+    // En cualquier otro caso, retornar false
+    return false;
+  }
 }

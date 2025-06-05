@@ -39,12 +39,16 @@ class HomeTabWidgetState extends State<HomeTabWidget> {
 
     setState(() {
       _isLoadingAvailableOrders = true;
-    });
-
-    try {
+    });    try {
       final availableOrders = await widget.controller.fetchAvailableOrders();
+      
+      // Filtrar explícitamente para solo mostrar pedidos con estado 'in_process'
+      final filteredOrders = availableOrders.where((order) => 
+        order['status'] == 'in_process'
+      ).toList();
+      
       setState(() {
-        _availableOrders = availableOrders;
+        _availableOrders = filteredOrders;
         _isLoadingAvailableOrders = false;
       });
     } catch (e) {
@@ -114,21 +118,18 @@ class HomeTabWidgetState extends State<HomeTabWidget> {
       inProgressOrders =
           widget.controller.activeOrders.where((order) {
             try {
-              final status = order['status']?.toString() ?? '';
-
-              // Include orders with these statuses
+              final status = order['status']?.toString() ?? '';              // Include orders with these statuses
               bool isActiveStatus =
                   status == 'in_process' ||
                   status == 'accepted' ||
                   status == 'on_way';
 
-              // Also include pending orders that have assignments
+              // Include pending orders that have assignments - but they should be visible as "in_process" not as "pending"
               bool isPendingWithAssignment =
                   status == 'pending' && order['assigned_at'] != null;
 
-              return isActiveStatus ||
-                  isPendingWithAssignment ||
-                  status == 'pending';
+              // Only include in_process, accepted, on_way status, and pending with assignments
+              return isActiveStatus || isPendingWithAssignment;
             } catch (e) {
               //ignore: avoid_print
               print('Error processing order: $e');
