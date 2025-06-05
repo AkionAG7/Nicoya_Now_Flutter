@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:nicoya_now/app/features/driver/presentation/controllers/driver_controller.dart';
@@ -29,12 +30,15 @@ class _ImprovedOrderTrackingWidgetState
   late LatLng _driverLocation;
   late LatLng _merchantLocation;
   late LatLng _customerLocation;
-
   @override
   void initState() {
     super.initState();
     _initLocations();
     _updateCurrentStep();
+    
+    // Registro para ayudar a la depuración
+    print('ImprovedOrderTrackingWidget inicializado con pedido: ${widget.activeOrder['order_id']}');
+    print('Estado del pedido: ${widget.activeOrder['status']}');
   }
 
   @override
@@ -73,6 +77,8 @@ class _ImprovedOrderTrackingWidgetState
     _updateMarkers();
   }  void _updateCurrentStep() {
     final status = widget.activeOrder['status']?.toString() ?? '';
+    
+    print('Actualizando paso de seguimiento basado en status: $status');
 
     setState(() {
       switch (status) {
@@ -96,6 +102,7 @@ class _ImprovedOrderTrackingWidgetState
           break;
         default:
           currentStep = 1;
+          print('Estado no reconocido: $status, configurando paso 1');
       }
     });
   }
@@ -179,9 +186,7 @@ class _ImprovedOrderTrackingWidgetState
           left: 20,
           right: 20,
           child: _buildStatusPanel(timeRange),
-        ),
-
-        // Bottom driver info panel - similar to the image
+        ),        // Bottom driver info panel - similar to the image
         Positioned(
           bottom: 0,
           left: 0,
@@ -191,6 +196,22 @@ class _ImprovedOrderTrackingWidgetState
 
         // Back button
         Positioned(top: 20, left: 16, child: _buildBackButton()),
+        
+        // Action buttons for order tracking
+        Positioned(
+          bottom: 80,
+          left: 0,
+          right: 0,
+          child: _buildActionButtons(),
+        ),
+
+        // Action buttons for order tracking
+        Positioned(
+          bottom: 80,
+          left: 0,
+          right: 0,
+          child: _buildActionButtons(),
+        ),
       ],
     );
   }
@@ -432,5 +453,97 @@ class _ImprovedOrderTrackingWidgetState
         ),
       ),
     );
+  }  Widget _buildActionButtons() {
+    final String status = widget.activeOrder['status']?.toString() ?? '';
+    final String orderId = widget.activeOrder['order_id']?.toString() ?? '';
+
+    if (status == 'on_way') {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        margin: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              spreadRadius: 1,
+              blurRadius: 10,
+              offset: const Offset(0, 1),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ElevatedButton.icon(
+              icon: const Icon(Icons.check_circle),
+              label: const Text('Marcar como entregado'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFE60023),
+                foregroundColor: Colors.white,
+                minimumSize: const Size.fromHeight(50),
+              ),
+              onPressed: () async {
+                // Mostrar diálogo de confirmación
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Confirmar entrega'),
+                    content: const Text('¿Has entregado este pedido al cliente?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text('Cancelar'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text('Confirmar'),
+                      ),
+                    ],
+                  ),
+                );                if (confirm == true) {
+                  try {
+                    // Marcar el pedido como entregado
+                    final success = await widget.controller.updateOrderStatus(orderId, 'delivered');
+                    
+                    if (success) {
+                      // Reload active orders to ensure UI is updated
+                      await widget.controller.loadActiveOrders();
+                      
+                      // Mostrar mensaje de éxito
+                      // ignore: use_build_context_synchronously
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('¡Pedido entregado correctamente!')),
+                      );
+                      
+                      // Volver a la pantalla principal después de un breve retraso
+                      Future.delayed(const Duration(seconds: 2), () {
+                        // ignore: use_build_context_synchronously
+                        Navigator.pop(context);
+                      });
+                    } else {
+                      // Show error message if update failed
+                      // ignore: use_build_context_synchronously
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Error al marcar el pedido como entregado')),
+                      );
+                    }
+                  } catch (e) {
+                    // Handle any exceptions
+                    // ignore: use_build_context_synchronously
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error: $e')),
+                    );
+                  }
+                }
+              },
+            ),
+          ],
+        ),
+      );
+    }
+    
+    return const SizedBox.shrink();
   }
 }

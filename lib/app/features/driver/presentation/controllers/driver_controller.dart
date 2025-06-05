@@ -148,12 +148,11 @@ class DriverController extends ChangeNotifier {
       }
       //ignore: avoid_print
       print('Loading active orders for driver: $userId');
-      
-      // APPROACH 1: Get orders through the view
+        // APPROACH 1: Get orders through the view
       // This uses the current_driver_orders view to get more complete information
       final response = await _supabase
           .from('current_driver_orders')          .select('*, customer:customer_id(*), merchant:merchant_id(*), delivery_address:delivery_address_id(*)')
-          .filter('status', 'in', ['pending', 'accepted', 'in_process', 'on_way']);
+          .filter('status', 'in', ['pending', 'accepted', 'in_process', 'on_way', 'delivered']);
       
       _activeOrders = List<Map<String, dynamic>>.from(response);
       //ignore: avoid_print
@@ -409,8 +408,7 @@ class DriverController extends ChangeNotifier {
       print('Error updating location: $e');
     }
   }
-  
-  /// Accept a new order
+  /// Accept a new order using the RPC function
   Future<bool> acceptOrder(String orderId) async {
     try {
       final userId = _supabase.auth.currentUser?.id;
@@ -419,28 +417,56 @@ class DriverController extends ChangeNotifier {
         _error = 'Usuario no autenticado';
         notifyListeners();
         return false;
-      }      // Update order status and assign driver
-      // Use 'pending' status as this is a valid status in the enum
-      // and create an entry in order_assignment table to track the assignment
-      await _supabase
-          .from('order')
-          .update({
-            'driver_id': userId,
-            'status': 'pending',
-            'driver_assigned_at': DateTime.now().toIso8601String(),
-          })
-          .eq('order_id', orderId);
+      }
       
-      // Create an order assignment record
-      final now = DateTime.now().toIso8601String();
-      await _supabase
-          .from('order_assignment')
-          .insert({
-            'order_id': orderId,
-            'driver_id': userId,
-            'assigned_at': now,
-          });
+      // Llamar a la función RPC para aceptar el pedido
+      // Esta función debería:
+      // 1. Insertar una fila en order_assignment
+      // 2. Actualizar el status del pedido a on_way
+      await _supabase.rpc(
+        'accept_order',
+        params: {
+          'p_driver_id': userId,
+          'p_order_id': orderId,
+        },
+      );
       
+      // Actualizar inmediatamente el estado en memoria
+      // Buscar si el pedido ya existe en la lista de pedidos activos
+      final existingOrderIndex = _activeOrders.indexWhere((order) => order['order_id'] == orderId);
+      
+      if (existingOrderIndex != -1) {
+        // Si el pedido ya está en la lista, actualizar su estado
+        _activeOrders[existingOrderIndex]['status'] = 'on_way';
+      } else {
+        // Si no existe, intentar obtener el pedido del servidor
+        try {
+          final orderData = await _supabase
+              .from('order')
+              .select('*, customer:customer_id(*), merchant:merchant_id(*), delivery_address:delivery_address_id(*)')
+              .eq('order_id', orderId)
+              .single();
+          
+          // Agregar el pedido a la lista con estado on_way
+          final Map<String, dynamic> newOrder = Map<String, dynamic>.from(orderData);
+          newOrder['status'] = 'on_way';
+          _activeOrders.add(newOrder);
+          
+          // Enrich with delivery coordinates
+          if (newOrder['delivery_address'] != null) {
+            newOrder['delivery_latitude'] = newOrder['delivery_address']['latitude'];
+            newOrder['delivery_longitude'] = newOrder['delivery_address']['longitude'];
+          }
+        } catch (fetchError) {
+          //ignore: avoid_print
+          print('Error fetching accepted order details: $fetchError');
+        }
+      }
+      
+      // Notificar a los widgets sobre el cambio
+      notifyListeners();
+      
+      // Recargar los pedidos activos para actualizar todos los datos desde el servidor
       await loadActiveOrders();
       return true;
     } catch (e) {
@@ -449,7 +475,8 @@ class DriverController extends ChangeNotifier {
       return false;
     }
   }
-    /// Fetch available orders (not assigned to any driver) using the new view
+  /// Fetch available orders (not assigned to any driver) using the new view
+  /// Only returns orders with status 'in_process'
   Future<List<Map<String, dynamic>>> fetchAvailableOrders() async {
     try {
       final userId = _supabase.auth.currentUser?.id;
@@ -461,6 +488,7 @@ class DriverController extends ChangeNotifier {
       }
       
       // Using the available_orders_view instead of the RPC function
+      // Esta vista debe devolver solo los pedidos con estado 'in_process' sin asignaciones
       final response = await _supabase
           .from('available_orders_view')
           .select();
@@ -597,9 +625,9 @@ class DriverController extends ChangeNotifier {
       }
       
       // Use the appropriate SQL function or direct update for each status
-      try {
-        switch (status) {
-          case 'accepted':            try {
+      try {        switch (status) {
+          case 'accepted':
+            try {
               // Skip problematic RPC and use direct SQL update instead
               // to avoid potential SQL errors related to missing columns
               await _supabase
@@ -609,14 +637,17 @@ class DriverController extends ChangeNotifier {
                     'updated_at': DateTime.now().toIso8601String(),
                   })
                   .eq('order_id', orderId);
+              
+              // Update the order in memory
+              _updateOrderInMemory(orderId, status);
+              
             } catch (error) {
               //ignore: avoid_print
               print('Error updating order status to accepted: $error');
               rethrow;
             }
             break;
-            
-          case 'in_process':
+              case 'in_process':
             // This status is used when the driver has picked up the order            // Skip problematic RPC calls that might reference non-existent columns
             // Use direct updates instead to avoid 'column role does not exist' errors
             try {
@@ -627,6 +658,9 @@ class DriverController extends ChangeNotifier {
                     'updated_at': DateTime.now().toIso8601String(),
                   })
                   .eq('order_id', orderId);
+              
+              // Update the order in memory
+              _updateOrderInMemory(orderId, status);
             } catch (error) {
               //ignore: avoid_print
               print('Error updating order status to in_process: $error');
@@ -653,9 +687,11 @@ class DriverController extends ChangeNotifier {
                   'updated_at': DateTime.now().toIso8601String(),
                 })
                 .eq('order_id', orderId);
-            break;
             
-          case 'delivered':            // Skip problematic RPC calls to avoid column errors
+            // Update the order in memory
+            _updateOrderInMemory(orderId, status);
+            break;
+              case 'delivered':            // Skip problematic RPC calls to avoid column errors
             // Use direct SQL updates instead
             try {
               await _supabase
@@ -666,6 +702,9 @@ class DriverController extends ChangeNotifier {
                     'delivered_at': DateTime.now().toIso8601String(), 
                   })
                   .eq('order_id', orderId);
+              
+              // Update the order in memory
+              _updateOrderInMemory(orderId, status);
             } catch (error) {
               //ignore: avoid_print
               print('Error updating order status to delivered: $error');
@@ -683,9 +722,7 @@ class DriverController extends ChangeNotifier {
               //ignore: avoid_print
               print('Error updating assignment delivered_at time: $e');
             }
-            break;
-            
-          default:
+            break;          default:
             // Fallback to the old method for any other status
             await _supabase
                 .from('order')
@@ -694,6 +731,9 @@ class DriverController extends ChangeNotifier {
                   'updated_at': DateTime.now().toIso8601String(),
                 })
                 .eq('order_id', orderId);
+            
+            // Update the order in memory
+            _updateOrderInMemory(orderId, status);
         }
       } catch (statusUpdateError) {
         //ignore: avoid_print
@@ -1306,6 +1346,76 @@ class DriverController extends ChangeNotifier {
     } catch (e) {
       //ignore: avoid_print
       print('❌ ERROR IN DEBUG SPECIFIC ORDER: $e');
+    }
+  }
+  
+  /// Fetch my deliveries (orders on_way or delivered)
+  Future<List<Map<String, dynamic>>> fetchMyDeliveries() async {
+    try {
+      final userId = _supabase.auth.currentUser?.id;
+      
+      if (userId == null) {
+        _error = 'Usuario no autenticado';
+        notifyListeners();
+        return [];
+      }
+      
+      // Using current_driver_orders view to get driver's assigned orders
+      final response = await _supabase
+          .from('current_driver_orders')
+          .select();
+      
+      // Return the list of active deliveries
+      final List<Map<String, dynamic>> orders = List<Map<String, dynamic>>.from(response);
+      
+      // Log for debugging
+      //ignore: avoid_print
+      print('Fetched ${orders.length} my delivery orders');
+      
+      return orders;
+    } catch (e) {
+      _error = 'Error al obtener mis pedidos: $e';
+      notifyListeners();
+      return [];
+    }
+  }
+  
+  /// Configura suscripciones Realtime para actualizar la lista cuando otro conductor toma un pedido
+  void setupRealtimeSubscriptions() {
+    final userId = _supabase.auth.currentUser?.id;
+    if (userId == null) return;
+    
+    // Suscribirse a cambios en la tabla order_assignment
+    _supabase.channel('public:order_assignment')
+      .onPostgresChanges(
+        event: PostgresChangeEvent.insert,
+        schema: 'public',
+        table: 'order_assignment',
+        callback: (_) async {
+          // Refrescar las listas cuando alguien toma un pedido
+          await loadActiveOrders();
+          notifyListeners();
+        }
+      )
+      .subscribe();
+  }
+  
+  /// Helper method to update an order's status in memory
+  void _updateOrderInMemory(String orderId, String status) {
+    // Find the order in the active orders list
+    final orderIndex = _activeOrders.indexWhere((order) => order['order_id'] == orderId);
+    
+    if (orderIndex != -1) {
+      // Update the status in memory
+      _activeOrders[orderIndex]['status'] = status;
+      
+      // If the status is delivered, also update the delivered_at timestamp
+      if (status == 'delivered') {
+        _activeOrders[orderIndex]['delivered_at'] = DateTime.now().toIso8601String();
+      }
+      
+      // Notify listeners of the change
+      notifyListeners();
     }
   }
 }
