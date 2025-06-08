@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:nicoya_now/app/features/driver/presentation/controllers/driver_controller.dart';
+import 'package:nicoya_now/app/features/driver/data/driver_order_service.dart';
 
 class ImprovedOrderTrackingWidget extends StatefulWidget {
   final DriverController controller;
@@ -29,10 +29,15 @@ class _ImprovedOrderTrackingWidgetState
   // Initial locations
   late LatLng _driverLocation;
   late LatLng _merchantLocation;
-  late LatLng _customerLocation;
-  @override
+  late LatLng _customerLocation;  @override
   void initState() {
     super.initState();
+    
+    // Asserts for debugging
+    assert(widget.activeOrder['merchant'] is Map<String, dynamic>, 'Merchant debe ser un Map<String, dynamic>');
+    assert(widget.activeOrder['customer'] is Map<String, dynamic>, 'Customer debe ser un Map<String, dynamic>');
+    assert(widget.activeOrder['delivery_address'] != null, 'Delivery address no debe ser null');
+    
     _initLocations();
     _updateCurrentStep();
     
@@ -128,10 +133,9 @@ class _ImprovedOrderTrackingWidgetState
           position: _merchantLocation,
           icon: BitmapDescriptor.defaultMarkerWithHue(
             BitmapDescriptor.hueGreen,
-          ),
-          infoWindow: InfoWindow(
+          ),          infoWindow: InfoWindow(
             title:
-                widget.activeOrder['merchant']?['business_name'] ?? 'Comercio',
+                widget.activeOrder['merchant']?['business_name']?.toString() ?? 'Comercio',
           ),
         ),
       );
@@ -141,9 +145,8 @@ class _ImprovedOrderTrackingWidgetState
         Marker(
           markerId: const MarkerId('customer'),
           position: _customerLocation,
-          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-          infoWindow: InfoWindow(
-            title: widget.activeOrder['customer']?['name'] ?? 'Cliente',
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),          infoWindow: InfoWindow(
+            title: widget.activeOrder['customer']?['name']?.toString() ?? 'Cliente',
           ),
         ),
       );
@@ -186,32 +189,18 @@ class _ImprovedOrderTrackingWidgetState
           left: 20,
           right: 20,
           child: _buildStatusPanel(timeRange),
-        ),        // Bottom driver info panel - similar to the image
+        ),
+        
+        // Bottom driver info panel with draggable functionality
         Positioned(
           bottom: 0,
           left: 0,
           right: 0,
-          child: _buildDriverInfoPanel(),
+          child: _buildDraggableInfoPanel(),
         ),
 
         // Back button
         Positioned(top: 20, left: 16, child: _buildBackButton()),
-        
-        // Action buttons for order tracking
-        Positioned(
-          bottom: 80,
-          left: 0,
-          right: 0,
-          child: _buildActionButtons(),
-        ),
-
-        // Action buttons for order tracking
-        Positioned(
-          bottom: 80,
-          left: 0,
-          right: 0,
-          child: _buildActionButtons(),
-        ),
       ],
     );
   }
@@ -296,137 +285,6 @@ class _ImprovedOrderTrackingWidgetState
     }
   }
 
-  Widget _buildDriverInfoPanel() {
-    final driverData = widget.controller.currentDriverData;
-    final String driverName =
-        "${driverData?['first_name']?.toString() ?? ''} ${driverData?['last_name1']?.toString() ?? ''}";    
-      // Get customer address using safe extraction
-    final String customerAddress = _getCustomerAddress();
-    
-    // We no longer need the merchant address for this panel
-    // as we're using the customer address instead
-
-    return Container(
-      margin: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(77),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Driver info header with red background
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: const BoxDecoration(
-              color: Color(0xFFE60023),
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(20),
-                topRight: Radius.circular(20),
-              ),
-            ),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 22,
-                  backgroundColor: Colors.white,
-                  child: const Icon(
-                    Icons.person,
-                    color: Color(0xFFE60023),
-                    size: 28,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      driverName,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                    const Text(
-                      "Repartidor",
-                      style: TextStyle(color: Colors.white, fontSize: 12),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
-          // White part with address and preparation status
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(20),
-                bottomRight: Radius.circular(20),
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Address section
-                Row(
-                  children: const [
-                    Icon(
-                      Icons.location_on_outlined,
-                      size: 16,
-                      color: Colors.grey,
-                    ),
-                    SizedBox(width: 6),
-                    Text(
-                      "Address",
-                      style: TextStyle(fontSize: 12, color: Colors.grey),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),                Text(
-                  customerAddress,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const Divider(height: 20),
-
-                // Preparation status
-                Row(
-                  children: const [
-                    Icon(Icons.access_time, size: 16, color: Colors.grey),
-                    SizedBox(width: 6),
-                    Text(
-                      "Preparando",
-                      style: TextStyle(fontSize: 12, color: Colors.grey),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  "30 Mins",
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
   Widget _buildBackButton() {
     return GestureDetector(
       onTap: () {
@@ -502,38 +360,52 @@ class _ImprovedOrderTrackingWidgetState
                       ),
                     ],
                   ),
-                );                if (confirm == true) {
+                );
+                  if (confirm == true) {
                   try {
-                    // Marcar el pedido como entregado
-                    final success = await widget.controller.updateOrderStatus(orderId, 'delivered');
+                    // Import the service at the top of the file
+                    // import 'package:nicoya_now/app/features/driver/data/driver_order_service.dart';
                     
-                    if (success) {
-                      // Reload active orders to ensure UI is updated
-                      await widget.controller.loadActiveOrders();
-                      
-                      // Mostrar mensaje de éxito
-                      // ignore: use_build_context_synchronously
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('¡Pedido entregado correctamente!')),
-                      );
-                      
-                      // Volver a la pantalla principal después de un breve retraso
-                      Future.delayed(const Duration(seconds: 2), () {
-                        // ignore: use_build_context_synchronously
-                        Navigator.pop(context);
-                      });
-                    } else {
-                      // Show error message if update failed
-                      // ignore: use_build_context_synchronously
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Error al marcar el pedido como entregado')),
-                      );
-                    }
-                  } catch (e) {
-                    // Handle any exceptions
+                    // Mostrar indicador de carga
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Actualizando estado del pedido...'),
+                        duration: Duration(seconds: 1),
+                      ),
+                    );
+                    
+                    // Usar el nuevo método markDelivered
+                    await DriverOrderService.markDelivered(orderId);
+                    
+                    // Reload active orders to ensure UI is updated
+                    await widget.controller.loadActiveOrders();
+                    
+                    // Actualizar estado local
+                    _updateCurrentStep();
+                    
+                    // Mostrar mensaje de éxito
                     // ignore: use_build_context_synchronously
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error: $e')),
+                      const SnackBar(
+                        content: Text('¡Pedido entregado correctamente!'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                    
+                    // Volver a la pantalla principal después de un breve retraso
+                    Future.delayed(const Duration(seconds: 2), () {
+                      // ignore: use_build_context_synchronously
+                      Navigator.pop(context);
+                    });
+                  } catch (e, s) {
+                    // Handle any exceptions with more details
+                    debugPrint('Error markDelivered → $e\n$s');
+                    // ignore: use_build_context_synchronously
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Error al marcar el pedido como entregado'),
+                        backgroundColor: Colors.red,
+                      ),
                     );
                   }
                 }
@@ -545,5 +417,177 @@ class _ImprovedOrderTrackingWidgetState
     }
     
     return const SizedBox.shrink();
+  }
+
+  Widget _buildDraggableInfoPanel() {
+    final driverData = widget.controller.currentDriverData;
+    
+    // Extract merchant and customer names properly
+    final String merchantName = widget.activeOrder['merchant']?['business_name']?.toString() ?? 'Comercio';
+    final String customerName = widget.activeOrder['customer']?['name']?.toString() ?? 'Cliente';
+    
+    // Get customer address using safe extraction
+    final String customerAddress = _getCustomerAddress();
+    
+    // Format driver name
+    final String driverName = "${driverData?['first_name']?.toString() ?? ''} ${driverData?['last_name1']?.toString() ?? ''}";
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.35,
+      minChildSize: 0.25,
+      maxChildSize: 0.85,
+      builder: (_, controller) => Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(77),
+              blurRadius: 10,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: ListView(
+          controller: controller,
+          children: [
+            // Handle bar at top for drag indication
+            Center(
+              child: Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 8),
+                width: 40,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2.5),
+                ),
+              ),
+            ),
+            
+            // Driver info header with red background
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: const BoxDecoration(
+                color: Color(0xFFE60023),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 22,
+                    backgroundColor: Colors.white,
+                    child: const Icon(
+                      Icons.person,
+                      color: Color(0xFFE60023),
+                      size: 28,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        driverName,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const Text(
+                        "Repartidor",
+                        style: TextStyle(color: Colors.white, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            // Order details
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Merchant info
+                  Text(
+                    merchantName,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  
+                  // Customer info
+                  Text(
+                    '$customerName • $customerAddress',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  
+                  const Divider(height: 24),
+                  
+                  // Address section
+                  Row(
+                    children: const [
+                      Icon(
+                        Icons.location_on_outlined,
+                        size: 16,
+                        color: Colors.grey,
+                      ),
+                      SizedBox(width: 6),
+                      Text(
+                        "Dirección de entrega",
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    customerAddress,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Preparation status
+                  Row(
+                    children: const [
+                      Icon(Icons.access_time, size: 16, color: Colors.grey),
+                      SizedBox(width: 6),
+                      Text(
+                        "Tiempo estimado",
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    "30 Mins",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  
+                  // Add action buttons
+                  const SizedBox(height: 24),
+                  _buildActionButtons(),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

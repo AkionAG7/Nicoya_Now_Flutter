@@ -148,13 +148,27 @@ class DriverController extends ChangeNotifier {
       }
       //ignore: avoid_print
       print('Loading active orders for driver: $userId');
-        // APPROACH 1: Get orders through the view
+      
+      // APPROACH 1: Get orders through the view
       // This uses the current_driver_orders view to get more complete information
       final response = await _supabase
-          .from('current_driver_orders')          .select('*, customer:customer_id(*), merchant:merchant_id(*), delivery_address:delivery_address_id(*)')
-          .filter('status', 'in', ['pending', 'accepted', 'in_process', 'on_way', 'delivered']);
+          .from('current_driver_orders')
+          .select();      // la vista ya trae JSON anidado y filtra estados
       
-      _activeOrders = List<Map<String, dynamic>>.from(response);
+      // Process the response to ensure proper formatting for nested objects
+      final List<Map<String, dynamic>> processedOrders = [];
+      
+      for (var order in List<Map<String, dynamic>>.from(response)) {
+        // Process nested objects safely with proper field extraction
+        order['merchantName'] = order['merchant']?['business_name'] ?? 'Comercio';
+        order['customerName'] = order['customer']?['first_name'] ?? 'Cliente';
+        order['delivery_lat'] = order['delivery_address']?['lat'];
+        order['delivery_lng'] = order['delivery_address']?['lng'];
+        
+        processedOrders.add(order);
+      }
+      
+      _activeOrders = processedOrders;
       //ignore: avoid_print
       print('Orders from current_driver_orders view: ${_activeOrders.length}');
       

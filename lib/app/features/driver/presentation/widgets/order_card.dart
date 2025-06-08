@@ -8,15 +8,12 @@ import 'package:nicoya_now/app/features/driver/presentation/utilities/status_for
 class OrderCard extends StatelessWidget {
   final Map<String, dynamic> order;
 
-  const OrderCard({super.key, required this.order});
-
-  @override
+  const OrderCard({super.key, required this.order});  @override
   Widget build(BuildContext context) {
     final String orderId = order['order_id'] ?? '';
     final String status = order['status'] ?? '';
-    final String customerName = order['customer']?['name'] ?? 'Cliente';
-    final String merchantName =
-        order['merchant']?['business_name'] ?? 'Comercio';
+    final String customerName = order['customerName'] ?? 'Cliente';
+    final String merchantName = order['merchantName'] ?? 'Comercio';
     final String deliveryAddress =
         order['delivery_address'] ?? 'Dirección de entrega';
     final String pickupAddress =
