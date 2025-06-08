@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:nicoya_now/app/features/driver/data/driver_order_service.dart';
 
 enum DriverState {
   initial,
@@ -704,39 +705,20 @@ class DriverController extends ChangeNotifier {
             
             // Update the order in memory
             _updateOrderInMemory(orderId, status);
-            break;
-              case 'delivered':            // Skip problematic RPC calls to avoid column errors
-            // Use direct SQL updates instead
+            break;            case 'delivered':
+            // Use the dedicated method from DriverOrderService for delivered status
             try {
-              await _supabase
-                  .from('order')
-                  .update({
-                    'status': status,
-                    'updated_at': DateTime.now().toIso8601String(),
-                    'delivered_at': DateTime.now().toIso8601String(), 
-                  })
-                  .eq('order_id', orderId);
+              // Use the DriverOrderService instead of calling the RPC directly
+              await DriverOrderService.markDelivered(orderId);
               
               // Update the order in memory
               _updateOrderInMemory(orderId, status);
             } catch (error) {
               //ignore: avoid_print
-              print('Error updating order status to delivered: $error');
+              print('Error marking order as delivered: $error');
               rethrow;
             }
-            
-            // Try to update assignment record with delivery timestamp
-            try {
-              await _supabase
-                  .from('order_assignment')
-                  .update({'delivered_at': DateTime.now().toIso8601String()})
-                  .eq('order_id', orderId)
-                  .eq('driver_id', userId);
-            } catch (e) {
-              //ignore: avoid_print
-              print('Error updating assignment delivered_at time: $e');
-            }
-            break;          default:
+            break;default:
             // Fallback to the old method for any other status
             await _supabase
                 .from('order')

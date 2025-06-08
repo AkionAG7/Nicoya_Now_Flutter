@@ -6,6 +6,7 @@ import 'package:nicoya_now/app/features/ubication/delivery_tracking/ubication_co
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 import 'package:nicoya_now/Icons/nicoya_now_icons_icons.dart';
 import 'package:nicoya_now/app/features/driver/presentation/widgets/active_order_tracking.dart';
+import 'package:nicoya_now/app/features/driver/data/driver_order_service.dart';
 
 class HomeDriverPage extends StatefulWidget {
   const HomeDriverPage({super.key});
@@ -799,12 +800,28 @@ class HomeDriverPageState extends State<HomeDriverPage>
               backgroundColor: const Color(0xFFE60023),
               foregroundColor: Colors.white,
             ),
-            onPressed: () async {
-              final controller = Provider.of<DriverController>(
-                context,
-                listen: false,
-              );
-              await controller.updateOrderStatus(orderId, 'delivered');            },
+            onPressed: () async {              try {
+                // Use DriverOrderService to mark the order as delivered
+                await DriverOrderService.markDelivered(orderId);
+                
+                // Load active orders to refresh the UI
+                final controller = Provider.of<DriverController>(context, listen: false);
+                await controller.loadActiveOrders();
+                
+                // Show success message
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Pedido entregado correctamente')),
+                );
+              } catch (e) {
+                debugPrint('Error al marcar como entregado: $e');
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Error al marcar como entregado'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
           ),
         ];
       case 'on_way':
