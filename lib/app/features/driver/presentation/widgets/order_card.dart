@@ -10,19 +10,24 @@ class OrderCard extends StatelessWidget {
   final Map<String, dynamic> order;
 
   const OrderCard({super.key, required this.order});  
-
   @override
   Widget build(BuildContext context) {    
     final String orderId = order['order_id'] ?? '';
     final String status = order['status'] ?? '';
     final String customerName = order['customerName'] ?? 'Cliente';
     final String merchantName = order['merchantName'] ?? 'Comercio';
+    
+    // Dirección de entrega
     final String deliveryStreet = order['delivery_address']?['street'] ?? '';
     final String deliveryCity = order['delivery_address']?['district'] ?? '';
     final String deliveryAddress = '$deliveryStreet $deliveryCity'.trim().isEmpty
         ? 'Dirección de entrega' : '$deliveryStreet $deliveryCity';
-    final String pickupAddress =
-        order['merchant']?['address'] ?? 'Dirección de recogida';
+    
+    // Dirección del comercio
+    final String merchantStreet = order['merchant']?['street'] ?? '';
+    final String merchantDistrict = order['merchant']?['district'] ?? '';
+    final String pickupAddress = ('$merchantStreet $merchantDistrict').trim().isEmpty
+        ? 'Dirección no disponible' : '$merchantStreet $merchantDistrict';
 
     return Card(
       elevation: 4,

@@ -158,13 +158,28 @@ class DriverController extends ChangeNotifier {
       
       // Process the response to ensure proper formatting for nested objects
       final List<Map<String, dynamic>> processedOrders = [];
-      
-      for (var order in List<Map<String, dynamic>>.from(response)) {
+        for (var order in List<Map<String, dynamic>>.from(response)) {
         // Process nested objects safely with proper field extraction
         order['merchantName'] = order['merchant']?['business_name'] ?? 'Comercio';
         order['customerName'] = order['customer']?['first_name'] ?? 'Cliente';
+        
+        // Add delivery coordinates
         order['delivery_lat'] = order['delivery_address']?['lat'];
         order['delivery_lng'] = order['delivery_address']?['lng'];
+        
+        // Add merchant coordinates for maps
+        order['merchant_lat'] = order['merchant']?['lat'];
+        order['merchant_lng'] = order['merchant']?['lng'];
+        
+        // Asegurarse de que merchant_address está disponible para el UI
+        order['merchant_address'] = {
+          'street': order['merchant']?['street'] ?? '',
+          'district': order['merchant']?['district'] ?? '',
+        };
+        
+        // Log for debugging
+        //ignore: avoid_print
+        print('Merchant address: Street: ${order["merchant"]?["street"]}, District: ${order["merchant"]?["district"]}');
         
         processedOrders.add(order);
       }

@@ -61,15 +61,13 @@ class _ImprovedOrderTrackingWidgetState
     _driverLocation = LatLng(
       double.parse(driverData?['current_latitude']?.toString() ?? '10.15749'),
       double.parse(driverData?['current_longitude']?.toString() ?? '-85.44926'),
-    );
-
-    // Merchant location
+    );    // Merchant location
     _merchantLocation = LatLng(
       double.parse(
-        orderData['merchant']?['latitude']?.toString() ?? '10.14353',
+        orderData['merchant']?['lat']?.toString() ?? '10.14353',
       ),
       double.parse(
-        orderData['merchant']?['longitude']?.toString() ?? '-85.45195',
+        orderData['merchant']?['lng']?.toString() ?? '-85.45195',
       ),
     );
 
@@ -512,13 +510,20 @@ class _ImprovedOrderTrackingWidgetState
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Merchant info
+                children: [                  // Merchant info
                   Text(
                     merchantName,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
+                    ),
+                  ),
+                  // Show merchant address
+                  Text(
+                    "${widget.activeOrder['merchant']?['street'] ?? ''} ${widget.activeOrder['merchant']?['district'] ?? ''}",
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey,
                     ),
                   ),
                   const SizedBox(height: 8),

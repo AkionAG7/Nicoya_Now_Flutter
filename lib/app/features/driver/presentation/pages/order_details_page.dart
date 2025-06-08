@@ -22,15 +22,21 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final String status = order['status'] ?? '';
+  Widget build(BuildContext context) {    final String status = order['status'] ?? '';
     final customer = order['customer'] ?? {};
     final merchant = order['merchant'] ?? {};
     final items = order['items'] ?? [];
 
     // Format pickup and delivery address
-    final pickupAddress = merchant['address'] ?? 'Dirección no disponible';
-    final deliveryAddress = customer['address'] ?? 'Dirección no disponible';
+    final merchantStreet = merchant['street'] ?? '';
+    final merchantDistrict = merchant['district'] ?? '';
+    final pickupAddress = ('$merchantStreet $merchantDistrict').trim().isEmpty
+        ? 'Dirección no disponible' : '$merchantStreet $merchantDistrict';
+        
+    // Dirección de entrega
+    final deliveryAddress = order['delivery_address']?['street'] != null 
+        ? '${order['delivery_address']['street']}, ${order['delivery_address']['district'] ?? ''}'
+        : 'Dirección no disponible';
 
     return Scaffold(
       appBar: AppBar(

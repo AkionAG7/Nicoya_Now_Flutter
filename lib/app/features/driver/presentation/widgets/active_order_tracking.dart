@@ -50,7 +50,6 @@ class _ActiveOrderTrackingWidgetState extends State<ActiveOrderTrackingWidget> {
     _mapController?.dispose();
     super.dispose();
   }
-
   void _initLocations() {
     // In a real app, these would come from your database or location service
     final driverData = widget.controller.currentDriverData;
@@ -64,14 +63,14 @@ class _ActiveOrderTrackingWidgetState extends State<ActiveOrderTrackingWidget> {
 
     // Merchant location (from database)
     _merchantLocation = LatLng(
-      orderData['merchant']?['latitude'] ?? 10.14353,
-      orderData['merchant']?['longitude'] ?? -85.45195,
+      orderData['merchant']?['lat'] ?? 10.14353,
+      orderData['merchant']?['lng'] ?? -85.45195,
     );
 
     // Customer location (delivery address)
     _customerLocation = LatLng(
-      orderData['delivery_lat'] ?? 10.13978,
-      orderData['delivery_lng'] ?? -85.44389,
+      orderData['delivery_address']?['lat'] ?? 10.13978,
+      orderData['delivery_address']?['lng'] ?? -85.44389,
     );
 
     _updateMarkers();
@@ -449,8 +448,7 @@ class _ActiveOrderTrackingWidgetState extends State<ActiveOrderTrackingWidget> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
+                            crossAxisAlignment: CrossAxisAlignment.start,                            children: [
                               const Text(
                                 "Recoger en",
                                 style: TextStyle(color: Colors.grey, fontSize: 12),
@@ -460,6 +458,14 @@ class _ActiveOrderTrackingWidgetState extends State<ActiveOrderTrackingWidget> {
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,
+                                ),
+                              ),
+                              // Mostrar la dirección del comercio
+                              Text(
+                                "${widget.activeOrder['merchant']?['street'] ?? ''} ${widget.activeOrder['merchant']?['district'] ?? ''}",
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey,
                                 ),
                               ),
                             ],
