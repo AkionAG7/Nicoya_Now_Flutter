@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:nicoya_now/app/features/driver/presentation/controllers/driver_controller.dart';
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 import 'package:nicoya_now/app/features/driver/presentation/utilities/status_formatter.dart';
+import 'package:nicoya_now/app/features/driver/presentation/utilities/amount_formatter.dart';
 
 class AssignedOrderCard extends StatelessWidget {
   final Map<String, dynamic> order;
@@ -13,11 +14,9 @@ class AssignedOrderCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final String orderId = order['order_id'] ?? '';
+  Widget build(BuildContext context) {    final String orderId = order['order_id'] ?? '';
     final String merchantName = order['merchant']?['business_name'] ?? 'Comercio';
     final String customerName = order['customer']?['name'] ?? 'Cliente';
-    final double orderTotal = order['total'] != null ? double.parse(order['total'].toString()) : 0.0;
     
     return Card(
       margin: EdgeInsets.symmetric(vertical: 8.0),
@@ -35,9 +34,8 @@ class AssignedOrderCard extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
-                ),
-                Text(
-                  '₡${orderTotal.toStringAsFixed(2)}',
+                ),                Text(
+                  AmountFormatter.formatTotal(order),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: Color(0xFFE60023),

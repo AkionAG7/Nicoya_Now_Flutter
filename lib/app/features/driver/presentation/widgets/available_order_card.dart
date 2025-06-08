@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
+import 'package:nicoya_now/app/features/driver/presentation/utilities/amount_formatter.dart';
 
 class AvailableOrderCard extends StatelessWidget {
   final Map<String, dynamic> order;
@@ -14,12 +15,9 @@ class AvailableOrderCard extends StatelessWidget {
   Widget build(BuildContext context) {
     // Extract order information safely from the structure of available_orders_view
     final String orderId = order['order_id']?.toString() ?? 'Sin ID';
-    
-    // Merchant info
+      // Merchant info
     final merchant = order['merchant'];
     final String merchantName = merchant != null ? merchant['name']?.toString() ?? 'Comercio desconocido' : 'Comercio desconocido';
-    
-    final String total = order['total']?.toString() ?? '0';
     
     // Customer info
     final customer = order['customer'];
@@ -74,9 +72,8 @@ class AvailableOrderCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.green,
                     borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    '₡$total',
+                  ),                  child: Text(
+                    AmountFormatter.formatTotal(order),
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,

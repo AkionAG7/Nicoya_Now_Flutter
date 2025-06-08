@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:nicoya_now/app/features/driver/presentation/controllers/driver_controller.dart';
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
+import 'package:nicoya_now/app/features/driver/presentation/utilities/amount_formatter.dart';
 
 class OrderDetailsPage extends StatefulWidget {
   final Map<String, dynamic> order;
@@ -22,7 +23,8 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
   }
 
   @override
-  Widget build(BuildContext context) {    final String status = order['status'] ?? '';
+  Widget build(BuildContext context) {
+    final String status = order['status'] ?? '';
     final customer = order['customer'] ?? {};
     final merchant = order['merchant'] ?? {};
     final items = order['items'] ?? [];
@@ -31,10 +33,11 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
     final merchantStreet = merchant['street'] ?? '';
     final merchantDistrict = merchant['district'] ?? '';
     final pickupAddress = ('$merchantStreet $merchantDistrict').trim().isEmpty
-        ? 'Dirección no disponible' : '$merchantStreet $merchantDistrict';
-        
+        ? 'Dirección no disponible'
+        : '$merchantStreet $merchantDistrict';
+
     // Dirección de entrega
-    final deliveryAddress = order['delivery_address']?['street'] != null 
+    final deliveryAddress = order['delivery_address']?['street'] != null
         ? '${order['delivery_address']['street']}, ${order['delivery_address']['district'] ?? ''}'
         : 'Dirección no disponible';
 
@@ -100,9 +103,8 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                           ),
                           subtitle: Text(
                             'Ver detalles completos en la aplicación',
-                          ),
-                          trailing: Text(
-                            '₡${order['total_amount']?.toString() ?? '0'}',
+                          ),                          trailing: Text(
+                            AmountFormatter.formatTotal(order),
                           ),
                         ),
                       ] else ...[
@@ -124,9 +126,8 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                             const Text(
                               'Total',
                               style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              '₡${order['total_amount']?.toString() ?? '0'}',
+                            ),                            Text(
+                              AmountFormatter.formatTotal(order),
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                               ),
@@ -148,7 +149,9 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
         ),
       ),
     );
-  }  Widget _buildStatusCard(String status) {
+  }
+
+  Widget _buildStatusCard(String status) {
     Color statusColor;
     String statusText;
 
@@ -247,7 +250,9 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
         },
       ),
     );
-  }  Widget _buildActionButtons(String orderId, String status) {
+  }
+
+  Widget _buildActionButtons(String orderId, String status) {
     switch (status) {
       case 'in_process':
         return Row(
@@ -329,10 +334,12 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                   final controller = Provider.of<DriverController>(
                     context,
                     listen: false,
-                  );                  final success = await controller.updateOrderStatus(
+                  );
+                  final success = await controller.updateOrderStatus(
                     orderId,
                     'on_way',
-                  );                  if (success && mounted) {
+                  );
+                  if (success && mounted) {
                     setState(() {
                       order['status'] = 'on_way';
                     });
