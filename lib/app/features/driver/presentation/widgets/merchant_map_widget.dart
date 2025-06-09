@@ -66,10 +66,9 @@ class _MerchantMapWidgetState extends State<MerchantMapWidget> {
       } catch (e) {
          //ignore: avoid_print
         print('Error with first merchant query approach: $e');
-        
-        // Fallback option if the first query fails - try with a different schema
+          // Fallback option if the first query fails - try with a different schema
         try {
-          final responseFallback = await supabase
+          await supabase
               .from('merchant')
               .select('merchant_id, business_name')
               .eq('is_active', true);
@@ -133,8 +132,7 @@ class _MerchantMapWidgetState extends State<MerchantMapWidget> {
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
-      child: GoogleMap(
+      borderRadius: BorderRadius.circular(8),      child: GoogleMap(
         initialCameraPosition: CameraPosition(
           target: _centerLocation,
           zoom: 14,
@@ -143,6 +141,13 @@ class _MerchantMapWidgetState extends State<MerchantMapWidget> {
         myLocationEnabled: true,
         myLocationButtonEnabled: true,
         zoomControlsEnabled: true,
+        // Habilitar TODOS los gestos de mapa para movimiento libre
+        scrollGesturesEnabled: true,   // CRÍTICO: permite desplazamiento
+        zoomGesturesEnabled: true,     // Zoom con pellizco
+        tiltGesturesEnabled: true,     // Inclinar perspectiva
+        rotateGesturesEnabled: true,   // Rotar mapa
+        compassEnabled: true,          // Mostrar brújula
+        mapToolbarEnabled: true,       // Herramientas de navegación
         onMapCreated: (controller) {
           _mapController = controller;
         },

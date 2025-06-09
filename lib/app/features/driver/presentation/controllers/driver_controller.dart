@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:nicoya_now/app/features/driver/data/driver_order_service.dart';
 
 enum DriverState {
   initial,
@@ -148,13 +149,42 @@ class DriverController extends ChangeNotifier {
       }
       //ignore: avoid_print
       print('Loading active orders for driver: $userId');
-        // APPROACH 1: Get orders through the view
+      
+      // APPROACH 1: Get orders through the view
       // This uses the current_driver_orders view to get more complete information
       final response = await _supabase
-          .from('current_driver_orders')          .select('*, customer:customer_id(*), merchant:merchant_id(*), delivery_address:delivery_address_id(*)')
-          .filter('status', 'in', ['pending', 'accepted', 'in_process', 'on_way', 'delivered']);
+          .from('current_driver_orders')
+          .select();      // la vista ya trae JSON anidado y filtra estados
       
-      _activeOrders = List<Map<String, dynamic>>.from(response);
+      // Process the response to ensure proper formatting for nested objects
+      final List<Map<String, dynamic>> processedOrders = [];
+        for (var order in List<Map<String, dynamic>>.from(response)) {
+        // Process nested objects safely with proper field extraction
+        order['merchantName'] = order['merchant']?['business_name'] ?? 'Comercio';
+        order['customerName'] = order['customer']?['first_name'] ?? 'Cliente';
+        
+        // Add delivery coordinates
+        order['delivery_lat'] = order['delivery_address']?['lat'];
+        order['delivery_lng'] = order['delivery_address']?['lng'];
+        
+        // Add merchant coordinates for maps
+        order['merchant_lat'] = order['merchant']?['lat'];
+        order['merchant_lng'] = order['merchant']?['lng'];
+        
+        // Asegurarse de que merchant_address está disponible para el UI
+        order['merchant_address'] = {
+          'street': order['merchant']?['street'] ?? '',
+          'district': order['merchant']?['district'] ?? '',
+        };
+        
+        // Log for debugging
+        //ignore: avoid_print
+        print('Merchant address: Street: ${order["merchant"]?["street"]}, District: ${order["merchant"]?["district"]}');
+        
+        processedOrders.add(order);
+      }
+      
+      _activeOrders = processedOrders;
       //ignore: avoid_print
       print('Orders from current_driver_orders view: ${_activeOrders.length}');
       
@@ -690,39 +720,20 @@ class DriverController extends ChangeNotifier {
             
             // Update the order in memory
             _updateOrderInMemory(orderId, status);
-            break;
-              case 'delivered':            // Skip problematic RPC calls to avoid column errors
-            // Use direct SQL updates instead
+            break;            case 'delivered':
+            // Use the dedicated method from DriverOrderService for delivered status
             try {
-              await _supabase
-                  .from('order')
-                  .update({
-                    'status': status,
-                    'updated_at': DateTime.now().toIso8601String(),
-                    'delivered_at': DateTime.now().toIso8601String(), 
-                  })
-                  .eq('order_id', orderId);
+              // Use the DriverOrderService instead of calling the RPC directly
+              await DriverOrderService.markDelivered(orderId);
               
               // Update the order in memory
               _updateOrderInMemory(orderId, status);
             } catch (error) {
               //ignore: avoid_print
-              print('Error updating order status to delivered: $error');
+              print('Error marking order as delivered: $error');
               rethrow;
             }
-            
-            // Try to update assignment record with delivery timestamp
-            try {
-              await _supabase
-                  .from('order_assignment')
-                  .update({'delivered_at': DateTime.now().toIso8601String()})
-                  .eq('order_id', orderId)
-                  .eq('driver_id', userId);
-            } catch (e) {
-              //ignore: avoid_print
-              print('Error updating assignment delivered_at time: $e');
-            }
-            break;          default:
+            break;default:
             // Fallback to the old method for any other status
             await _supabase
                 .from('order')
