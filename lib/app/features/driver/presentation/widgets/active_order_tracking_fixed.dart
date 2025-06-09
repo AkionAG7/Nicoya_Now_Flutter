@@ -26,12 +26,14 @@ class _ActiveOrderTrackingWidgetState extends State<ActiveOrderTrackingWidget> {
   final Set<Polyline> _polylines = {};
   int currentStep = 1; // 1: Assigned, 2: Picked up, 3: On the way, 4: Delivered
   Timer? _timer;
+  bool _isUserInteracting = false;
+  bool _followDriverAutomatically = true;
+  Timer? _cameraUpdateTimer;
 
   // Initial locations
   late LatLng _driverLocation;
   late LatLng _merchantLocation;
   late LatLng _customerLocation;
-
   @override
   void initState() {
     super.initState();
@@ -42,11 +44,51 @@ class _ActiveOrderTrackingWidgetState extends State<ActiveOrderTrackingWidget> {
     _timer = Timer.periodic(const Duration(seconds: 15), (timer) {
       _advanceStep();
     });
+
+    // Start camera update timer, but only when not interacting
+    _startCameraUpdateTimer();
   }
 
+  void _startCameraUpdateTimer() {
+    _cameraUpdateTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (!_isUserInteracting && _followDriverAutomatically && _mapController != null) {
+        _updateCameraToDriverLocation();
+      }
+    });
+  }
+
+  void _updateCameraToDriverLocation() {
+    if (_mapController != null) {
+      _mapController!.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: _driverLocation,
+            zoom: 16,
+          ),
+        ),
+      );
+    }
+  }
+
+  void _onMapTap() {
+    setState(() {
+      _isUserInteracting = true;
+      _followDriverAutomatically = false;
+    });
+
+    // Reset interaction flag after 5 seconds
+    Timer(const Duration(seconds: 5), () {
+      if (mounted) {
+        setState(() {
+          _isUserInteracting = false;
+        });
+      }
+    });
+  }
   @override
   void dispose() {
     _timer?.cancel();
+    _cameraUpdateTimer?.cancel();
     _mapController?.dispose();
     super.dispose();
   }
@@ -188,32 +230,51 @@ class _ActiveOrderTrackingWidgetState extends State<ActiveOrderTrackingWidget> {
         "${timeFormat.format(now)} - ${timeFormat.format(deliveryEndTime)}";
 
     return Stack(
-      children: [
-        // Map covering the whole background
-        SizedBox(
-          height: MediaQuery.of(context).size.height,
-          child: GoogleMap(
-            initialCameraPosition: CameraPosition(
-              target: _driverLocation,
-              zoom: 14,
+      children: [        // Map covering the whole background
+        GestureDetector(
+          onPanDown: (_) => _onMapTap(),
+          onTap: _onMapTap,
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height,
+            child: GoogleMap(
+              initialCameraPosition: CameraPosition(
+                target: _driverLocation,
+                zoom: 14,
+              ),
+              markers: _markers,
+              polylines: _polylines,
+              myLocationEnabled: true,
+              myLocationButtonEnabled: false, // We'll add our own
+              zoomControlsEnabled: false,
+              // Enable all map gestures
+              scrollGesturesEnabled: true,
+              zoomGesturesEnabled: true,
+              tiltGesturesEnabled: true,
+              rotateGesturesEnabled: true,
+              compassEnabled: true,
+              mapToolbarEnabled: false,
+              onMapCreated: (controller) {
+                _mapController = controller;
+              },
+              onCameraMove: (position) {
+                // User is moving the camera manually
+                if (!_isUserInteracting) {
+                  _onMapTap();
+                }
+              },
             ),
-            markers: _markers,
-            polylines: _polylines,
-            myLocationEnabled: true,
-            myLocationButtonEnabled: true,
-            zoomControlsEnabled: false,
-            onMapCreated: (controller) {
-              _mapController = controller;
-            },
           ),
-        ),
-
-        // Top status panel
+        ),        // Top status panel
         Positioned(
           top: 65,
           left: 20,
           right: 20,
           child: _buildStatusPanel(timeRange),
+        ),        // Map control buttons
+        Positioned(
+          top: 150,
+          right: 20,
+          child: _buildMapControls(),
         ),
 
         // Bottom delivery info with draggable functionality
@@ -664,6 +725,98 @@ class _ActiveOrderTrackingWidgetState extends State<ActiveOrderTrackingWidget> {
           size: 20,
         ),
       ),
+    );  }
+  
+  Widget _buildMapControls() {
+    return Column(
+      children: [
+        // GPS/Driver location button
+        Container(
+          width: 45,
+          height: 45,
+          decoration: BoxDecoration(
+            color: _followDriverAutomatically ? const Color(0xFFE60023) : Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(51),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: IconButton(
+            onPressed: () {
+              setState(() {
+                _followDriverAutomatically = true;
+                _isUserInteracting = false;
+              });
+              _updateCameraToDriverLocation();
+            },
+            icon: Icon(
+              Icons.my_location,
+              color: _followDriverAutomatically ? Colors.white : const Color(0xFFE60023),
+              size: 20,
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        
+        // Zoom in button
+        Container(
+          width: 45,
+          height: 45,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(51),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: IconButton(
+            onPressed: () {
+              _mapController?.animateCamera(CameraUpdate.zoomIn());
+            },
+            icon: const Icon(
+              Icons.add,
+              color: Color(0xFFE60023),
+              size: 20,
+            ),
+          ),
+        ),
+        const SizedBox(height: 4),
+        
+        // Zoom out button
+        Container(
+          width: 45,
+          height: 45,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(51),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: IconButton(
+            onPressed: () {
+              _mapController?.animateCamera(CameraUpdate.zoomOut());
+            },
+            icon: const Icon(
+              Icons.remove,
+              color: Color(0xFFE60023),
+              size: 20,
+            ),
+          ),
+        ),
+      ],
     );
   }
   

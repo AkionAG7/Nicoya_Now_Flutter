@@ -158,35 +158,61 @@ class _ImprovedOrderTrackingWidgetState
     final deliveryEndTime = now.add(const Duration(minutes: 45));
     final timeFormat = DateFormat('h:mm a');
     final String timeRange =
-        "${timeFormat.format(now)} - ${timeFormat.format(deliveryEndTime)}";
-
-    return Stack(
+        "${timeFormat.format(now)} - ${timeFormat.format(deliveryEndTime)}";    return Stack(
       children: [
-        // Map covering the whole background
-        SizedBox(
-          height: MediaQuery.of(context).size.height,
-          child: GoogleMap(
-            initialCameraPosition: CameraPosition(
-              target: _driverLocation,
-              zoom: 14,
+        // Map covering the whole background - Versión totalmente interactiva
+        GestureDetector(
+          // Fundamental: Este GestureDetector garantiza que los gestos lleguen al mapa
+          behavior: HitTestBehavior.translucent,
+          onPanDown: (_) {
+            print('DEBUG: Gesto detectado en el área del mapa');
+          },
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height,
+            child: GoogleMap(
+              initialCameraPosition: CameraPosition(
+                target: _driverLocation,
+                zoom: 14,
+              ),
+              markers: _markers,
+              polylines: _polylines,
+              myLocationEnabled: true,
+              myLocationButtonEnabled: false, // We'll add our own controls
+              zoomControlsEnabled: false,
+              // CRÍTICO: Habilitar TODOS los gestos del mapa
+              scrollGesturesEnabled: true,   // Permite desplazamiento
+              zoomGesturesEnabled: true,     // Zoom con pellizco
+              tiltGesturesEnabled: true,     // Inclinar perspectiva
+              rotateGesturesEnabled: true,   // Rotar mapa
+              compassEnabled: true,          // Mostrar brújula
+              mapToolbarEnabled: true,       // Herramientas de navegación
+              onMapCreated: (controller) {
+                _mapController = controller;
+                print('DEBUG: Mapa creado e inicializado');
+              },
+              onCameraMove: (position) {
+                // Map is being moved by user
+                print('DEBUG: Cámara moviéndose - Lat: ${position.target.latitude}, Lng: ${position.target.longitude}');
+              },
+              onTap: (position) {
+                print('DEBUG: Mapa tocado en: $position');
+              },
             ),
-            markers: _markers,
-            polylines: _polylines,
-            myLocationEnabled: true,
-            myLocationButtonEnabled: true,
-            zoomControlsEnabled: false,
-            onMapCreated: (controller) {
-              _mapController = controller;
-            },
           ),
-        ),
-
-        // Top status panel - similar to the image
+        ),// Top status panel - similar to the image
         Positioned(
           top: 65,
           left: 20,
           right: 20,
           child: _buildStatusPanel(timeRange),
+        ),        // Map control buttons
+        Positioned(
+          top: 180,
+          right: 16,
+          child: Material(
+            color: Colors.transparent,
+            child: _buildMapControls(),
+          ),
         ),
         
         // Bottom driver info panel with draggable functionality
@@ -416,7 +442,6 @@ class _ImprovedOrderTrackingWidgetState
     
     return const SizedBox.shrink();
   }
-
   Widget _buildDraggableInfoPanel() {
     final driverData = widget.controller.currentDriverData;
     
@@ -430,37 +455,52 @@ class _ImprovedOrderTrackingWidgetState
     // Format driver name
     final String driverName = "${driverData?['first_name']?.toString() ?? ''} ${driverData?['last_name1']?.toString() ?? ''}";
 
-    return DraggableScrollableSheet(
-      initialChildSize: 0.35,
-      minChildSize: 0.25,
-      maxChildSize: 0.85,
-      builder: (_, controller) => Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(77),
-              blurRadius: 10,
-              offset: const Offset(0, -4),
-            ),
-          ],
-        ),
-        child: ListView(
-          controller: controller,
-          children: [
-            // Handle bar at top for drag indication
-            Center(
-              child: Container(
-                margin: const EdgeInsets.only(top: 12, bottom: 8),
-                width: 40,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2.5),
+    return NotificationListener<DraggableScrollableNotification>(
+      onNotification: (notification) {
+        // Controlar cuándo el panel está expandido para no interferir con el mapa
+        print('DEBUG: Panel deslizable - posición: ${notification.extent}');
+        return false;
+      },
+      child: DraggableScrollableSheet(
+        initialChildSize: 0.25,     // Tamaño inicial más pequeño
+        minChildSize: 0.15,         // Mínimo más pequeño
+        maxChildSize: 0.7,          // Máximo reducido para dar más espacio al mapa
+        builder: (_, controller) => Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(77),
+                blurRadius: 10,
+                offset: const Offset(0, -4),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              // Handle bar at top for drag indication - más prominente
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Center(
+                  child: Container(
+                    width: 50,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[400],
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
                 ),
               ),
-            ),
+              
+              // Contenido del panel en un Expanded para evitar conflictos
+              Expanded(
+                child: ListView(
+                  controller: controller,
+                  padding: EdgeInsets.zero,
+                  children: [
             
             // Driver info header with red background
             Container(
@@ -583,16 +623,116 @@ class _ImprovedOrderTrackingWidgetState
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  
-                  // Add action buttons
-                  const SizedBox(height: 24),
+                    // Add action buttons                  const SizedBox(height: 24),
                   _buildActionButtons(),
                 ],
               ),
             ),
-          ],
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildMapControls() {
+    return Column(
+      children: [
+        // GPS/My location button
+        Container(
+          width: 45,
+          height: 45,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(51),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: IconButton(
+            onPressed: () {
+              if (_mapController != null) {
+                _mapController!.animateCamera(
+                  CameraUpdate.newCameraPosition(
+                    CameraPosition(
+                      target: _driverLocation,
+                      zoom: 16,
+                    ),
+                  ),
+                );
+              }
+            },
+            icon: const Icon(
+              Icons.my_location,
+              color: Color(0xFFE60023),
+              size: 20,
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        
+        // Zoom in button
+        Container(
+          width: 45,
+          height: 45,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(51),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: IconButton(
+            onPressed: () {
+              _mapController?.animateCamera(CameraUpdate.zoomIn());
+            },
+            icon: const Icon(
+              Icons.add,
+              color: Color(0xFFE60023),
+              size: 20,
+            ),
+          ),
+        ),
+        const SizedBox(height: 4),
+        
+        // Zoom out button
+        Container(
+          width: 45,
+          height: 45,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(51),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: IconButton(
+            onPressed: () {
+              _mapController?.animateCamera(CameraUpdate.zoomOut());
+            },
+            icon: const Icon(
+              Icons.remove,
+              color: Color(0xFFE60023),
+              size: 20,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

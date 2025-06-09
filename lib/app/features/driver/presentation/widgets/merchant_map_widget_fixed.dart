@@ -128,8 +128,7 @@ class _MerchantMapWidgetState extends State<MerchantMapWidget> {
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
       child: Stack(
-        children: [
-          GoogleMap(
+        children: [          GoogleMap(
             initialCameraPosition: CameraPosition(
               target: _centerLocation,
               zoom: 14,
@@ -138,6 +137,13 @@ class _MerchantMapWidgetState extends State<MerchantMapWidget> {
             myLocationEnabled: true,
             myLocationButtonEnabled: true,
             zoomControlsEnabled: true,
+            // Habilitar TODOS los gestos de mapa para movimiento libre
+            scrollGesturesEnabled: true,   // CRÍTICO: permite desplazamiento
+            zoomGesturesEnabled: true,     // Zoom con pellizco
+            tiltGesturesEnabled: true,     // Inclinar perspectiva
+            rotateGesturesEnabled: true,   // Rotar mapa
+            compassEnabled: true,          // Mostrar brújula
+            mapToolbarEnabled: true,       // Herramientas de navegación
             onMapCreated: (controller) {
               _mapController = controller;
             },
