@@ -93,14 +93,15 @@ class DeliveryTrackingScreen extends StatelessWidget {
             merchantName: merchantName,
             driverName: 'Tu repartidor',
           ),
-          
-          // Panel de información (deslizable hacia arriba)
-          DraggableScrollableSheet(
-            initialChildSize: 0.15, // Tamaño inicial (pequeño)
-            minChildSize: 0.1,     // Tamaño mínimo
-            maxChildSize: 0.4,     // Tamaño máximo
-            builder: (context, scrollController) {
-              return Container(
+            // Panel de información simplificado (sin DraggableScrollableSheet)
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: IgnorePointer(
+              ignoring: false, // Permitir interacciones con el panel pero no interferir con el mapa
+              child: Container(
+                constraints: BoxConstraints(maxHeight: 160), // Altura fija más pequeña
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -112,9 +113,10 @@ class DeliveryTrackingScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: ListView(
-                  controller: scrollController,
+                child: SingleChildScrollView(
                   padding: EdgeInsets.all(16),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                   children: [
                     // Indicador de arrastre
                     Center(
@@ -166,8 +168,7 @@ class DeliveryTrackingScreen extends StatelessWidget {
                     ),
                     
                     SizedBox(height: 16),
-                    
-                    // Instrucciones para usar el mapa
+                      // Instrucciones para usar el mapa
                     Text(
                       '¿Dificultad para navegar el mapa?',
                       style: TextStyle(fontWeight: FontWeight.bold),
@@ -184,11 +185,12 @@ class DeliveryTrackingScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                  ],
+                    ],
+                  ),
                 ),
-              );
-            },
-          ),        ],
+              ),
+            ),
+          ),],
       ),
     );
   }

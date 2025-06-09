@@ -212,54 +212,14 @@ class _TrackingMapState extends State<TrackingMap> {  GoogleMapController? _mapC
               },
             ),
           ),
-        ),
-          // Panel de controles del mapa
+        ),          // Panel de controles del mapa simplificado - solo los esenciales
         Positioned(
           bottom: 110,
           right: 16,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Control de zoom
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 4,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    // Zoom in
-                    IconButton(
-                      icon: Icon(Icons.add),
-                      onPressed: () {
-                        if (_mapController != null) {
-                          _mapController!.animateCamera(CameraUpdate.zoomIn());
-                        }
-                      },
-                    ),
-                    Divider(height: 1, color: Colors.grey.shade300),
-                    // Zoom out
-                    IconButton(
-                      icon: Icon(Icons.remove),
-                      onPressed: () {
-                        if (_mapController != null) {
-                          _mapController!.animateCamera(CameraUpdate.zoomOut());
-                        }
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 12),
-              
-              // Botón para activar/desactivar seguimiento
+              // Botón para activar/desactivar seguimiento (mantener solo este)
               FloatingActionButton(
                 heroTag: "btnSeguimiento",
                 backgroundColor: _cameraFollowsDriver ? Colors.blue : Colors.grey,

@@ -160,67 +160,54 @@ class _ImprovedOrderTrackingWidgetState
     final String timeRange =
         "${timeFormat.format(now)} - ${timeFormat.format(deliveryEndTime)}";    return Stack(
       children: [
-        // Map covering the whole background - Versión totalmente interactiva
-        GestureDetector(
-          // Fundamental: Este GestureDetector garantiza que los gestos lleguen al mapa
-          behavior: HitTestBehavior.translucent,
-          onPanDown: (_) {
-            print('DEBUG: Gesto detectado en el área del mapa');
-          },
-          child: SizedBox(
-            height: MediaQuery.of(context).size.height,
-            child: GoogleMap(
-              initialCameraPosition: CameraPosition(
-                target: _driverLocation,
-                zoom: 14,
-              ),
-              markers: _markers,
-              polylines: _polylines,
-              myLocationEnabled: true,
-              myLocationButtonEnabled: false, // We'll add our own controls
-              zoomControlsEnabled: false,
-              // CRÍTICO: Habilitar TODOS los gestos del mapa
-              scrollGesturesEnabled: true,   // Permite desplazamiento
-              zoomGesturesEnabled: true,     // Zoom con pellizco
-              tiltGesturesEnabled: true,     // Inclinar perspectiva
-              rotateGesturesEnabled: true,   // Rotar mapa
-              compassEnabled: true,          // Mostrar brújula
-              mapToolbarEnabled: true,       // Herramientas de navegación
-              onMapCreated: (controller) {
-                _mapController = controller;
-                print('DEBUG: Mapa creado e inicializado');
-              },
-              onCameraMove: (position) {
-                // Map is being moved by user
-                print('DEBUG: Cámara moviéndose - Lat: ${position.target.latitude}, Lng: ${position.target.longitude}');
-              },
-              onTap: (position) {
-                print('DEBUG: Mapa tocado en: $position');
-              },
+        // Map covering the whole background - Optimizado para mejor interactividad
+        SizedBox(
+          height: MediaQuery.of(context).size.height,
+          child: GoogleMap(
+            initialCameraPosition: CameraPosition(
+              target: _driverLocation,
+              zoom: 14,
             ),
+            markers: _markers,
+            polylines: _polylines,            myLocationEnabled: true,
+            myLocationButtonEnabled: true,  // Habilitar botón nativo como merchant map
+            zoomControlsEnabled: true,      // Habilitar controles nativos como merchant map
+            // CRÍTICO: Habilitar TODOS los gestos del mapa
+            scrollGesturesEnabled: true,   // Permite desplazamiento
+            zoomGesturesEnabled: true,     // Zoom con pellizco
+            tiltGesturesEnabled: true,     // Inclinar perspectiva
+            rotateGesturesEnabled: true,   // Rotar mapa
+            compassEnabled: true,          // Mostrar brújula
+            mapToolbarEnabled: true,       // Herramientas de navegación
+            onMapCreated: (controller) {
+              _mapController = controller;
+              print('DEBUG: Mapa creado e inicializado');
+            },
+            onCameraMoveStarted: () {
+              // Detectar cuando el usuario comienza a mover la cámara
+              print('DEBUG: Usuario comenzó a mover la cámara - Interacción detectada');
+            },
+            onCameraMove: (position) {
+              // Map is being moved by user
+              print('DEBUG: Cámara moviéndose - Lat: ${position.target.latitude}, Lng: ${position.target.longitude}');
+            },
+            onTap: (position) {
+              print('DEBUG: Mapa tocado en: $position');
+            },
           ),
-        ),// Top status panel - similar to the image
+        ),        // Top status panel - optimizado para no interferir con gestos del mapa
         Positioned(
           top: 65,
           left: 20,
-          right: 20,
-          child: _buildStatusPanel(timeRange),
-        ),        // Map control buttons
-        Positioned(
-          top: 180,
-          right: 16,
-          child: Material(
-            color: Colors.transparent,
-            child: _buildMapControls(),
+          right: 20,          child: IgnorePointer(
+            child: _buildStatusPanel(timeRange),
           ),
-        ),
-        
-        // Bottom driver info panel with draggable functionality
+        ),          // Bottom driver info panel with draggable functionality
         Positioned(
           bottom: 0,
           left: 0,
           right: 0,
-          child: _buildDraggableInfoPanel(),
+          child: _buildSimplifiedInfoPanel(),
         ),
 
         // Back button
@@ -442,7 +429,7 @@ class _ImprovedOrderTrackingWidgetState
     
     return const SizedBox.shrink();
   }
-  Widget _buildDraggableInfoPanel() {
+  Widget _buildSimplifiedInfoPanel() {
     final driverData = widget.controller.currentDriverData;
     
     // Extract merchant and customer names properly
@@ -455,76 +442,59 @@ class _ImprovedOrderTrackingWidgetState
     // Format driver name
     final String driverName = "${driverData?['first_name']?.toString() ?? ''} ${driverData?['last_name1']?.toString() ?? ''}";
 
-    return NotificationListener<DraggableScrollableNotification>(
-      onNotification: (notification) {
-        // Controlar cuándo el panel está expandido para no interferir con el mapa
-        print('DEBUG: Panel deslizable - posición: ${notification.extent}');
-        return false;
-      },
-      child: DraggableScrollableSheet(
-        initialChildSize: 0.25,     // Tamaño inicial más pequeño
-        minChildSize: 0.15,         // Mínimo más pequeño
-        maxChildSize: 0.7,          // Máximo reducido para dar más espacio al mapa
-        builder: (_, controller) => Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withAlpha(77),
-                blurRadius: 10,
-                offset: const Offset(0, -4),
-              ),
-            ],
+    return Container(
+      width: double.infinity,
+      constraints: const BoxConstraints(maxHeight: 160), // Tamaño fijo pequeño
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(77),
+            blurRadius: 10,
+            offset: const Offset(0, -4),
           ),
-          child: Column(
-            children: [
-              // Handle bar at top for drag indication - más prominente
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                child: Center(
-                  child: Container(
-                    width: 50,
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[400],
-                      borderRadius: BorderRadius.circular(3),
-                    ),
-                  ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Handle bar at top for visual indication
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Center(
+              child: Container(
+                width: 60,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[400],
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              
-              // Contenido del panel en un Expanded para evitar conflictos
-              Expanded(
-                child: ListView(
-                  controller: controller,
-                  padding: EdgeInsets.zero,
-                  children: [
-            
-            // Driver info header with red background
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(
-                color: Color(0xFFE60023),
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
-                ),
-              ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 22,
-                    backgroundColor: Colors.white,
-                    child: const Icon(
-                      Icons.person,
-                      color: Color(0xFFE60023),
-                      size: 28,
-                    ),
+            ),
+          ),
+          
+          // Driver info header with red background - más compacto
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: const BoxDecoration(
+              color: Color(0xFFE60023),
+            ),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 18,
+                  backgroundColor: Colors.white,
+                  child: const Icon(
+                    Icons.person,
+                    color: Color(0xFFE60023),
+                    size: 20,
                   ),
-                  const SizedBox(width: 12),
-                  Column(
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
@@ -532,207 +502,71 @@ class _ImprovedOrderTrackingWidgetState
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                          fontSize: 12,
                         ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                       const Text(
                         "Repartidor",
-                        style: TextStyle(color: Colors.white, fontSize: 12),
+                        style: TextStyle(color: Colors.white, fontSize: 10),
                       ),
                     ],
                   ),
-                ],
-              ),
+                ),
+                // Tap to expand hint
+                const Icon(
+                  Icons.keyboard_arrow_up,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ],
             ),
+          ),
 
-            // Order details
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [                  // Merchant info
-                  Text(
-                    merchantName,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
+          // Compact order details
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        merchantName,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-                  // Show merchant address
-                  Text(
-                    "${widget.activeOrder['merchant']?['street'] ?? ''} ${widget.activeOrder['merchant']?['district'] ?? ''}",
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  
-                  // Customer info
-                  Text(
-                    '$customerName • $customerAddress',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey,
-                    ),
-                  ),
-                  
-                  const Divider(height: 24),
-                  
-                  // Address section
-                  Row(
-                    children: const [
-                      Icon(
-                        Icons.location_on_outlined,
-                        size: 16,
+                    const Text(
+                      "30 mins",
+                      style: TextStyle(
+                        fontSize: 12,
                         color: Colors.grey,
                       ),
-                      SizedBox(width: 6),
-                      Text(
-                        "Dirección de entrega",
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    customerAddress,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
                     ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Preparation status
-                  Row(
-                    children: const [
-                      Icon(Icons.access_time, size: 16, color: Colors.grey),
-                      SizedBox(width: 6),
-                      Text(
-                        "Tiempo estimado",
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    "30 Mins",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                    // Add action buttons                  const SizedBox(height: 24),
-                  _buildActionButtons(),
-                ],
-              ),
-            ),
                   ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 4),
+                Text(
+                  '$customerName • $customerAddress',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                
+                // Action buttons si es necesario
+                const SizedBox(height: 8),
+                _buildActionButtons(),
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
-  }
-
-  Widget _buildMapControls() {
-    return Column(
-      children: [
-        // GPS/My location button
-        Container(
-          width: 45,
-          height: 45,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withAlpha(51),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: IconButton(
-            onPressed: () {
-              if (_mapController != null) {
-                _mapController!.animateCamera(
-                  CameraUpdate.newCameraPosition(
-                    CameraPosition(
-                      target: _driverLocation,
-                      zoom: 16,
-                    ),
-                  ),
-                );
-              }
-            },
-            icon: const Icon(
-              Icons.my_location,
-              color: Color(0xFFE60023),
-              size: 20,
-            ),
-          ),
-        ),
-        const SizedBox(height: 8),
-        
-        // Zoom in button
-        Container(
-          width: 45,
-          height: 45,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withAlpha(51),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: IconButton(
-            onPressed: () {
-              _mapController?.animateCamera(CameraUpdate.zoomIn());
-            },
-            icon: const Icon(
-              Icons.add,
-              color: Color(0xFFE60023),
-              size: 20,
-            ),
-          ),
-        ),
-        const SizedBox(height: 4),
-        
-        // Zoom out button
-        Container(
-          width: 45,
-          height: 45,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withAlpha(51),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: IconButton(
-            onPressed: () {
-              _mapController?.animateCamera(CameraUpdate.zoomOut());
-            },
-            icon: const Icon(
-              Icons.remove,
-              color: Color(0xFFE60023),
-              size: 20,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
+  }}
