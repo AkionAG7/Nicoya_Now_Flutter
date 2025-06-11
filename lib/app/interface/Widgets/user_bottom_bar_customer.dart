@@ -21,34 +21,66 @@ class UserBottomBarCustomerState extends State<UserBottomBarCustomer> {
         child: Center(
           child: Padding(
             padding: const EdgeInsets.only(left: 40, right: 40),
-            child: SizedBox(
-              width: double.infinity,
-              height: 70,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFf10027),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: double.infinity,
+                  height: 70,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFf10027),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.pushNamed(context, Routes.modifyCustomerInfo);
+                    },
+                    child: Text(
+                      'Editar información',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                      ),
+                    ),
                   ),
                 ),
-                onPressed: () async {
-                  await authDataSource.signOut();
-                  if (!mounted) return;
-                  // ignore: use_build_context_synchronously
-                  Navigator.pushNamedAndRemoveUntil(context,
-                    Routes.login_page,
-                    (route) => false,
-                  );
-                },
-                child: Text(
-                  'Cerrar Sesión',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
+
+                SizedBox(height: 30),
+
+                SizedBox(
+                  width: double.infinity,
+                  height: 70,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFf10027),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    onPressed: () async {
+                      await authDataSource.signOut();
+                      if (!mounted) return;
+                      Navigator.pushNamedAndRemoveUntil(
+                        // ignore: use_build_context_synchronously
+                        context,
+                        Routes.login_page,
+                        (route) => false,
+                      );
+                    },
+                    child: Text(
+                      'Cerrar Sesión',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                      ),
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
           ),
         ),

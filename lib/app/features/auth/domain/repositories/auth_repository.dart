@@ -1,3 +1,4 @@
+import 'package:nicoya_now/app/features/address/domain/entities/address.dart';
 import 'package:nicoya_now/app/features/auth/domain/entities/user.dart';
 
 abstract class AuthRepository {
@@ -22,4 +23,7 @@ abstract class AuthRepository {
   // Methods for verification status
   Future<bool> getMerchantVerificationStatus(String userId);
   Future<bool> getDriverVerificationStatus(String userId);
+  Future<void> updateUserInfo ( {required String userId, required String phone, required String address});
+  Future<List<Address>> getUserAddresses(String userId);  
+
 }

@@ -1,3 +1,4 @@
+import 'package:nicoya_now/app/features/address/domain/entities/address.dart';
 import 'package:nicoya_now/app/features/auth/data/datasources/auth_data_source.dart';
 import 'package:nicoya_now/app/features/auth/domain/entities/user.dart';
 import 'package:nicoya_now/app/features/auth/domain/repositories/auth_repository.dart';
@@ -46,14 +47,16 @@ class AuthRepositoryImpl implements AuthRepository {
           'lng': null,
           'note': '',
         });
-      }      return User(
+      }
+      return User(
         id: userId,
         email: email,
         firstName: firstName,
         lastName1: lastName1,
         lastName2: lastName2,
         phone: phone,
-        role: '', // No asignamos rol automáticamente, se hará explícitamente según el flujo de registro
+        role:
+            '', // No asignamos rol automáticamente, se hará explícitamente según el flujo de registro
       );
     } catch (e) {
       rethrow;
@@ -82,30 +85,36 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<void> resetPassword(String email) async {
     throw UnimplementedError();
   }
-    @override
+
+  @override
   Future<void> updateProfile(String userId, Map<String, dynamic> data) async {
     await dataSource.updateProfile(userId, data);
   }
-  
+
   @override
   Future<List<String>> getUserRoles(String userId) async {
     return await dataSource.getRolesForUser(userId);
   }
-  
+
   @override
-  Future<void> assignRoleToUser(String userId, String roleId, Map<String, dynamic> roleData) async {
+  Future<void> assignRoleToUser(
+    String userId,
+    String roleId,
+    Map<String, dynamic> roleData,
+  ) async {
     await dataSource.addRoleToUser(userId, roleId, roleData);
   }
-    @override
+
+  @override
   Future<bool> getMerchantVerificationStatus(String userId) async {
     return await dataSource.getMerchantVerificationStatus(userId);
   }
-  
+
   @override
   Future<bool> getDriverVerificationStatus(String userId) async {
     return await dataSource.getDriverVerificationStatus(userId);
   }
-  
+
   User _mapToUser(Map<String, dynamic> userData) {
     return User(
       id: userData['id'],
@@ -117,4 +126,23 @@ class AuthRepositoryImpl implements AuthRepository {
       role: userData['role'] ?? '', // No asignamos un rol por defecto
     );
   }
+
+  @override
+  Future<void> updateUserInfo({
+    required String userId,
+    required String phone,
+    required String address,
+  }) async {
+    await dataSource.updateUserInfo(
+      userId: userId,
+      phone: phone,
+      address: address,
+    );
+  }
+
+  @override
+  Future<List<Address>> getUserAddresses(String userId) async {
+    return await dataSource.getUserAddress(userId);
+  }
+  
 }

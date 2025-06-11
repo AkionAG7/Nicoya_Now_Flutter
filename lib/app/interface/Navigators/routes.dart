@@ -43,6 +43,7 @@ class Routes {
   static const carrito = '/carrito';
   static const pago = '/pago';
   static const UserBottomBarCustomer = '/userBottomBarCustomer';
+  static const modifyCustomerInfo = '/modifyCustomerInfo';
 
   // Test route
   static const testImages = '/testImages';
