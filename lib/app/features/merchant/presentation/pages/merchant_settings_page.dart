@@ -1,6 +1,7 @@
 // lib/app/features/merchant/presentation/pages/merchant_settings_page.dart
 
 import 'package:flutter/material.dart';
+import 'package:nicoya_now/app/features/merchant/presentation/pages/edit_address_page.dart';
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -134,17 +135,20 @@ class MerchantSettingsPage extends StatelessWidget {
 
               // DIRECCIÓN PRINCIPAL
               ListTile(
-                leading: const Icon(Icons.location_on),
-                title: Text(addressData?['street'] as String? ?? '-'),
-                subtitle: const Text('Dirección Principal'),
-                trailing: TextButton(
-                  onPressed: () {
-                    // TODO: agregar / editar dirección
-                  },
-                  child: const Text('Editar'),
-                ),
-              ),
+  leading: const Icon(Icons.location_on),
+  title: Text(addressData?['street'] as String? ?? '-'),
+  subtitle: const Text('Dirección Principal'),
+  // en MerchantSettingsPage:
+trailing: TextButton(
+  onPressed: () {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const EditAddressPage(addressId: '',)),
+    );
+  },
+  child: const Text('Editar'),
+),
 
+),
               const Divider(),
 
               // OTROS

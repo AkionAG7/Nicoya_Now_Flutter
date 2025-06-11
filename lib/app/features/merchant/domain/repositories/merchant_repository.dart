@@ -5,6 +5,7 @@ abstract class MerchantRepository {
   Future<List<Merchant>> getAllMerchants();
   Future<Merchant> getMerchantByOwner(String ownerId);
   Future<List<Merchant>> getMerchantSearch(String query);
+    Future<Merchant> updateMerchantAddress(Merchant merchant);
 
   Future<Merchant> registerMerchant({
     required String email,

@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:nicoya_now/app/features/address/domain/entities/address.dart';
 import 'package:nicoya_now/app/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:nicoya_now/app/features/merchant/domain/entities/merchant.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -24,6 +25,7 @@ abstract class MerchantDataSource {
   Future<List<Merchant>> fetchAllMerchants();
   Future<Merchant> getMerchantByOwner(String ownerId);
   Future<List<Merchant>> fetchMerchantSearch(String query);
+    Future<Merchant> updateMerchantAddress(Merchant merchant);
 }
 
 class SupabaseMerchantDataSource implements MerchantDataSource {
@@ -48,7 +50,7 @@ class SupabaseMerchantDataSource implements MerchantDataSource {
           logoUrl: item['logo_url'] as String? ?? '',
           mainAddressId: item['main_address_id'] as String,
           isActive: item['is_active'] as bool? ?? false,
-          createdAt: DateTime.parse(item['created_at'] as String),
+          createdAt: DateTime.parse(item['created_at'] as String), mainAddress: Address.empty(),
         );
       }).toList();
     } else {
@@ -78,7 +80,7 @@ class SupabaseMerchantDataSource implements MerchantDataSource {
       mainAddressId: resp['main_address_id'],
       logoUrl: resp['logo_url'] ?? '',
       isActive: resp['is_active'] ?? false,
-      createdAt: DateTime.parse(resp['created_at'] as String),
+      createdAt: DateTime.parse(resp['created_at'] as String), mainAddress: Address.empty(),
     );
   }
 
@@ -97,7 +99,7 @@ class SupabaseMerchantDataSource implements MerchantDataSource {
             logoUrl: item['logo_url'] as String? ?? '',
             mainAddressId: item['main_address_id'] as String,
             isActive: item['is_active'] as bool? ?? false,
-            createdAt: DateTime.parse(item['created_at'] as String),
+            createdAt: DateTime.parse(item['created_at'] as String), mainAddress: Address.empty(),
           );
         }).toList();
       } else {
@@ -273,5 +275,28 @@ class SupabaseMerchantDataSource implements MerchantDataSource {
       // Note: AuthController has already created the user and assigned the role
       rethrow;
     }
+  }
+
+   @override
+  Future<Merchant> updateMerchantAddress(Merchant merchant) async {
+    // 1) Actualizamos la fila en la tabla `address`
+    final addressJson = await _supa
+      .from('address')
+      .update({
+        'street'   : merchant.mainAddress.street,
+        'district' : merchant.mainAddress.district,
+        'lat'      : merchant.mainAddress.lat,
+        'lng'      : merchant.mainAddress.lng,
+        'note'     : merchant.mainAddress.note,
+      })
+      .eq('address_id', merchant.mainAddress.addressId)
+      .select()
+      .single();
+
+    // 2) Parseamos la respuesta a nuestra entidad Address
+    final updatedAddress = Address.fromMap(addressJson);
+
+    // 3) Retornamos un nuevo Merchant con la dirección actualizada en memoria
+    return merchant.copyWith(mainAddress: updatedAddress);
   }
 }

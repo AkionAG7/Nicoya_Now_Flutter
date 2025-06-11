@@ -37,6 +37,7 @@ class Routes {
   static const clientNav = '/clientNav';
   static const isFirstTime = '/isFirstTime';
   static const appStartNavigation = '/appStartNavigation';
+  static const editAddress = '/editAddress';
   static const selectUserRole = '/selectUserRole';
   static const roleFormPage = '/roleFormPage';
   static const addRolePage = '/addRolePage';
