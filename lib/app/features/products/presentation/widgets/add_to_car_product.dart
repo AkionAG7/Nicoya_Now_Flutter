@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:nicoya_now/app/features/order/domain/exceptions/order_error_exception.dart';
 import 'package:nicoya_now/app/features/order/domain/usecases/add_product_to_car_usecase.dart';
+import 'package:nicoya_now/app/features/order/presentation/widgets/add_to_car_error_modal.dart';
 import 'package:nicoya_now/app/features/products/domain/entities/products.dart';
 import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -33,10 +35,9 @@ class AddToCarProduct extends StatelessWidget {
               );
               // ignore: use_build_context_synchronously
               Navigator.popAndPushNamed(context, Routes.clientNav);
-            } catch (e) {
-              // ignore: use_build_context_synchronously
-              ScaffoldMessenger.of(context,
-              ).showSnackBar(SnackBar(content: Text('Error: $e')));
+            } on OrderErrorException {
+              //ignore: use_build_context_synchronously
+              await showOrderErrorModal(context);
             }
           },
           style: ElevatedButton.styleFrom(

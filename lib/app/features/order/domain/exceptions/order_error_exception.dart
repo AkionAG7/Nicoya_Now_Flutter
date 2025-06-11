@@ -1,0 +1,4 @@
+class OrderErrorException implements Exception {
+
+  
+}

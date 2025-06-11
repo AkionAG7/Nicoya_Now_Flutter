@@ -1,4 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:nicoya_now/app/features/address/domain/entities/address.dart';
+import 'package:nicoya_now/app/features/order/domain/exceptions/order_error_exception.dart';
+import 'package:nicoya_now/app/features/order/presentation/widgets/add_to_car_error_modal.dart';
 import 'package:nicoya_now/app/features/products/domain/entities/products.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -43,9 +46,7 @@ class OrderItemDatasourceImpl implements OrderItemDatasource {
       final existingMerchantId = existingOrder['merchant_id'];
 
       if (existingMerchantId != product.merchant_id) {
-        throw Exception(
-          'El producto no pertenece al mismo comerciante del pedido existente, finaliza primero tu orden actual.',
-        );
+        throw OrderErrorException();
       }
       orderId = existingOrder['order_id'];
       // Sumar el subtotal al total actual
