@@ -121,12 +121,6 @@ class _MerchantSettingsPageState extends State<MerchantSettingsPage> {
                 leading: const Icon(Icons.email),
                 title: Text(email),
                 subtitle: const Text('Correo'),
-                trailing: TextButton(
-                  onPressed: () {
-                    // TODO: editar correo
-                  },
-                  child: const Text('Editar'),
-                ),
               ),
              ListTile(
   leading: const Icon(Icons.phone),
