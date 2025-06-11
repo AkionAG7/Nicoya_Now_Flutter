@@ -1,4 +1,6 @@
 
+import 'package:postgrest/src/types.dart';
+
 class Address {
   final String address_id;
   final String user_id;
@@ -19,4 +21,8 @@ class Address {
     required this.note,
     required this.created_at,
   });
+
+  static empty() {}
+
+  static fromMap(PostgrestMap addressJson) {}
 }
