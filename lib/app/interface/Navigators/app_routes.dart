@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nicoya_now/app/features/merchant/presentation/pages/edit_address_page.dart';
 import 'package:nicoya_now/app/interface/Widgets/custumer_modify_info.dart';
 import 'package:nicoya_now/app/interface/Widgets/user_bottom_bar_customer.dart';
 import 'package:nicoya_now/app/features/auth/presentation/controllers/auth_controller.dart';
@@ -110,5 +111,9 @@ Map<String, Widget Function(BuildContext)> get appRoutes {
     Routes.pago: (context) => const Pago(),
     Routes.UserBottomBarCustomer: (context) => const UserBottomBarCustomer(),
     Routes.modifyCustomerInfo: (context) => const CustumerModifyInfo(),
+    Routes.editAddress: (context) {
+      final addressId = ModalRoute.of(context)!.settings.arguments as String;
+      return EditAddressPage(addressId: addressId);
+    },
   };
 }

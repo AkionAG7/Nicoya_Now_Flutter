@@ -1,6 +1,7 @@
 // lib/app/features/order/presentation/pages/order_detail_page.dart
 
 import 'package:get_it/get_it.dart';
+import 'package:nicoya_now/app/features/merchant/domain/usecases/update_merchant_address_usecase.dart';
 import 'package:nicoya_now/app/features/order/presentation/controllers/change_order_status_controller.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -180,6 +181,9 @@ void setupServiceLocator() {
         locator<AdminMerchantRepo.MerchantRepository>(),
       ),
     )
+      ..registerLazySingleton<UpdateMerchantAddress>(
+    () => UpdateMerchantAddress(locator<MerchantRepository>()),
+  )
     // Admin – Driver
     ..registerLazySingleton<GetAllDriversUseCase>(
       () => GetAllDriversUseCase(locator<DriverRepository>()),
@@ -209,9 +213,12 @@ void setupServiceLocator() {
         registerMerchantUseCase: locator<RegisterMerchantUseCase>(),
       ),
     )
-    ..registerFactory<MerchantSettingsController>(
-      () => MerchantSettingsController(locator<GetMerchantByOwnerUseCase>()),
-    )
+  ..registerFactory<MerchantSettingsController>(
+    () => MerchantSettingsController(
+      locator<GetMerchantByOwnerUseCase>(),
+      locator<UpdateMerchantAddress>(),
+    ),
+  )
     // Products
     ..registerFactory<AddProductsController>(
       () => AddProductsController(
