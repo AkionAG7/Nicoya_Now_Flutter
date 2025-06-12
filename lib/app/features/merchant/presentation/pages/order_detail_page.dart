@@ -108,11 +108,7 @@ class OrderDetailPage extends StatelessWidget {
             children: [
               ListTile(
                 leading: const Icon(Icons.person),
-                title: Text('Cliente: ${data['customer_id']}'),
-              ),
-              ListTile(
-                leading: const Icon(Icons.store),
-                title: Text('Comerciante: ${data['merchant_id']}'),
+                title: Text('Cliente ID: ${data['customer_id']}'),
               ),
               ListTile(
                 leading: const Icon(Icons.location_on),
@@ -189,18 +185,32 @@ class OrderDetailPage extends StatelessWidget {
                   ],
                 ),
               ] else if (currentStatus == 'accepted') ...[
-                Center(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // Una vez aceptada, el comerciante puede pasarla a "in_process"
-                      _updateOrderStatus(context, 'in_process');
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
-                      minimumSize: const Size(120, 40),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        // Cambia de "pending" a "accepted"
+                        _updateOrderStatus(context, 'in_process');
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        minimumSize: const Size(120, 40),
+                      ),
+                      child: const Text('Preparar'),
                     ),
-                    child: const Text('Procesar'),
-                  ),
+                    ElevatedButton(
+                      onPressed: () {
+                        // Cambia de "pending" a "cancelled"
+                        _updateOrderStatus(context, 'cancelled');
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        minimumSize: const Size(120, 40),
+                      ),
+                      child: const Text('Cancelar'),
+                    ),
+                  ],
                 ),
               ] else ...[
                 ElevatedButton(
