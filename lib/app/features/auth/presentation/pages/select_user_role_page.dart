@@ -161,7 +161,7 @@ class _SelectUserRolePageState extends State<SelectUserRolePage> {
       ),
     );
   }
-    void _selectRole(BuildContext context, String role) async {
+  void _selectRole(BuildContext context, String role) async {
     try {
       // Mostrar indicador de carga
       showDialog(
@@ -169,6 +169,74 @@ class _SelectUserRolePageState extends State<SelectUserRolePage> {
         barrierDismissible: false,
         builder: (ctx) => const Center(child: CircularProgressIndicator()),
       );
+      
+      // Verificar estado de verificación antes de permitir el acceso
+      if (role == 'driver') {
+        final authController = Provider.of<AuthController>(context, listen: false);
+        final userId = Supabase.instance.client.auth.currentUser!.id;
+          // Verificar si el driver está verificado
+        final isDriverVerified = await authController.checkDriverVerificationStatus(userId);
+        
+        if (!isDriverVerified) {
+          // Cerrar diálogo de carga
+          if (context.mounted) {
+            Navigator.of(context).pop();
+            
+            // Mostrar mensaje y redirigir a página de espera
+            showDialog(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                title: const Text('Cuenta Pendiente'),
+                content: const Text('Tu cuenta de repartidor está pendiente de verificación. Te avisaremos cuando esté lista.'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(ctx).pop();
+                      Navigator.of(context).pushReplacementNamed(Routes.driverPending);
+                    },
+                    child: const Text('Entendido'),
+                  ),
+                ],
+              ),
+            );
+          }
+          return;
+        }
+      }
+      
+      // Verificar estado de verificación para merchants
+      if (role == 'merchant') {
+        final authController = Provider.of<AuthController>(context, listen: false);
+        final userId = Supabase.instance.client.auth.currentUser!.id;
+          // Verificar si el merchant está verificado
+        final isMerchantVerified = await authController.checkMerchantVerificationStatus(userId);
+        
+        if (!isMerchantVerified) {
+          // Cerrar diálogo de carga
+          if (context.mounted) {
+            Navigator.of(context).pop();
+            
+            // Mostrar mensaje y redirigir a página de espera
+            showDialog(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                title: const Text('Cuenta Pendiente'),
+                content: const Text('Tu cuenta de comerciante está pendiente de verificación. Te avisaremos cuando esté lista.'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(ctx).pop();
+                      Navigator.of(context).pushReplacementNamed(Routes.merchantPending);
+                    },
+                    child: const Text('Entendido'),
+                  ),
+                ],
+              ),
+            );
+          }
+          return;
+        }
+      }
       
       // Establecer el rol seleccionado como predeterminado
       final roleService = RoleService(Supabase.instance.client);

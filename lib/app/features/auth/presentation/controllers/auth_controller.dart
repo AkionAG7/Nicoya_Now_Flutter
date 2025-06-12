@@ -112,7 +112,7 @@ class AuthController extends ChangeNotifier {
       return {'success': false, 'message': _errorMessage};
     }
   }
-    // Método para verificar el estado de verificación del comerciante
+  // Método para verificar el estado de verificación del comerciante
   Future<bool> _checkMerchantVerificationStatus(String userId) async {
     try {
       final result = await _signInUseCase.repository.getMerchantVerificationStatus(userId);
@@ -134,6 +134,15 @@ class AuthController extends ChangeNotifier {
       print('Error verificando estado de driver: $e');
       return false; // En caso de error, asumimos que no está verificado
     }
+  }
+
+  // Métodos públicos para verificar estado de verificación (usados en SelectUserRolePage)
+  Future<bool> checkMerchantVerificationStatus(String userId) async {
+    return await _checkMerchantVerificationStatus(userId);
+  }
+  
+  Future<bool> checkDriverVerificationStatus(String userId) async {
+    return await _checkDriverVerificationStatus(userId);
   }
 
   Future<bool> signUp({
@@ -413,7 +422,6 @@ class AuthController extends ChangeNotifier {
       return false;
     }
   }
-  
   /// Method to handle login with role selection if user has multiple roles
   Future<Map<String, dynamic>> handleLoginWithRoleSelection(String email, String password) async {
     _state = AuthState.loading;
@@ -421,29 +429,26 @@ class AuthController extends ChangeNotifier {
     notifyListeners();
     
     try {
-      // Sign in the user with enhanced verification
-      final signInResult = await signIn(email, password);
-      
-      // If sign-in failed due to verification, return that result
-      if (!signInResult['success']) {
-        return signInResult;
-      }
+      // First, try sign in with ignoreDriverVerification=true to bypass driver verification checks
+      // This allows us to count roles before applying verification logic
+      // Note: Merchant verification is handled differently (doesn't block login, only role access)
+      _user = await _signInUseCase.execute(email, password, ignoreDriverVerification: true);
       
       // Get all roles for this user
       _availableRoles = await _getUserRolesUseCase.execute(_user!.id);
       
-      // If user has only one role, just log them in normally
-      if (_availableRoles.length <= 1) {
+      // If user has multiple roles, go to role selection page where verification will be handled per role
+      if (_availableRoles.length > 1) {
         _state = AuthState.authenticated;
         notifyListeners();
-        return {'success': true};
+        return {'success': true, 'hasMultipleRoles': true};
       }
       
-      // Otherwise, user has multiple roles, so signal that role selection is needed
-      // but still mark them as authenticated
-      _state = AuthState.authenticated;
-      notifyListeners();
-      return {'success': true, 'hasMultipleRoles': true};
+      // If user has only one role, apply normal verification logic by calling signIn again
+      final signInResult = await signIn(email, password);
+      
+      // Return the result of single-role sign in (with verification)
+      return signInResult;
     } catch (e) {
       _state = AuthState.error;
       _errorMessage = e.toString();
