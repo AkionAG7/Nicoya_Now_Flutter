@@ -251,8 +251,7 @@ class SupabaseMerchantDataSource implements MerchantDataSource {
         final row =
             await _supa
                 .from('merchant')
-                .upsert(
-                  {
+                .upsert(                  {
                     // Use upsert to avoid duplicate key errors
                     'merchant_id': uid,
                     'owner_id': uid, // Ensure owner_id is explicitly set
@@ -261,7 +260,7 @@ class SupabaseMerchantDataSource implements MerchantDataSource {
                     'corporate_name': corporateName,
                     'logo_url': publicUrl,
                     'main_address_id': addressId,
-                    'is_active': false,
+                    'is_active': false, // ¡No activar aquí! Lo hace el admin desde el dashboard.
                   },
                   onConflict:
                       'merchant_id', // Especificar la columna para resolver conflictos

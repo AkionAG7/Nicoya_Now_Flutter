@@ -55,17 +55,21 @@ class RoleService {
           .select()
           .eq('user_id', userId)
           .eq('role_id', roleId)
-          .maybeSingle();
-
-      if (existingRole != null) {
+          .maybeSingle();      if (existingRole != null) {
         throw Exception('Ya tienes este rol asociado a tu cuenta');
       }
 
+      // Primero desactivar todos los roles existentes del usuario
+      await _supabase.from('user_role')
+          .update({'is_default': false})
+          .eq('user_id', userId);
+
+      // Luego insertar el nuevo rol como default (activo)
       await _supabase.from('user_role').insert({
         'user_id': userId,
         'role_id': roleId,
-        'is_default': false,
-      });      if (roleSlug == 'driver') {
+        'is_default': true,  // ← Ahora el nuevo rol queda activo inmediatamente
+      });if (roleSlug == 'driver') {
         // Solo actualizamos id_number en profile, no license_number
         // (license_number debe incluirse en los args para DeliverForm2)
         if (roleData['id_number'] != null) {
@@ -85,8 +89,7 @@ class RoleService {
               .select()
               .eq('merchant_id', userId)
               .maybeSingle();
-              
-          if (existingMerchant == null) {
+                if (existingMerchant == null) {
             // If it doesn't exist, use upsert with onConflict to handle potential conflicts
             final merchantData = {
               'merchant_id': userId,
@@ -94,7 +97,7 @@ class RoleService {
               'legal_id': roleData['id_number'] ?? '',
               'business_name': roleData['business_name'] ?? '',
               'corporate_name': roleData['corporate_name'] ?? '',
-              'is_active': false,
+              'is_active': false, // ¡No activar aquí! Lo hace el admin desde el dashboard.
               // We don't include main_address_id or logo_url to avoid null constraint errors
             };
             //ignore: avoid_print

@@ -188,11 +188,26 @@ class _RoleFormPageState extends State<RoleFormPage> {
         } else {
           // Este caso debería manejarse por la lógica de registro específica
           success = false;
-        }
-
-        if (success && mounted) {
+        }        if (success && mounted) {
+          // Mostrar feedback de confirmación al usuario
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('¡Rol de cliente agregado correctamente!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          
           // Navigate to appropriate screen based on role
           Navigator.of(context).pushReplacementNamed(Routes.home_food);
+        } else if (!success && mounted) {
+          // Mostrar mensaje de error si la operación falló
+          final authController = Provider.of<AuthController>(context, listen: false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(authController.errorMessage ?? 'Error al agregar el rol de cliente'),
+              backgroundColor: Colors.red,
+            ),
+          );
         }
       } finally {
         if (mounted) {

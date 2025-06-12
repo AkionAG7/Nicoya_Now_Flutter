@@ -4,7 +4,7 @@ import 'package:nicoya_now/app/features/address/domain/entities/address.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract class AuthDataSource {
-  Future<Map<String, dynamic>> signIn(String email, String password);
+  Future<Map<String, dynamic>> signIn(String email, String password, {bool ignoreDriverVerification = false});
   Future<Map<String, dynamic>> signUp(String email, String password);
   Future<void> signOut();
   Future<Map<String, dynamic>?> getCurrentUser();
@@ -32,9 +32,8 @@ abstract class AuthDataSource {
 class SupabaseAuthDataSource implements AuthDataSource {
   final SupabaseClient _supabaseClient;
 
-  SupabaseAuthDataSource(this._supabaseClient);
-  @override
-  Future<Map<String, dynamic>> signIn(String email, String password) async {
+  SupabaseAuthDataSource(this._supabaseClient);  @override
+  Future<Map<String, dynamic>> signIn(String email, String password, {bool ignoreDriverVerification = false}) async {
     final response = await _supabaseClient.auth.signInWithPassword(
       email: email,
       password: password,
@@ -61,7 +60,7 @@ class SupabaseAuthDataSource implements AuthDataSource {
       primaryRole = roles.first['role']['slug'] ?? '';
     }
 
-    if (primaryRole == 'driver') {
+    if (primaryRole == 'driver' && !ignoreDriverVerification) {
       try {
         final driverVerification =
             await _supabaseClient
@@ -227,16 +226,19 @@ class SupabaseAuthDataSource implements AuthDataSource {
             .from('role')
             .select('role_id')
             .eq('slug', roleSlug)
-            .single();
+            .single();    final roleId = roleResult['role_id'];
 
-    final roleId = roleResult['role_id'];
+    // First, deactivate all existing roles for this user
+    await _supabaseClient.from('user_role')
+        .update({'is_default': false})
+        .eq('user_id', userId);
 
-    // Insert into the user_role table
+    // Insert into the user_role table with the new role as default (active)
     await _supabaseClient.from('user_role').insert({
       'user_id': userId,
       'role_id': roleId,
-      'is_default': false, // Not setting as default unless specified
-    }); // If additional role data is provided, store it based on role type
+      'is_default': true, // New role becomes immediately active
+    });// If additional role data is provided, store it based on role type
     if (roleData.isNotEmpty) {
       // Handle id_number in the profile table for all roles
       if (roleData['id_number'] != null) {
@@ -247,12 +249,12 @@ class SupabaseAuthDataSource implements AuthDataSource {
       }
 
       // Para el rol de driver, NO creamos el registro en la tabla driver aquí
-      // Se creará cuando se complete el segundo formulario con vehicle_type      if (roleSlug == 'merchant') {
-      // Always ensure both merchant_id and owner_id are set to prevent not-null constraint violations
+      // Se creará cuando se complete el segundo formulario con vehicle_type      if (roleSlug == 'merchant') {      // Always ensure both merchant_id and owner_id are set to prevent not-null constraint violations
       final merchantData = {
         'merchant_id': userId,
         'owner_id':
             userId, // Set owner_id to prevent not-null constraint violation
+        'is_active': false, // ¡No activar aquí! Lo hace el admin desde el dashboard.
       };
 
       // Add additional merchant-specific fields if available

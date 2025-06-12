@@ -2,7 +2,7 @@ import 'package:nicoya_now/app/features/address/domain/entities/address.dart';
 import 'package:nicoya_now/app/features/auth/domain/entities/user.dart';
 
 abstract class AuthRepository {
-  Future<User> signIn(String email, String password);
+  Future<User> signIn(String email, String password, {bool ignoreDriverVerification = false});
   Future<User> signUp(String email, String password, {
     String? firstName,
     String? lastName1,

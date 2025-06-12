@@ -6,7 +6,7 @@ class SignInUseCase {
 
   SignInUseCase(this.repository);
 
-  Future<User> execute(String email, String password) {
-    return repository.signIn(email, password);
+  Future<User> execute(String email, String password, {bool ignoreDriverVerification = false}) {
+    return repository.signIn(email, password, ignoreDriverVerification: ignoreDriverVerification);
   }
 }
