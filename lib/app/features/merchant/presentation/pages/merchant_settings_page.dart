@@ -28,7 +28,6 @@ class _MerchantSettingsPageState extends State<MerchantSettingsPage> {
       _loadFuture = _loadData();
     });
   }
-
   Future<Map<String, dynamic>> _loadData() async {
     final supa   = Supabase.instance.client;
     final userId = supa.auth.currentUser!.id;
@@ -58,8 +57,16 @@ class _MerchantSettingsPageState extends State<MerchantSettingsPage> {
         .eq('user_id', userId)
         .maybeSingle();
 
+    // Safely handle the merchant data conversion
+    final merchantData = Map<String, dynamic>.from(m as Map);
+    
+    // Handle case where main_address might be null
+    if (merchantData['main_address'] == null) {
+      merchantData['main_address'] = {'street': 'Dirección no configurada'};
+    }
+
     return {
-      'merchant': Map<String, dynamic>.from(m as Map),
+      'merchant': merchantData,
       'profile' : p == null ? {} : Map<String, dynamic>.from(p as Map),
       'email'   : supa.auth.currentUser!.email  ?? '',
     };

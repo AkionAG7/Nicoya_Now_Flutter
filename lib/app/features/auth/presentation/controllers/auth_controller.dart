@@ -20,29 +20,26 @@ enum RoleType {
   merchant
 }
 
-class AuthController extends ChangeNotifier {
-  final SignInUseCase _signInUseCase;
+class AuthController extends ChangeNotifier {  final SignInUseCase _signInUseCase;
   final SignUpUseCase _signUpUseCase;
   final RoleService _roleService;
   final GetUserRolesUseCase _getUserRolesUseCase;
-  final AddUserRoleUseCase _addUserRoleUseCase;
+  // final AddUserRoleUseCase _addUserRoleUseCase; // Currently unused
 
   AuthState _state = AuthState.initial;
   User? _user;
   String? _errorMessage;
   List<String> _availableRoles = [];
-
   AuthController({
     required SignInUseCase signInUseCase,
     required SignUpUseCase signUpUseCase,
     required RoleService roleService,
     required GetUserRolesUseCase getUserRolesUseCase,
-    required AddUserRoleUseCase addUserRoleUseCase,
+    required AddUserRoleUseCase addUserRoleUseCase, // Keep parameter for DI but don't store
   })  : _signInUseCase = signInUseCase,
         _signUpUseCase = signUpUseCase,
         _roleService = roleService,
-        _getUserRolesUseCase = getUserRolesUseCase,
-        _addUserRoleUseCase = addUserRoleUseCase;AuthState get state => _state;
+        _getUserRolesUseCase = getUserRolesUseCase;AuthState get state => _state;
   User? get user => _user;
   String? get errorMessage => _errorMessage;
   RoleService get roleService => _roleService;
@@ -259,6 +256,7 @@ class AuthController extends ChangeNotifier {
     String? idNumber,
     String? businessName,
     String? corporateName,
+    bool isNewUserRegistration = false, // Flag to distinguish between new registration and role addition
   }) async {
     _state = AuthState.loading;
     _errorMessage = null;
@@ -335,12 +333,21 @@ class AuthController extends ChangeNotifier {
       _state = AuthState.authenticated;
       notifyListeners();
       
-      // Return success with instruction to go to role selection page
-      return {
-        'success': true,
-        'redirectToRoleSelection': true,
-        'message': 'Registro de comerciante exitoso. Selecciona tu rol para continuar.'
-      };
+      // For new user registration, continue with merchant setup (logo, address)
+      // For existing user adding role, redirect to role selection
+      if (isNewUserRegistration) {
+        return {
+          'success': true,
+          'redirectToRoleSelection': false, // Continue with merchant setup
+          'message': 'Usuario y rol de merchant creados. Continuando con configuración...'
+        };
+      } else {
+        return {
+          'success': true,
+          'redirectToRoleSelection': true, // Redirect to role selection
+          'message': 'Registro de comerciante exitoso. Selecciona tu rol para continuar.'
+        };
+      }
     } catch (e) {
       _state = AuthState.error;
       _errorMessage = e.toString();

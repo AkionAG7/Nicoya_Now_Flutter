@@ -35,14 +35,12 @@ class Merchant {
         legalId        : map['legal_id']        as String,
         businessName   : map['business_name']   as String,
         corporateName  : map['corporate_name']  as String?,
-        logoUrl        : map['logo_url']        as String,
-        mainAddressId  : map['main_address_id'] as String,
+        logoUrl        : map['logo_url']        as String,        mainAddressId  : map['main_address_id'] as String,
         isActive       : map['is_active']       as bool,
         createdAt      : DateTime.parse(map['created_at'] as String),
-        mainAddress    : Address.fromMap(       // <-- parsear dirección anidada
-                          map['main_address'] 
-                            as Map<String, dynamic>
-                        ),
+        mainAddress    : map['main_address'] != null 
+                          ? Address.fromMap(map['main_address'] as Map<String, dynamic>)
+                          : Address.empty(), // Use empty address if main_address is null
       );
 
   Map<String, dynamic> toMap() => {
