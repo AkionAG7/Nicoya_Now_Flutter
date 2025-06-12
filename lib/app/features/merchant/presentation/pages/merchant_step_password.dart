@@ -75,32 +75,23 @@ class _MerchantStepPasswordState extends State<MerchantStepPassword> {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content: Text(
-                                        'Cuenta creada exitosamente',
+                                        '¡Registro exitoso! Tu cuenta está pendiente de verificación. Por favor, inicia sesión.',
                                       ),
                                       backgroundColor: Colors.green,
+                                      duration: Duration(seconds: 4),
                                     ),
                                   );
                                   
-                                  // Check if this is the new flow (redirect to role selection)
-                                  // We can check if the user was created and has merchant role
-                                  final user = authController.user;
-                                  if (user != null) {
-                                    // For new merchant registration, always go to role selection page
-                                    Navigator.pushNamedAndRemoveUntil(
-                                      //ignore: use_build_context_synchronously
-                                      context,
-                                      Routes.selectUserRole,
-                                      (_) => false,
-                                    );
-                                  } else {
-                                    // Fallback to pending page
-                                    Navigator.pushNamedAndRemoveUntil(
-                                      //ignore: use_build_context_synchronously
-                                      context,
-                                      Routes.merchantPending,
-                                      (_) => false,
-                                    );
-                                  }
+                                  // Sign out user to require fresh login
+                                  await authController.signOut();
+                                  
+                                  // Navigate to login page instead of role selection
+                                  Navigator.pushNamedAndRemoveUntil(
+                                    //ignore: use_build_context_synchronously
+                                    context,
+                                    Routes.login_page,
+                                    (_) => false,
+                                  );
                                 } else {
                                   // Show error message with more details
                                   //ignore: use_build_context_synchronously
