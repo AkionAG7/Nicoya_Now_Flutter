@@ -71,35 +71,53 @@ class MerchantRegistrationController extends ChangeNotifier {
 
       if (_businessName == null || _businessName!.isEmpty) {
         throw Exception("El nombre del negocio es obligatorio");
-      }
-
-      if (_logoPath == null || _logoPath!.isEmpty) {
+      }      if (_logoPath == null || _logoPath!.isEmpty) {
         throw Exception("Es necesario subir el logo del negocio");
       }
-      _merchant = await _registerMerchantUseCase.execute(
-        email: _email!,
-        password: password,
-        legalId: _isCedulaJuridica ? _legalId! : '',
-        businessName: _businessName!,
-        corporateName: _corpName ?? '',
-        phone: _phone!,
-        address: _address!,
-        logoPath: _logoPath!,
-        firstName: _firstName!,
-        lastName1: _last1!,
-        lastName2: _last2!,
-        authController: authController,
-        cedula: _isCedulaJuridica ? null : _legalId,
-      );
-      // Verificar el estado del registro
-      //ignore: avoid_print
-      print(
-        'MERCHANT REGISTRATION: Registration successful, merchant should be pending verification',
-      );
+      
+      try {
+        _merchant = await _registerMerchantUseCase.execute(
+          email: _email!,
+          password: password,
+          legalId: _isCedulaJuridica ? _legalId! : '',
+          businessName: _businessName!,
+          corporateName: _corpName ?? '',
+          phone: _phone!,
+          address: _address!,
+          logoPath: _logoPath!,
+          firstName: _firstName!,
+          lastName1: _last1!,
+          lastName2: _last2!,
+          authController: authController,
+          cedula: _isCedulaJuridica ? null : _legalId,
+        );
+        
+        // Traditional flow - merchant object was created successfully
+        //ignore: avoid_print
+        print(
+          'MERCHANT REGISTRATION: Registration successful, merchant should be pending verification',
+        );
 
-      _state = MerchantRegistrationState.success;
-      notifyListeners();
-      return true;
+        _state = MerchantRegistrationState.success;
+        notifyListeners();
+        return true;
+      } catch (e) {
+        // Check if this is a redirect exception from the new flow
+        if (e.toString().startsWith('Exception: REDIRECT_TO_ROLE_SELECTION:')) {
+          // This is the new flow - user should be redirected to role selection
+          //ignore: avoid_print
+          print(
+            'MERCHANT REGISTRATION: New user flow - should redirect to role selection',
+          );
+          
+          _state = MerchantRegistrationState.success;
+          notifyListeners();
+          return true;
+        } else {
+          // This is a real error
+          rethrow;
+        }
+      }
     } catch (e) {
       _state = MerchantRegistrationState.error;
       _errorMessage = e.toString();

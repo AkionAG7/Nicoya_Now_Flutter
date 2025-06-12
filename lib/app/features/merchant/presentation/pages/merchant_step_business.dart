@@ -164,24 +164,29 @@ class _MerchantStepBusinessState extends State<MerchantStepBusiness> {
                                             .addRoleToCurrentUser(
                                               RoleType.merchant,
                                               roleData,
-                                            );
-                                        if (success && mounted) {
+                                            );                                        if (success && mounted) {
                                           ScaffoldMessenger.of(
                                             //ignore: use_build_context_synchronously
                                             context,
                                           ).showSnackBar(
                                             const SnackBar(
                                               content: Text(
-                                                'Rol de comerciante agregado correctamente',
+                                                'Rol de comerciante agregado correctamente. Por favor, inicia sesión nuevamente.',
                                               ),
                                               backgroundColor: Colors.green,
+                                              duration: Duration(seconds: 4),
                                             ),
-                                          ); // Navigate to the merchant pending page since verification is required
+                                          );
+                                          
+                                          // Sign out user to require fresh login
+                                          await authController.signOut();
+                                          
+                                          // Navigate to login page instead of automatic navigation
                                           Navigator.of(
                                             //ignore: use_build_context_synchronously
                                             context,
                                           ).pushNamedAndRemoveUntil(
-                                            Routes.merchantPending,
+                                            Routes.login_page,
                                             (route) => false,
                                           );
                                         } else {

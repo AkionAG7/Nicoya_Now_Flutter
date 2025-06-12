@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nicoya_now/app/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:nicoya_now/app/interface/Navigators/routes.dart';
 import 'package:provider/provider.dart';
 
 class ClientForm extends StatefulWidget {
@@ -41,9 +42,7 @@ class _ClientFormState extends State<ClientForm> {
       final authController = Provider.of<AuthController>(
         context,
         listen: false,
-      );
-
-      final success = await authController.signUp(
+      );      final success = await authController.signUp(
         email: _email.text.trim(),
         password: _password.text,
         firstName: _firstName.text.trim(),
@@ -51,12 +50,28 @@ class _ClientFormState extends State<ClientForm> {
         lastName2: _lastName2.text.trim(),
         phone: _phone.text.trim(),
         address: _address.text.trim(),
+        addCustomerRole: true, // Ensure customer role is added
       );
 
-      if (!mounted) return;
-
-      if (success) {
-        Navigator.pop(context);
+      if (!mounted) return;      if (success) {
+        // Show success message and navigate to login
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('¡Cuenta creada exitosamente! Por favor, inicia sesión.'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 3),
+          ),
+        );
+        
+        // Sign out to ensure clean state
+        await authController.signOut();
+        
+        // Navigate to login page instead of just popping
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          Routes.login_page,
+          (route) => false,
+        );
       } else {
         setState(() => _error = authController.errorMessage);
       }

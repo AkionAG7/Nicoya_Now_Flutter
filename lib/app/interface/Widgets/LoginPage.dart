@@ -193,15 +193,30 @@ class LoginPageState extends State<LoginPage> {  bool _obscureText = true;
         _passwordController.text,
       );
 
-      if (!mounted) return;
-
-      if (result['success'] == true) {
-        // Verificar si hay múltiples roles disponibles
-        if (result['hasMultipleRoles'] == true) {
+      if (!mounted) return;      if (result['success'] == true) {
+        // Check if should redirect to pending page
+        if (result['redirectToPending'] != null) {
+          final roleType = result['redirectToPending'];
+          if (roleType == 'driver') {
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              Routes.driverPending,
+              (route) => false,
+            );
+          } else if (roleType == 'merchant') {
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              Routes.merchantPending,
+              (route) => false,
+            );
+          }
+        }
+        // Verificar si hay múltiples roles disponibles o single verified role
+        else if (result['hasMultipleRoles'] == true) {
           // Navegar a la página de selección de rol
           Navigator.pushReplacementNamed(context, Routes.selectUserRole);
         } else {
-          // Solo hay un rol, navegar directamente según el rol
+          // Solo hay un rol verificado, navegar directamente según el rol
           final userRole = authController.userRole ?? 'customer';
           switch (userRole) {
             case 'admin':

@@ -42,7 +42,7 @@ class AuthController extends ChangeNotifier {
         _signUpUseCase = signUpUseCase,
         _roleService = roleService,
         _getUserRolesUseCase = getUserRolesUseCase,
-        _addUserRoleUseCase = addUserRoleUseCase;  AuthState get state => _state;
+        _addUserRoleUseCase = addUserRoleUseCase;AuthState get state => _state;
   User? get user => _user;
   String? get errorMessage => _errorMessage;
   RoleService get roleService => _roleService;
@@ -195,9 +195,8 @@ class AuthController extends ChangeNotifier {
       return false;
     }
   }
-
   /// Specialized method for driver registration
-  Future<bool> signUpDriver({
+  Future<Map<String, dynamic>> signUpDriver({
     required String email,
     required String password,
     required String firstName,
@@ -234,15 +233,24 @@ class AuthController extends ChangeNotifier {
       
       _state = AuthState.authenticated;
       notifyListeners();
-      return true;
+      
+      // Return success with instruction to go to role selection page
+      return {
+        'success': true,
+        'redirectToRoleSelection': true,
+        'message': 'Registro exitoso. Selecciona tu rol para continuar.'
+      };
     } catch (e) {
       _state = AuthState.error;
       _errorMessage = e.toString();
       notifyListeners();
-      return false;
+      return {
+        'success': false,
+        'message': _errorMessage
+      };
     }
   }  /// Specialized method for merchant registration
-  Future<bool> signUpMerchant({
+  Future<Map<String, dynamic>> signUpMerchant({
     required String email,
     required String password,
     required String firstName,
@@ -327,12 +335,21 @@ class AuthController extends ChangeNotifier {
       
       _state = AuthState.authenticated;
       notifyListeners();
-      return true;
+      
+      // Return success with instruction to go to role selection page
+      return {
+        'success': true,
+        'redirectToRoleSelection': true,
+        'message': 'Registro de comerciante exitoso. Selecciona tu rol para continuar.'
+      };
     } catch (e) {
       _state = AuthState.error;
       _errorMessage = e.toString();
       notifyListeners();
-      return false;
+      return {
+        'success': false,
+        'message': _errorMessage
+      };
     }
   }
     /// Method to handle adding a new role to an existing user
@@ -391,22 +408,20 @@ class AuthController extends ChangeNotifier {
         //ignore: avoid_print
         print("Setting owner_id to ${_user!.id} for merchant role");
       }
-      
-      // Check if the user already has this role
+        // Check if the user already has this role
       final userRoles = await _getUserRolesUseCase.execute(_user!.id);
       
       if (userRoles.contains(roleSlug)) {
-        // If user already has the role, update the data instead of adding it
-        if (roleType == RoleType.merchant) {
-          // For merchants, ensure we have all required data
-          await _roleService.addRoleWithData(roleSlug, roleData);
-        } else {
-          // For other roles, simply update the necessary data
-          await _addUserRoleUseCase.execute(_user!.id, roleSlug, roleData);
-        }
+        // User already has the role - this should not happen normally, but if it does,
+        // we can just refresh the data rather than trying to add it again
+        _state = AuthState.error;
+        _errorMessage = 'Ya tienes este rol asociado a tu cuenta';
+        notifyListeners();
+        return false;
       } else {
-        // If user doesn't have the role yet, add it with the corresponding data
-        await _addUserRoleUseCase.execute(_user!.id, roleSlug, roleData);
+        // User doesn't have the role yet, add it with the corresponding data
+        // Always use RoleService to maintain proper role isolation
+        await _roleService.addRoleWithData(roleSlug, roleData);
       }
       
       // Refresh user data to get updated roles
@@ -421,8 +436,7 @@ class AuthController extends ChangeNotifier {
       notifyListeners();
       return false;
     }
-  }
-  /// Method to handle login with role selection if user has multiple roles
+  }  /// Method to handle login with role selection if user has multiple roles
   Future<Map<String, dynamic>> handleLoginWithRoleSelection(String email, String password) async {
     _state = AuthState.loading;
     _errorMessage = null;
@@ -436,6 +450,9 @@ class AuthController extends ChangeNotifier {
       
       // Get all roles for this user
       _availableRoles = await _getUserRolesUseCase.execute(_user!.id);
+        // Check if user has merchant or driver roles (regardless of verification status)
+      final hasMerchantRole = _availableRoles.contains('merchant');
+      final hasDriverRole = _availableRoles.contains('driver');
       
       // If user has multiple roles, go to role selection page where verification will be handled per role
       if (_availableRoles.length > 1) {
@@ -444,7 +461,36 @@ class AuthController extends ChangeNotifier {
         return {'success': true, 'hasMultipleRoles': true};
       }
       
-      // If user has only one role, apply normal verification logic by calling signIn again
+      // If user has single role but it's merchant or driver, check verification status first
+      if (hasMerchantRole || hasDriverRole) {
+        final singleRole = _availableRoles.first;
+        
+        // Check verification status for the single role
+        if (singleRole == 'driver') {
+          final isVerified = await checkDriverVerificationStatus(_user!.id);
+          if (!isVerified) {
+            // Single driver role but not verified - go to pending page
+            _state = AuthState.authenticated;
+            notifyListeners();
+            return {'success': true, 'hasMultipleRoles': false, 'redirectToPending': 'driver'};
+          }
+        } else if (singleRole == 'merchant') {
+          final isVerified = await checkMerchantVerificationStatus(_user!.id);
+          if (!isVerified) {
+            // Single merchant role but not verified - go to pending page
+            _state = AuthState.authenticated;
+            notifyListeners();
+            return {'success': true, 'hasMultipleRoles': false, 'redirectToPending': 'merchant'};
+          }
+        }
+        
+        // If we get here, the single role is verified - go to role selection for consistency
+        _state = AuthState.authenticated;
+        notifyListeners();
+        return {'success': true, 'hasMultipleRoles': true};
+      }
+      
+      // If user has only customer or admin role, apply normal verification logic
       final signInResult = await signIn(email, password);
       
       // Return the result of single-role sign in (with verification)
@@ -456,7 +502,7 @@ class AuthController extends ChangeNotifier {
       return {'success': false, 'message': _errorMessage};
     }
   }
-    // Helper method to convert role type enum to string slug
+  // Helper method to convert role type enum to string slug
   String _getRoleSlugFromType(RoleType roleType) {
     switch (roleType) {
       case RoleType.customer:
@@ -465,6 +511,21 @@ class AuthController extends ChangeNotifier {
         return 'driver';
       case RoleType.merchant:
         return 'merchant';
+    }
+  }
+
+  /// Sign out the current user
+  Future<void> signOut() async {
+    try {
+      await _signInUseCase.repository.signOut();
+      _state = AuthState.unauthenticated;
+      _user = null;
+      _availableRoles = [];
+      _errorMessage = null;
+      notifyListeners();
+    } catch (e) {
+      _errorMessage = 'Error al cerrar sesión: ${e.toString()}';
+      notifyListeners();
     }
   }
 }

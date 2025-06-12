@@ -37,8 +37,7 @@ class MerchantRepositoryImpl implements MerchantRepository {
     required String phone,
     required AuthController authController,
     String? cedula,
-  }) async {
-    final m = await _ds.registerMerchant(
+  }) async {    final result = await _ds.registerMerchant(
       address        : address,
       businessName   : businessName,
       corporateName  : corporateName,
@@ -54,6 +53,16 @@ class MerchantRepositoryImpl implements MerchantRepository {
       cedula         : cedula,
     );
 
-    return Merchant.fromMap(m);
+    // Check if should redirect to role selection
+    if (result['redirectToRoleSelection'] == true) {
+      // For the new flow, we don't return a merchant object
+      // We should modify the contract to handle this properly
+      // For now, we'll throw an exception with navigation info
+      throw Exception('REDIRECT_TO_ROLE_SELECTION:${result['message']}');
+    }
+    
+    // Extract merchant data for traditional flow
+    final merchantData = result['merchant'] ?? result;
+    return Merchant.fromMap(merchantData);
   }
 }

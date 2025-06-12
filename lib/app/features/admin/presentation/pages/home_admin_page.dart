@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/di/service_locator.dart';
 import '../controllers/admin_merchant_controller.dart';
@@ -56,16 +57,19 @@ class _HomeAdminPageState extends State<HomeAdminPage> {
       ),
     );
 
-    if (shouldLogout == true) {
-      try {
+    if (shouldLogout == true) {      try {
         // Cerrar sesión en Supabase
         await Supabase.instance.client.auth.signOut();
         
+        // Clear local preferences to ensure clean logout
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.clear();
+        
         if (mounted) {
-          // Navegar a la pantalla de navegación inicial
+          // Navigate to the login page instead of app start navigation
           Navigator.pushNamedAndRemoveUntil(
             context,
-            Routes.appStartNavigation,
+            Routes.login_page,
             (route) => false,
           );
         }

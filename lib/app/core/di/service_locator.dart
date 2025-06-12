@@ -148,9 +148,8 @@ void setupServiceLocator() {
     )
     ..registerLazySingleton<GetUserRolesUseCase>(
       () => GetUserRolesUseCase(locator<AuthRepository>()),
-    )
-    ..registerLazySingleton<AddUserRoleUseCase>(
-      () => AddUserRoleUseCase(locator<AuthRepository>()),
+    )    ..registerLazySingleton<AddUserRoleUseCase>(
+      () => AddUserRoleUseCase(locator<RoleService>()),
     )
     ..registerLazySingleton<RegisterMerchantUseCase>(
       () => RegisterMerchantUseCase(locator<MerchantRepository>()),

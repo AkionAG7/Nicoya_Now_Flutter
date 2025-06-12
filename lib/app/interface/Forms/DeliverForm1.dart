@@ -82,10 +82,9 @@ class _DeliverForm1State extends State<DeliverForm1> {
               'isAddingRole': true, // Pass this flag to DeliverForm2
             },
           );
-        }
-      } else {
+        }      } else {
         // New user registration
-        success = await authController.signUpDriver(
+        final result = await authController.signUpDriver(
           email: _email.text.trim(),
           password: _pass.text,
           firstName: _nombre.text.trim(),
@@ -95,15 +94,37 @@ class _DeliverForm1State extends State<DeliverForm1> {
           idNumber: _cedula.text.trim(),
         );
 
+        success = result['success'] ?? false;
+
         if (success && mounted) {
-          Navigator.pushReplacementNamed(
-            context,
-            Routes.deliver_Form2,
-            arguments: {
-              'uid': authController.user!.id,
-              'licenseNumber': _license.text.trim(),
-            },
-          );
+          // Check if should redirect to role selection page
+          if (result['redirectToRoleSelection'] == true) {
+            // Show success message
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(result['message'] ?? 'Registro exitoso'),
+                backgroundColor: Colors.green,
+              ),
+            );
+              // Navigate to role selection page instead of DeliverForm2
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              Routes.selectUserRole,
+              (route) => false,
+            );
+          } else {
+            // Fallback to previous behavior (should not happen with new flow)
+            Navigator.pushReplacementNamed(
+              context,
+              Routes.deliver_Form2,
+              arguments: {
+                'uid': authController.user!.id,
+                'licenseNumber': _license.text.trim(),
+              },
+            );
+          }
+        } else {
+          setState(() => _error = result['message'] ?? 'Error en el registro');
         }
       }
 
