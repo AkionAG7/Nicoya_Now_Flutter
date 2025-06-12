@@ -8,8 +8,8 @@ class DriverListItem extends StatelessWidget {
   final String status;
   final VoidCallback onApprove;
   final VoidCallback? onReject;
+  final VoidCallback? onUnapprove;
   final bool isApproved;
-
   const DriverListItem({
     super.key,
     required this.name,
@@ -18,6 +18,7 @@ class DriverListItem extends StatelessWidget {
     required this.status,
     required this.onApprove,
     this.onReject,
+    this.onUnapprove,
     this.isApproved = false,
   });
 
@@ -40,9 +41,22 @@ class DriverListItem extends StatelessWidget {
             Text('Estado: $status'),
           ],
         ),
-        isThreeLine: true,
-        trailing: isApproved
-            ? const Icon(Icons.verified, color: Colors.green)
+        isThreeLine: true,        trailing: isApproved
+            ? Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.verified, color: Colors.green),
+                  const SizedBox(width: 8),                  if (onUnapprove != null)
+                    ElevatedButton(
+                      onPressed: onUnapprove,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text('Suspender'),
+                    ),
+                ],
+              )
             : Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [

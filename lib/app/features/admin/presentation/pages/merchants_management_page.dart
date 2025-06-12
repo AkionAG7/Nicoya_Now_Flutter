@@ -19,7 +19,6 @@ class _MerchantsManagementPageState extends State<MerchantsManagementPage>
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   late TabController _tabController;
-
   @override
   void initState() {
     super.initState();
@@ -27,22 +26,6 @@ class _MerchantsManagementPageState extends State<MerchantsManagementPage>
     _controller.loadMerchants();
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(_handleTabChange);
-
-    // Add a delayed debug print to check controller state
-    Future.delayed(const Duration(seconds: 3), () {
-      //ignore: avoid_print
-      print("DEBUG CONTROLLER STATE AFTER 3s: ");
-      //ignore: avoid_print
-      print("State: ${_controller.state}");
-      //ignore: avoid_print
-      print("Error: ${_controller.error}");
-      //ignore: avoid_print
-      print("Merchants count: ${_controller.merchants.length}");
-      if (_controller.merchants.isNotEmpty) {
-        //ignore: avoid_print
-        print("First merchant: ${_controller.merchants.first}");
-      }
-    });
   }
 
   void _handleTabChange() {
@@ -120,31 +103,9 @@ class _MerchantsManagementPageState extends State<MerchantsManagementPage>
                             style: const TextStyle(color: Colors.red),
                             textAlign: TextAlign.center,
                           ),
-                          const SizedBox(height: 16),
-                          ElevatedButton(
+                          const SizedBox(height: 16),                          ElevatedButton(
                             onPressed: () => controller.refresh(),
                             child: const Text('Reintentar'),
-                          ),
-                          const SizedBox(height: 16),
-                          // Debug button
-                          ElevatedButton(
-                            onPressed: () {
-                              //ignore: avoid_print
-                              print("DEBUG CONTROLLER INFO:");
-                              //ignore: avoid_print
-                              print("State: ${controller.state}");
-                              //ignore: avoid_print
-                              print("Error: ${controller.error}");
-                              //ignore: avoid_print
-                              print(
-                                "Merchants count: ${controller.merchants.length}",
-                              );
-
-                              // Print raw network response
-                              locator<AdminMerchantController>()
-                                  .loadMerchants();
-                            },
-                            child: const Text('Debug Info (Check Console)'),
                           ),
                         ],
                       ),
@@ -174,8 +135,7 @@ class _MerchantsManagementPageState extends State<MerchantsManagementPage>
                     child: ListView.builder(
                       itemCount: filteredMerchants.length,
                       itemBuilder: (context, index) {
-                        final merchant = filteredMerchants[index];
-                        return MerchantListItem(
+                        final merchant = filteredMerchants[index];                        return MerchantListItem(
                           name: merchant.businessName,
                           status:
                               merchant.isVerified ? 'Aprobado' : 'Pendiente',
@@ -185,6 +145,13 @@ class _MerchantsManagementPageState extends State<MerchantsManagementPage>
                                 merchant.businessName,
                                 merchant.merchantId,
                               ),
+                          onUnapprove: merchant.isVerified 
+                              ? () => _showUnapprovalDialog(
+                                  context,
+                                  merchant.businessName,
+                                  merchant.merchantId,
+                                )
+                              : null,
                           isApproved: merchant.isVerified,
                         );
                       },
@@ -248,6 +215,62 @@ class _MerchantsManagementPageState extends State<MerchantsManagementPage>
               ),
             ],
           ),
+    );
+  }
+  void _showUnapprovalDialog(
+    BuildContext context,
+    String merchantName,
+    String merchantId,
+  ) {
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Suspender $merchantName'),
+        content: const Text(
+          '¿Estás seguro de que deseas suspender este comercio? Esto cambiará su estado a "Pendiente".',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+
+              // Llamar al método de desaprobación del controlador
+              try {
+                final success = await _controller.unapproveMerchant(merchantId);                if (success) {
+                  scaffoldMessenger.showSnackBar(
+                    SnackBar(
+                      content: Text('$merchantName ha sido suspendido'),
+                      backgroundColor: Colors.orange,
+                    ),
+                  );
+                } else {
+                  scaffoldMessenger.showSnackBar(
+                    SnackBar(
+                      content: Text('Error al suspender $merchantName: ${_controller.error}'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }              } catch (e) {
+                scaffoldMessenger.showSnackBar(
+                  SnackBar(
+                    content: Text('Error al suspender $merchantName: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange,
+            ),
+            child: const Text('Suspender'),          ),
+        ],
+      ),
     );
   }
 }
