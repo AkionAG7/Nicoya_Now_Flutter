@@ -34,6 +34,8 @@ import 'package:nicoya_now/app/interface/Widgets/first_time_in.dart';
 import 'package:nicoya_now/app/interface/Widgets/home_page.dart';
 import 'package:nicoya_now/app/features/products/presentation/pages/home_food.dart';
 import 'package:nicoya_now/app/interface/Widgets/LoginPage.dart';
+import 'package:nicoya_now/app/interface/Widgets/ForgotPasswordPage.dart';
+import 'package:nicoya_now/app/interface/Widgets/ResetPasswordWithCodePage.dart';
 import 'package:nicoya_now/app/interface/Widgets/order_succes.dart';
 import 'package:nicoya_now/app/features/products/presentation/pages/product_detail.dart';
 import 'package:nicoya_now/app/interface/Widgets/register_user.dart';
@@ -56,9 +58,12 @@ Map<String, Widget Function(BuildContext)> get appRoutes {
     Routes.preLogin: (context) {
       // No necesitamos pasar el tipo de cuenta inicialmente
       return const Home(accountType: null);
-    },
-    Routes.login_page: (context) {
+    },    Routes.login_page: (context) {
       return const LoginPage(accountType: null);
+    },    Routes.forgotPassword: (context) => const ForgotPasswordPage(),
+    Routes.resetByCode: (context) {
+      final email = ModalRoute.of(context)!.settings.arguments as String;
+      return ResetPasswordWithCodePage(email: email);
     },
 
     Routes.register_user_page: (context) => const RegisterUser(),

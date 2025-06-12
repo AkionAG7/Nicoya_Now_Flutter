@@ -13,10 +13,18 @@ class LocationManager {
   void init(BuildContext context, DriverController controller) {
     _context = context;
     _controller = controller;
-  }
-
-  Future<void> requestLocationPermissions() async {
+  }  Future<void> requestLocationPermissions() async {
     try {
+      // First check if permissions are already granted
+      bool tienePermisos = await ubicacionController.tienePermisos();
+      
+      // If permissions are already granted, no need to show dialog
+      if (tienePermisos) {
+        await updateLocation();
+        return;
+      }
+      
+      // Only show dialog if permissions are needed
       final permiso = await showDialog<bool>(
         context: _context!,
         builder: (context) {
