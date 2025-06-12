@@ -136,6 +136,7 @@ class SupabaseMerchantDataSource implements MerchantDataSource {
       businessName:
           businessName, // Ahora pasamos explícitamente el nombre del negocio
       corporateName: corporateName, // Y el nombre corporativo
+      isNewUserRegistration: true, // Indicate this is a new user registration flow
     );
 
     final success = result['success'] ?? false;

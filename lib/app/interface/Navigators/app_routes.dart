@@ -76,9 +76,13 @@ Map<String, Widget Function(BuildContext)> get appRoutes {
     Routes.deliver_Form2: (context) => const DeliverForm2(),
     Routes.driverPending: (context) => const DriverPendingPage(),    Routes.merchantPending: (context) => const MerchantPendingPage(),    Routes.home_food: (context) => const HomeFood(),
     Routes.home_merchant: (context) => const HomeMerchantPage(),
-    Routes.home_driver: (context) => const HomeDriverPage(),
-    Routes.driver_order_details: (context) {
-      final order = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+    Routes.home_driver: (context) => const HomeDriverPage(),    Routes.driver_order_details: (context) {
+      final args = ModalRoute.of(context)?.settings.arguments;
+      if (args == null) {
+        // Handle the case where no arguments are passed
+        throw Exception('Order details page requires order arguments');
+      }
+      final order = args as Map<String, dynamic>;
       return OrderDetailsPage(order: order);
     },
     Routes.merchantStepBusiness: (context) => const MerchantStepBusiness(),
@@ -86,10 +90,13 @@ Map<String, Widget Function(BuildContext)> get appRoutes {
     Routes.merchantStepPassword: (context) => const MerchantStepPassword(),
     Routes.merchantSettings: (context) => const MerchantSettingsPage(),
     Routes.merchantPublicProducts:
-        (context) => const MerchantPublicProductsPage(),
-    Routes.addProduct: (context) {
-      final args = ModalRoute.of(context)!.settings.arguments as String;
-      return AddProductPage(merchantId: args);
+        (context) => const MerchantPublicProductsPage(),    Routes.addProduct: (context) {
+      final args = ModalRoute.of(context)?.settings.arguments;
+      if (args == null) {
+        throw Exception('Add product page requires merchant ID argument');
+      }
+      final merchantId = args as String;
+      return AddProductPage(merchantId: merchantId);
     },
     Routes.editProduct: (context) {
       final product = ModalRoute.of(context)!.settings.arguments as Product;
@@ -102,12 +109,14 @@ Map<String, Widget Function(BuildContext)> get appRoutes {
     Routes.clientNav: (context) => const BottomNavigator(),
     Routes.isFirstTime: (context) => const FirstTimeIn(),
     Routes.appStartNavigation: (context) => const AppStartNavigation(),
-    Routes.selectUserRole: (context) => const SelectUserRolePage(),
-    Routes.roleFormPage: (context) {
-      final args =
-          ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-      final roleType = args['roleType'] as RoleType;
-      final isAddingRole = args['isAddingRole'] as bool? ?? false;
+    Routes.selectUserRole: (context) => const SelectUserRolePage(),    Routes.roleFormPage: (context) {
+      final args = ModalRoute.of(context)?.settings.arguments;
+      if (args == null) {
+        throw Exception('Role form page requires role type argument');
+      }
+      final argsMap = args as Map<String, dynamic>;
+      final roleType = argsMap['roleType'] as RoleType;
+      final isAddingRole = argsMap['isAddingRole'] as bool? ?? false;
 
       return RoleFormPage(roleType: roleType, isAddingRole: isAddingRole);
     },

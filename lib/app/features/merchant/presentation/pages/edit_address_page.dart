@@ -49,10 +49,12 @@ class _EditAddressPageState extends State<EditAddressPage> {
 
       if (resp == null) {
         throw Exception('No se encontró merchant para $userId');
+      }      final m = resp as Map<String, dynamic>;
+      final address = m['main_address'] as Map<String, dynamic>?;
+      
+      if (address == null) {
+        throw Exception('No se encontró dirección principal para este merchant');
       }
-
-      final m       = resp as Map<String, dynamic>;
-      final address = m['main_address'] as Map<String, dynamic>;
 
       _addressId = address['address_id'] as String;
       _streetController.text   = address['street']   as String? ?? '';
