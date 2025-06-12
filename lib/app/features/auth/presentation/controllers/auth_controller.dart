@@ -228,17 +228,16 @@ class AuthController extends ChangeNotifier {
       await _signInUseCase.repository.updateProfile(_user!.id, {
         'id_number': idNumber,
       });
-      
-      await _refreshUserData();
+        await _refreshUserData();
       
       _state = AuthState.authenticated;
       notifyListeners();
       
-      // Return success with instruction to go to role selection page
+      // For driver registration, continue directly to DeliverForm2 to complete setup
       return {
         'success': true,
-        'redirectToRoleSelection': true,
-        'message': 'Registro exitoso. Selecciona tu rol para continuar.'
+        'redirectToRoleSelection': false, // Driver flow should continue to DeliverForm2
+        'message': 'Registro exitoso. Continúa completando tu perfil.'
       };
     } catch (e) {
       _state = AuthState.error;
@@ -387,8 +386,7 @@ class AuthController extends ChangeNotifier {
       notifyListeners();
       return false;
     }
-  }
-  /// Method to add a new role to the current authenticated user
+  }  /// Method to add a new role to the current authenticated user
   Future<bool> addRoleToCurrentUser(RoleType roleType, Map<String, dynamic> roleData) async {
     if (_user == null) {
       _errorMessage = 'No hay un usuario autenticado';
@@ -398,8 +396,7 @@ class AuthController extends ChangeNotifier {
     _state = AuthState.loading;
     _errorMessage = null;
     notifyListeners();
-    
-    try {
+      try {
       final roleSlug = _getRoleSlugFromType(roleType);
       
       // Always set owner_id for merchant roles to prevent null constraint violations
@@ -407,8 +404,7 @@ class AuthController extends ChangeNotifier {
         roleData['owner_id'] = _user!.id;
         //ignore: avoid_print
         print("Setting owner_id to ${_user!.id} for merchant role");
-      }
-        // Check if the user already has this role
+      }        // Check if the user already has this role
       final userRoles = await _getUserRolesUseCase.execute(_user!.id);
       
       if (userRoles.contains(roleSlug)) {
@@ -422,8 +418,7 @@ class AuthController extends ChangeNotifier {
         // User doesn't have the role yet, add it with the corresponding data
         // Always use RoleService to maintain proper role isolation
         await _roleService.addRoleWithData(roleSlug, roleData);
-      }
-      
+      }      
       // Refresh user data to get updated roles
       await _refreshUserData();
       

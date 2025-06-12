@@ -246,29 +246,34 @@ class SupabaseAuthDataSource implements AuthDataSource {
             .from('profile')
             .update({'id_number': roleData['id_number']})
             .eq('user_id', userId);
+      }      // Handle role-specific data creation
+      if (roleSlug == 'driver') {
+        // Para el rol de driver, NO creamos el registro en la tabla driver aquí
+        // Se creará cuando se complete el segundo formulario con vehicle_type
+        // Just update the profile with id_number if provided (already handled above)
+        // Continue to address and other processing below
+      } else if (roleSlug == 'merchant') {
+        // Always ensure both merchant_id and owner_id are set to prevent not-null constraint violations
+        final merchantData = {
+          'merchant_id': userId,
+          'owner_id':
+              userId, // Set owner_id to prevent not-null constraint violation
+          'is_active': false, // ¡No activar aquí! Lo hace el admin desde el dashboard.
+        };
+
+        // Add additional merchant-specific fields if available
+        if (roleData['business_name'] != null)
+          merchantData['business_name'] = roleData['business_name'];
+        if (roleData['corporate_name'] != null)
+          merchantData['corporate_name'] = roleData['corporate_name'];
+        if (roleData['id_number'] != null)
+          merchantData['legal_id'] = roleData['id_number'];
+
+        await _supabaseClient
+            .from('merchant')
+            .upsert(merchantData, onConflict: 'merchant_id');
       }
-
-      // Para el rol de driver, NO creamos el registro en la tabla driver aquí
-      // Se creará cuando se complete el segundo formulario con vehicle_type      if (roleSlug == 'merchant') {      // Always ensure both merchant_id and owner_id are set to prevent not-null constraint violations
-      final merchantData = {
-        'merchant_id': userId,
-        'owner_id':
-            userId, // Set owner_id to prevent not-null constraint violation
-        'is_active': false, // ¡No activar aquí! Lo hace el admin desde el dashboard.
-      };
-
-      // Add additional merchant-specific fields if available
-      if (roleData['business_name'] != null)
-        merchantData['business_name'] = roleData['business_name'];
-      if (roleData['corporate_name'] != null)
-        merchantData['corporate_name'] = roleData['corporate_name'];
-      if (roleData['id_number'] != null)
-        merchantData['legal_id'] = roleData['id_number'];
-
-      await _supabaseClient
-          .from('merchant')
-          .upsert(merchantData, onConflict: 'merchant_id');
-    } // Handle address data if provided
+    }// Handle address data if provided
     if (roleData['address'] != null &&
         roleData['address'].toString().trim().isNotEmpty) {
       try {
