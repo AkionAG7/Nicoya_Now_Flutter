@@ -245,10 +245,9 @@ class _SelectUserRolePageState extends State<SelectUserRolePage> {
       // Navegar a la página apropiada según el rol
       if (context.mounted) {
         Navigator.of(context).pop(); // Cerrar diálogo de carga
-        
-        switch (role) {
+          switch (role) {
           case 'customer':
-            Navigator.of(context).pushReplacementNamed(Routes.home_food);
+            Navigator.of(context).pushReplacementNamed(Routes.clientNav);
             break;
           case 'driver':
             Navigator.of(context).pushReplacementNamed(Routes.home_driver);
@@ -257,7 +256,7 @@ class _SelectUserRolePageState extends State<SelectUserRolePage> {
             Navigator.of(context).pushReplacementNamed(Routes.home_merchant);
             break;
           default:
-            Navigator.of(context).pushReplacementNamed(Routes.home_food);
+            Navigator.of(context).pushReplacementNamed(Routes.clientNav);
         }
       }
     } catch (e) {

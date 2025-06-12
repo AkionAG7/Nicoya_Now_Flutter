@@ -61,9 +61,7 @@ class _DeliverForm1State extends State<DeliverForm1> {
       final authController = Provider.of<AuthController>(
         context,
         listen: false,
-      );
-
-      bool success;
+      );      bool success;
       if (_isAddingRole) {
         // User is adding driver role to existing account
         success = await authController.addRoleToCurrentUser(RoleType.driver, {
@@ -82,7 +80,7 @@ class _DeliverForm1State extends State<DeliverForm1> {
               'isAddingRole': true, // Pass this flag to DeliverForm2
             },
           );
-        }      } else {
+        }} else {
         // New user registration
         final result = await authController.signUpDriver(
           email: _email.text.trim(),
@@ -94,35 +92,18 @@ class _DeliverForm1State extends State<DeliverForm1> {
           idNumber: _cedula.text.trim(),
         );
 
-        success = result['success'] ?? false;
-
-        if (success && mounted) {
-          // Check if should redirect to role selection page
-          if (result['redirectToRoleSelection'] == true) {
-            // Show success message
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(result['message'] ?? 'Registro exitoso'),
-                backgroundColor: Colors.green,
-              ),
-            );
-              // Navigate to role selection page instead of DeliverForm2
-            Navigator.pushNamedAndRemoveUntil(
-              context,
-              Routes.selectUserRole,
-              (route) => false,
-            );
-          } else {
-            // Fallback to previous behavior (should not happen with new flow)
-            Navigator.pushReplacementNamed(
-              context,
-              Routes.deliver_Form2,
-              arguments: {
-                'uid': authController.user!.id,
-                'licenseNumber': _license.text.trim(),
-              },
-            );
-          }
+        success = result['success'] ?? false;        if (success && mounted) {
+          // For driver registration, always continue to DeliverForm2 to complete the process
+          // The role has been added, now we need to collect vehicle and document info
+          Navigator.pushReplacementNamed(
+            context,
+            Routes.deliver_Form2,
+            arguments: {
+              'uid': authController.user!.id,
+              'licenseNumber': _license.text.trim(),
+              'isAddingRole': false, // This is new user registration, not adding role
+            },
+          );
         } else {
           setState(() => _error = result['message'] ?? 'Error en el registro');
         }

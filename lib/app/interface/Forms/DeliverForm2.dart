@@ -116,20 +116,25 @@ class _DeliverForm2State extends State<DeliverForm2> {
           context,
           Routes.login_page,
           (_) => false,
-        );
-      } else {
-        // New user registration - go to role selection page instead of pending
+        );      } else {
+        // New user registration - go to login page after signing out
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-              'Registro exitoso. Selecciona tu rol para continuar.',
+              '¡Registro exitoso! Tu cuenta está pendiente de verificación. Por favor, inicia sesión.',
             ),
             backgroundColor: Colors.green,
+            duration: Duration(seconds: 4),
           ),
         );
+        
+        // Sign out user to require fresh login
+        await Supabase.instance.client.auth.signOut();
+        
+        // Navigate to login page instead of role selection
         Navigator.pushNamedAndRemoveUntil(
           context,
-          Routes.selectUserRole,
+          Routes.login_page,
           (_) => false,
         );
       }
