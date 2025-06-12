@@ -14,10 +14,9 @@ class AvailableOrderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Extract order information safely from the structure of available_orders_view
-    final String orderId = order['order_id']?.toString() ?? 'Sin ID';
-      // Merchant info
-    final merchant = order['merchant'];
-    final String merchantName = merchant != null ? merchant['name']?.toString() ?? 'Comercio desconocido' : 'Comercio desconocido';
+    final String orderId = order['order_id']?.toString() ?? 'Sin ID';    // Merchant info
+    final merchantName =
+        order['merchant']?['business_name'] ?? 'Comercio';
     
     // Customer info
     final customer = order['customer'];
@@ -46,13 +45,9 @@ class AvailableOrderCard extends StatelessWidget {
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
+                    children: [                      Text(
                         merchantName,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium,
                       ),
                       Text(
                         'ID: ${orderId.substring(0, math.min(8, orderId.length))}...',
