@@ -25,15 +25,13 @@ class _ResetPasswordWithCodePageState extends State<ResetPasswordWithCodePage> {
     _pwd2Controller.dispose();
     super.dispose();
   }
-
-  Future<void> _submit() async {
-    if (_pwd1Controller.text != _pwd2Controller.text) {
+  Future<void> _submit() async {    if (_pwd1Controller.text != _pwd2Controller.text) {
       _show('Las contraseñas no coinciden');
       return;
     }
     
-    if (_pwd1Controller.text.length < 6) {
-      _show('La contraseña debe tener al menos 6 caracteres');
+    if (_pwd1Controller.text.length < 8) {
+      _show('La contraseña debe tener al menos 8 caracteres');
       return;
     }
 
@@ -41,62 +39,50 @@ class _ResetPasswordWithCodePageState extends State<ResetPasswordWithCodePage> {
 
     try {
       final supa = Supabase.instance.client;
-      final code = _codeController.text.trim();      // 1. obtener registro del código
-      final res = await supa
-          .from('password_reset_code')
-          .select('user_id, expires_at')
-          .eq('code', code)
-          .eq('email', widget.email) // Verificar también el email
-          .maybeSingle();
+      final code = _codeController.text.trim();
 
-      if (res == null) {
-        _show('Código inválido');
-        return;
-      }      final expires = DateTime.parse(res['expires_at']);
-      if (expires.isBefore(DateTime.now())) {
-        _show('Código expirado');
-        return;
-      }
-
-      // 2. cambiar password
-      final userId = res['user_id'] as String;
-      final upd = await supa.auth.admin.updateUserById(
-        userId,
-        attributes: AdminUserAttributes(password: _pwd1Controller.text),
+      // Usar la Edge Function para resetear la contraseña
+      final response = await supa.functions.invoke(
+        'confirm-reset-code',
+        body: {
+          'email': widget.email,
+          'code': code,
+          'new_password': _pwd1Controller.text,
+        },
       );
-      
-      if (upd.user == null) {
-        _show('Error al actualizar contraseña');
-        return;
-      }
 
-      // 3. eliminar el código usado
-      await supa.from('password_reset_code').delete().eq('user_id', userId);
-
-      if (mounted) {
-        Navigator.popUntil(context, (r) => r.isFirst); // vuelve a login
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Contraseña actualizada exitosamente'),
-            backgroundColor: Colors.green,
-          ),
-        );
+      // Verificar la respuesta de la Edge Function
+      if (response.status == 200) {
+        if (mounted) {
+          Navigator.popUntil(context, (r) => r.isFirst); // vuelve a login
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Contraseña actualizada exitosamente'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }      } else if (response.status == 400) {
+        _show('Código inválido o expirado');
+      } else if (response.status == 500) {
+        final msg = response.data?['error'] ?? 'Error interno del servidor';
+        _show(msg);
+      } else {
+        _show('Error inesperado. Código de estado: ${response.status}');
       }
     } catch (e) {
-      _show('Error: ${e.toString()}');
+      _show('Error de conexión: ${e.toString()}');
     } finally {
       if (mounted) {
         setState(() => _saving = false);
       }
     }
   }
-
-  void _show(String msg) {
+  void _show(String msg, {bool isError = true}) {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(msg),
-          backgroundColor: Colors.red,
+          backgroundColor: isError ? Colors.red : Colors.green,
         ),
       );
     }
@@ -159,12 +145,11 @@ class _ResetPasswordWithCodePageState extends State<ResetPasswordWithCodePage> {
                   keyboardType: TextInputType.number,
                   maxLength: 6,
                 ),
-                const SizedBox(height: 20),
-                TextFormField(
+                const SizedBox(height: 20),                TextFormField(
                   controller: _pwd1Controller,
                   decoration: InputDecoration(
                     labelText: 'Nueva contraseña',
-                    hintText: 'Mínimo 6 caracteres',
+                    hintText: 'Mínimo 8 caracteres',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -233,10 +218,24 @@ class _ResetPasswordWithCodePageState extends State<ResetPasswordWithCodePage> {
                           ),
                   ),
                 ),
-                const SizedBox(height: 20),
-                Center(
+                const SizedBox(height: 20),                Center(
                   child: TextButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: _saving ? null : () async {
+                      setState(() => _saving = true);
+                      try {
+                        final res = await Supabase.instance.client.functions.invoke(
+                          'send-reset-code',
+                          body: { 'email': widget.email },
+                        );                        _show(res.status == 200
+                              ? 'Te hemos enviado otro código'
+                              : 'No se pudo reenviar el código',
+                              isError: res.status != 200);
+                      } catch (e) {
+                        _show('Error al reenviar código: ${e.toString()}');
+                      } finally {
+                        setState(() => _saving = false);
+                      }
+                    },
                     child: const Text(
                       'Volver a enviar código',
                       style: TextStyle(
