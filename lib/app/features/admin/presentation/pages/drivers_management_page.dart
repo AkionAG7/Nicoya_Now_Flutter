@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/di/service_locator.dart';
 import '../controllers/admin_driver_controller.dart';
 import '../widgets/driver_list_item.dart';
+import 'driver_detail_page.dart';
 
 /// Página de gestión de repartidores
 class DriversManagementPage extends StatefulWidget {
@@ -17,30 +18,13 @@ class _DriversManagementPageState extends State<DriversManagementPage> with Sing
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   late TabController _tabController;
-  
-  @override
+    @override
   void initState() {
     super.initState();
     _controller = locator<AdminDriverController>();
     _controller.loadDrivers();
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(_handleTabChange);
-    
-    // Add a delayed debug print to check controller state
-    Future.delayed(const Duration(seconds: 3), () {
-      //ignore: avoid_print
-      print("DEBUG DRIVER CONTROLLER STATE AFTER 3s: ");
-      //ignore: avoid_print
-      print("State: ${_controller.state}");
-      //ignore: avoid_print
-      print("Error: ${_controller.error}");
-      //ignore: avoid_print
-      print("Drivers count: ${_controller.drivers.length}");
-      if (_controller.drivers.isNotEmpty) {
-        //ignore: avoid_print
-        print("First driver: ${_controller.drivers.first}");
-      }
-    });
   }
 
   void _handleTabChange() {
@@ -121,28 +105,9 @@ class _DriversManagementPageState extends State<DriversManagementPage> with Sing
                             style: const TextStyle(color: Colors.red),
                             textAlign: TextAlign.center,
                           ),
-                          const SizedBox(height: 16),
-                          ElevatedButton(
+                          const SizedBox(height: 16),                          ElevatedButton(
                             onPressed: () => controller.refresh(),
                             child: const Text('Reintentar'),
-                          ),
-                          const SizedBox(height: 16),
-                          // Debug button
-                          ElevatedButton(
-                            onPressed: () {
-                              //ignore: avoid_print
-                              print("DEBUG DRIVER CONTROLLER INFO:");
-                              //ignore: avoid_print
-                              print("State: ${controller.state}");
-                              //ignore: avoid_print
-                              print("Error: ${controller.error}");
-                              //ignore: avoid_print
-                              print("Drivers count: ${controller.drivers.length}");
-                              
-                              // Print raw network response
-                              locator<AdminDriverController>().loadDrivers();
-                            },
-                            child: const Text('Debug Info (Check Console)'),
                           ),
                         ],
                       ),
@@ -177,6 +142,8 @@ class _DriversManagementPageState extends State<DriversManagementPage> with Sing
                           status: driver.isVerified ? 'Aprobado' : 'Pendiente',
                           onApprove: () => _showDriverApprovalDialog(context, driver.driverId),
                           onReject: driver.isVerified ? null : () => _showDriverRejectionDialog(context, driver.driverId),
+                          onUnapprove: driver.isVerified ? () => _showDriverUnapprovalDialog(context, driver.driverId) : null,
+                          onViewDetails: () => _navigateToDriverDetail(context, driver),
                           isApproved: driver.isVerified,
                         );
                       },
@@ -291,6 +258,93 @@ class _DriversManagementPageState extends State<DriversManagementPage> with Sing
             child: const Text('Rechazar'),
           ),
         ],
+      ),
+    );
+  }
+    void _showDriverUnapprovalDialog(BuildContext context, String driverId) {
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Suspender Repartidor'),
+        content: const Text('¿Estás seguro de que deseas suspender este repartidor? Esto cambiará su estado a "Pendiente".'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              
+              // Llamar al método de desaprobación del controlador
+              try {
+                final success = await _controller.unapproveDriver(driverId);                if (success) {
+                  scaffoldMessenger.showSnackBar(
+                    const SnackBar(
+                      content: Text('Repartidor suspendido exitosamente'),
+                      backgroundColor: Colors.orange,
+                    ),
+                  );
+                } else {
+                  scaffoldMessenger.showSnackBar(
+                    SnackBar(
+                      content: Text('Error al suspender repartidor: ${_controller.error}'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }              } catch (e) {
+                scaffoldMessenger.showSnackBar(
+                  SnackBar(
+                    content: Text('Error al suspender repartidor: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+            child: const Text('Suspender'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _navigateToDriverDetail(BuildContext context, driver) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DriverDetailPage(
+          driver: driver,
+          onApprove: driver.isVerified ? null : () async {
+            Navigator.pop(context);
+            final success = await _controller.approveDriver(driver.driverId);
+            if (success) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Repartidor aprobado')),
+              );
+            }
+          },
+          onReject: driver.isVerified ? null : () async {
+            Navigator.pop(context);
+            final success = await _controller.rejectDriver(driver.driverId);
+            if (success) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Repartidor rechazado')),
+              );
+            }
+          },
+          onSuspend: driver.isVerified ? () async {
+            Navigator.pop(context);
+            final success = await _controller.unapproveDriver(driver.driverId);
+            if (success) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Repartidor suspendido')),
+              );
+            }
+          } : null,
+        ),
       ),
     );
   }

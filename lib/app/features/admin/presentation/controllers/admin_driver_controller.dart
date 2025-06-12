@@ -180,6 +180,33 @@ class AdminDriverController extends ChangeNotifier {
     }
   }
 
+  /// Unapprove a driver by ID (set isVerified to false)
+  Future<bool> unapproveDriver(String driverId) async {
+    try {
+      final result = await _rejectDriverUseCase.call(driverId);
+      return result.fold(
+        (failure) {
+          _error = _getFailureMessage(failure);
+          notifyListeners();
+          return false;
+        },
+        (unapprovedDriver) {
+          // Update the driver in the local list
+          final index = _drivers.indexWhere((d) => d.driverId == driverId);
+          if (index != -1) {
+            _drivers[index] = unapprovedDriver;
+            notifyListeners();
+          }
+          return true;
+        },
+      );
+    } catch (e) {
+      _error = 'Error inesperado: $e';
+      notifyListeners();
+      return false;
+    }
+  }
+
   /// Refresh drivers data
   Future<void> refresh() async {
     await loadDrivers();

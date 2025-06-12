@@ -10,12 +10,15 @@ enum AdminMerchantState { initial, loading, loaded, error }
 class AdminMerchantController extends ChangeNotifier {
   final GetAllMerchantsUseCase _getAllMerchantsUseCase;
   final ApproveMerchantUseCase _approveMerchantUseCase;
+  final RejectMerchantUseCase _rejectMerchantUseCase;
 
   AdminMerchantController({
     required GetAllMerchantsUseCase getAllMerchantsUseCase,
     required ApproveMerchantUseCase approveMerchantUseCase,
+    required RejectMerchantUseCase rejectMerchantUseCase,
   }) : _getAllMerchantsUseCase = getAllMerchantsUseCase,
-       _approveMerchantUseCase = approveMerchantUseCase;
+       _approveMerchantUseCase = approveMerchantUseCase,
+       _rejectMerchantUseCase = rejectMerchantUseCase;
 
   AdminMerchantState _state = AdminMerchantState.initial;
   List<Merchant> _merchants = [];
@@ -145,6 +148,34 @@ class AdminMerchantController extends ChangeNotifier {
       return false;
     }
   }
+
+  /// Unapprove a merchant by ID (set isVerified to false)
+  Future<bool> unapproveMerchant(String merchantId) async {
+    try {
+      final result = await _rejectMerchantUseCase.call(merchantId);
+      return result.fold(
+        (failure) {
+          _error = _getFailureMessage(failure);
+          notifyListeners();
+          return false;
+        },
+        (unapprovedMerchant) {
+          // Update the merchant in the local list
+          final index = _merchants.indexWhere(
+            (m) => m.merchantId == merchantId,
+          );
+          if (index != -1) {
+            _merchants[index] = unapprovedMerchant;
+            notifyListeners();
+          }
+          return true;
+        },
+      );
+    } catch (e) {
+      _error = 'Error inesperado: $e';
+      notifyListeners();
+      return false;
+    }  }
 
   /// Refresh merchants data
   Future<void> refresh() async {
