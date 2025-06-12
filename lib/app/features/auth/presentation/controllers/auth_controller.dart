@@ -326,8 +326,7 @@ class AuthController extends ChangeNotifier {
       return false;
     }
   }
-  
-  /// Method to handle adding a new role to an existing user
+    /// Method to handle adding a new role to an existing user
   Future<bool> handleRoleAdditionFlow(String email, String password, RoleType roleType) async {
     _state = AuthState.loading;
     _errorMessage = null;
@@ -335,7 +334,8 @@ class AuthController extends ChangeNotifier {
     
     try {
       // First, validate user credentials by signing in
-      _user = await _signInUseCase.execute(email, password);
+      // Use ignoreDriverVerification=true to allow adding roles to unverified drivers
+      _user = await _signInUseCase.execute(email, password, ignoreDriverVerification: true);
       
       // Check if the user already has the requested role
       final userRoles = await _getUserRolesUseCase.execute(_user!.id);

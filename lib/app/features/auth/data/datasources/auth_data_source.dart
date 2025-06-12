@@ -4,7 +4,7 @@ import 'package:nicoya_now/app/features/address/domain/entities/address.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract class AuthDataSource {
-  Future<Map<String, dynamic>> signIn(String email, String password);
+  Future<Map<String, dynamic>> signIn(String email, String password, {bool ignoreDriverVerification = false});
   Future<Map<String, dynamic>> signUp(String email, String password);
   Future<void> signOut();
   Future<Map<String, dynamic>?> getCurrentUser();
@@ -32,9 +32,8 @@ abstract class AuthDataSource {
 class SupabaseAuthDataSource implements AuthDataSource {
   final SupabaseClient _supabaseClient;
 
-  SupabaseAuthDataSource(this._supabaseClient);
-  @override
-  Future<Map<String, dynamic>> signIn(String email, String password) async {
+  SupabaseAuthDataSource(this._supabaseClient);  @override
+  Future<Map<String, dynamic>> signIn(String email, String password, {bool ignoreDriverVerification = false}) async {
     final response = await _supabaseClient.auth.signInWithPassword(
       email: email,
       password: password,
@@ -61,7 +60,7 @@ class SupabaseAuthDataSource implements AuthDataSource {
       primaryRole = roles.first['role']['slug'] ?? '';
     }
 
-    if (primaryRole == 'driver') {
+    if (primaryRole == 'driver' && !ignoreDriverVerification) {
       try {
         final driverVerification =
             await _supabaseClient

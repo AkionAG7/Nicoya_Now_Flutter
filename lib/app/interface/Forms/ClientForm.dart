@@ -118,127 +118,100 @@ class _ClientFormState extends State<ClientForm> {
           ),
         ),
         body: SafeArea(
-          child: SingleChildScrollView(
+            child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
             child: Column(
               children: [
-                _text('Nombre', _firstName, type: TextInputType.name),
-                const SizedBox(height: 20),
-                _text('Primer apellido', _lastName1, type: TextInputType.name),
-                const SizedBox(height: 20),
-                _text('Segundo apellido', _lastName2, type: TextInputType.name),
-                const SizedBox(height: 20),
-                _text('Teléfono', _phone, type: TextInputType.phone, maxLen: 8),
-                const SizedBox(height: 20),
-                _text('Domicilio', _address, type: TextInputType.streetAddress),
-                const SizedBox(height: 20),
-                TextFormField(
-                  controller: _email,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(labelText: 'Email'),
-                  validator:
-                      (v) =>
-                          v != null && v.contains('@')
-                              ? null
-                              : 'Correo inválido',
+              _text('Nombre', _firstName, type: TextInputType.name),
+              const SizedBox(height: 20),
+              _text('Primer apellido', _lastName1, type: TextInputType.name),
+              const SizedBox(height: 20),
+              _text('Segundo apellido', _lastName2, type: TextInputType.name),
+              const SizedBox(height: 20),
+              _text('Teléfono', _phone, type: TextInputType.phone, maxLen: 8),
+              const SizedBox(height: 20),
+              _text('Domicilio', _address, type: TextInputType.streetAddress),
+              const SizedBox(height: 20),
+              TextFormField(
+                controller: _email,
+                keyboardType: TextInputType.emailAddress,
+                decoration: const InputDecoration(labelText: 'Email'),
+                validator:
+                  (v) =>
+                    v != null && v.contains('@')
+                      ? null
+                      : 'Correo inválido',
+              ),
+              const SizedBox(height: 20),
+              TextFormField(
+                controller: _password,
+                obscureText: _hidePw,
+                decoration: InputDecoration(
+                labelText: 'Contraseña',
+                suffixIcon: IconButton(
+                  icon: Icon(
+                  _hidePw ? Icons.visibility_off : Icons.visibility,
+                  ),
+                  onPressed: () => setState(() => _hidePw = !_hidePw),
                 ),
-                const SizedBox(height: 20),
-                TextFormField(
-                  controller: _password,
-                  obscureText: _hidePw,
-                  decoration: InputDecoration(
-                    labelText: 'Contraseña',
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _hidePw ? Icons.visibility_off : Icons.visibility,
+                ),
+                validator:
+                  (v) =>
+                    v != null && v.length >= 6
+                      ? null
+                      : 'Mínimo 6 caracteres',
+              ),
+              const SizedBox(height: 20),
+              TextFormField(
+                controller: _passConf,
+                obscureText: _hidePw2,
+                decoration: InputDecoration(
+                labelText: 'Confirmar contraseña',
+                suffixIcon: IconButton(
+                  icon: Icon(
+                  _hidePw2 ? Icons.visibility_off : Icons.visibility,
+                  ),
+                  onPressed: () => setState(() => _hidePw2 = !_hidePw2),
+                ),
+                ),
+                validator: (v) => v == _password.text ? null : 'No coincide',
+              ),
+              const SizedBox(height: 30),
+              if (_error != null)
+                Text(
+                _error!,
+                style: const TextStyle(color: Colors.red, fontSize: 14),
+                ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                height: 55,
+                child: ElevatedButton(
+                onPressed: _loading ? null : _register,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xffd72a23),
+                  shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child:
+                  _loading
+                    ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                      color: Colors.white,
                       ),
-                      onPressed: () => setState(() => _hidePw = !_hidePw),
+                    )
+                    : const Text(
+                      'Registrar',
+                      style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                      ),
                     ),
-                  ),
-                  validator:
-                      (v) =>
-                          v != null && v.length >= 6
-                              ? null
-                              : 'Mínimo 6 caracteres',
                 ),
-                const SizedBox(height: 20),
-                TextFormField(
-                  controller: _passConf,
-                  obscureText: _hidePw2,
-                  decoration: InputDecoration(
-                    labelText: 'Confirmar contraseña',
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _hidePw2 ? Icons.visibility_off : Icons.visibility,
-                      ),
-                      onPressed: () => setState(() => _hidePw2 = !_hidePw2),
-                    ),
-                  ),
-                  validator: (v) => v == _password.text ? null : 'No coincide',
-                ),
-                const SizedBox(height: 30),
-                if (_error != null)
-                  Text(
-                    _error!,
-                    style: const TextStyle(color: Colors.red, fontSize: 14),
-                  ),
-                const SizedBox(height: 10),
-                SizedBox(
-                  width: double.infinity,
-                  height: 55,
-                  child: ElevatedButton(
-                    onPressed: _loading ? null : _register,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xffd72a23),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child:
-                        _loading
-                            ? const SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                              ),
-                            )
-                            : const Text(
-                              'Registrar',
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.white,
-                              ),
-                            ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                // Google sign-up button
-                Consumer<AuthController>(
-                  builder:
-                      (context, authController, _) => SizedBox(
-                        width: double.infinity,
-                        height: 55,
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            // Aquí implementarías la lógica para sign-in con Google
-                            // usando el controlador de autenticación
-                          },
-                          icon: const Icon(Icons.login, size: 24),
-                          label: const Text(
-                            'Google',
-                            style: TextStyle(fontSize: 18),
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: const Color(0xffd72a23),
-                            side: const BorderSide(color: Color(0xffd72a23)),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                        ),
-                      ),
-                ),
+              ),
               ],
             ),
           ),

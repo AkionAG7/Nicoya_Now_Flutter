@@ -7,11 +7,10 @@ class AuthRepositoryImpl implements AuthRepository {
   final AuthDataSource dataSource;
 
   AuthRepositoryImpl(this.dataSource);
-
   @override
-  Future<User> signIn(String email, String password) async {
+  Future<User> signIn(String email, String password, {bool ignoreDriverVerification = false}) async {
     try {
-      final userData = await dataSource.signIn(email, password);
+      final userData = await dataSource.signIn(email, password, ignoreDriverVerification: ignoreDriverVerification);
       return _mapToUser(userData);
     } catch (e) {
       rethrow;
