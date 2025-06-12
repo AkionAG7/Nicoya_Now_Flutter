@@ -175,9 +175,14 @@ void setupServiceLocator() {
       () => GetAllMerchantsUseCase(
         locator<AdminMerchantRepo.MerchantRepository>(),
       ),
-    )
-    ..registerLazySingleton<ApproveMerchantUseCase>(
+    )  
+      ..registerLazySingleton<ApproveMerchantUseCase>(
       () => ApproveMerchantUseCase(
+        locator<AdminMerchantRepo.MerchantRepository>(),
+      ),
+    )
+    ..registerLazySingleton<RejectMerchantUseCase>(
+      () => RejectMerchantUseCase(
         locator<AdminMerchantRepo.MerchantRepository>(),
       ),
     )
@@ -235,12 +240,13 @@ void setupServiceLocator() {
       () => ChangeOrderStatusController(
         changeStatusUseCase: locator<ChangeOrderStatusUseCase>(),
       ),
-    )
+    ) 
     // Admin – Merchant
     ..registerFactory<AdminMerchantController>(
       () => AdminMerchantController(
         getAllMerchantsUseCase: locator<GetAllMerchantsUseCase>(),
         approveMerchantUseCase: locator<ApproveMerchantUseCase>(),
+        rejectMerchantUseCase: locator<RejectMerchantUseCase>(),
       ),
     )
     // Admin – Driver

@@ -5,13 +5,13 @@ class MerchantListItem extends StatelessWidget {
   final String name;
   final String status;
   final VoidCallback onApprove;
-  final bool isApproved;
-
-  const MerchantListItem({
+  final VoidCallback? onUnapprove;
+  final bool isApproved;  const MerchantListItem({
     super.key,
     required this.name,
     required this.status,
     required this.onApprove,
+    this.onUnapprove,
     this.isApproved = false,
   });
 
@@ -25,10 +25,22 @@ class MerchantListItem extends StatelessWidget {
           child: Icon(Icons.store),
         ),
         title: Text(name),
-        subtitle: Text('Estado: $status'),
-        trailing: isApproved
-            ? const Icon(Icons.verified, color: Colors.green)
-            : ElevatedButton(
+        subtitle: Text('Estado: $status'),        trailing: isApproved
+            ? Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.verified, color: Colors.green),
+                  const SizedBox(width: 8),                  if (onUnapprove != null)
+                    ElevatedButton(
+                      onPressed: onUnapprove,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text('Suspender'),
+                    ),
+                ],
+              )            : ElevatedButton(
                 onPressed: onApprove,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFE60023),
