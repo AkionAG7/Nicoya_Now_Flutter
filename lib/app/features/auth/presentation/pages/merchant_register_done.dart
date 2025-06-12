@@ -14,11 +14,12 @@ class _MerchantPendingPageState extends State<MerchantPendingPage> {
   @override
   void initState() {
     super.initState();
-    Timer(const Duration(seconds: 3), () {
+    // Show message for longer to give user time to read
+    Timer(const Duration(seconds: 5), () {
       if (!mounted) return;
       Navigator.pushNamedAndRemoveUntil(
         context,
-        Routes.preLogin,    
+        Routes.login_page, // Changed from preLogin to login_page for better UX    
         (_) => false,
       );
     });

@@ -96,29 +96,40 @@ class _DeliverForm2State extends State<DeliverForm2> {
         'docs_url': folder,
         'is_verified': false,
       });
-      if (!mounted) return;
-
-      if (_isAddingRole) {
+      if (!mounted) return;      if (_isAddingRole) {
         // Show success message for role addition
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-              '¡Rol de repartidor agregado exitosamente! Tu cuenta está pendiente de verificación.',
+              '¡Rol de repartidor agregado exitosamente! Tu cuenta está pendiente de verificación. Por favor, inicia sesión nuevamente.',
+            ),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 4),
+          ),
+        );
+        
+        // Sign out user to require fresh login
+        await Supabase.instance.client.auth.signOut();
+        
+        // Navigate to login page instead of maintaining session
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          Routes.login_page,
+          (_) => false,
+        );
+      } else {
+        // New user registration - go to role selection page instead of pending
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Registro exitoso. Selecciona tu rol para continuar.',
             ),
             backgroundColor: Colors.green,
           ),
         );
-        // Navigate to home or appropriate screen
         Navigator.pushNamedAndRemoveUntil(
           context,
-          Routes.home_food,
-          (_) => false,
-        );
-      } else {
-        // New user registration - go to pending screen
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          Routes.driverPending,
+          Routes.selectUserRole,
           (_) => false,
         );
       }

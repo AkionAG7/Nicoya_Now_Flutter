@@ -192,13 +192,20 @@ class _RoleFormPageState extends State<RoleFormPage> {
           // Mostrar feedback de confirmación al usuario
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('¡Rol de cliente agregado correctamente!'),
+              content: Text('¡Rol de cliente agregado correctamente! Por favor, inicia sesión nuevamente.'),
               backgroundColor: Colors.green,
+              duration: Duration(seconds: 3),
             ),
           );
           
-          // Navigate to appropriate screen based on role
-          Navigator.of(context).pushReplacementNamed(Routes.home_food);
+          // Sign out user to require fresh login and clear session
+          await authController.signOut();
+          
+          // Navigate to login page instead of direct navigation
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            Routes.login_page, 
+            (route) => false,
+          );
         } else if (!success && mounted) {
           // Mostrar mensaje de error si la operación falló
           final authController = Provider.of<AuthController>(context, listen: false);

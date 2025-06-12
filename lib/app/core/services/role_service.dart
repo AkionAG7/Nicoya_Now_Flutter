@@ -34,7 +34,6 @@ class RoleService {
       throw Exception('Error añadiendo rol: ${e.message}');
     }
   }
-
   Future<void> addRoleWithData(
     String roleSlug,
     Map<String, dynamic> roleData,
@@ -55,63 +54,81 @@ class RoleService {
           .select()
           .eq('user_id', userId)
           .eq('role_id', roleId)
-          .maybeSingle();      if (existingRole != null) {
-        throw Exception('Ya tienes este rol asociado a tu cuenta');
-      }
+          .maybeSingle();
 
-      // Primero desactivar todos los roles existentes del usuario
-      await _supabase.from('user_role')
-          .update({'is_default': false})
+      if (existingRole != null) {
+        throw Exception('Ya tienes este rol asociado a tu cuenta');
+      }      // Verificar cuántos roles tiene el usuario para determinar si este será el primer rol
+      final existingRoles = await _supabase
+          .from('user_role')
+          .select('role_id')
           .eq('user_id', userId);
 
-      // Luego insertar el nuevo rol como default (activo)
+      final isFirstRole = existingRoles.isEmpty;
+
+      // Si no es el primer rol, desactivar todos los roles existentes
+      if (!isFirstRole) {
+        await _supabase.from('user_role')
+            .update({'is_default': false})
+            .eq('user_id', userId);
+      }
+
+      // Insertar el nuevo rol como default si es el primer rol, o como activo si no lo es
       await _supabase.from('user_role').insert({
         'user_id': userId,
         'role_id': roleId,
-        'is_default': true,  // ← Ahora el nuevo rol queda activo inmediatamente
-      });if (roleSlug == 'driver') {
-        // Solo actualizamos id_number en profile, no license_number
-        // (license_number debe incluirse en los args para DeliverForm2)
+        'is_default': true, // El nuevo rol siempre queda activo inmediatamente
+      });
+
+      // Manejar datos específicos por tipo de rol
+      if (roleSlug == 'driver') {
+        // SOLO para DRIVER: actualizar profile con id_number
         if (roleData['id_number'] != null) {
           await _supabase
               .from('profile')
               .update({'id_number': roleData['id_number']})
-              .eq('user_id', userId);      }      } else if (roleSlug == 'merchant') {
+              .eq('user_id', userId);
+        }
+        // NO tocar tabla merchant para drivers
+        return;
+      }
+
+      if (roleSlug == 'merchant') {
+        // SOLO para MERCHANT: crear/actualizar registro en tabla merchant
         try {
           // Always ensure owner_id is set
           if (!roleData.containsKey('owner_id')) {
             roleData['owner_id'] = userId;
           }
           
-          // Verify if a merchant record already exists
+          // Verificar si ya existe un registro de merchant
           final existingMerchant = await _supabase
               .from('merchant')
               .select()
               .eq('merchant_id', userId)
               .maybeSingle();
-                if (existingMerchant == null) {
-            // If it doesn't exist, use upsert with onConflict to handle potential conflicts
+                
+          if (existingMerchant == null) {
+            // Si no existe, crear nuevo registro con datos válidos
             final merchantData = {
               'merchant_id': userId,
-              'owner_id': roleData['owner_id'], // Make sure owner_id is explicitly set
+              'owner_id': roleData['owner_id'],
               'legal_id': roleData['id_number'] ?? '',
-              'business_name': roleData['business_name'] ?? '',
-              'corporate_name': roleData['corporate_name'] ?? '',
+              'business_name': roleData['business_name'] ?? 'Sin nombre', // Valor por defecto para evitar null
+              'corporate_name': roleData['corporate_name'] ?? 'Sin nombre corporativo',
               'is_active': false, // ¡No activar aquí! Lo hace el admin desde el dashboard.
-              // We don't include main_address_id or logo_url to avoid null constraint errors
             };
             //ignore: avoid_print
             print("Creating new merchant record: $merchantData");
             
             await _supabase.from('merchant').upsert(
               merchantData,
-              onConflict: 'merchant_id' // Specify which column to use for resolving conflicts
+              onConflict: 'merchant_id'
             );
           } else {
-            // If it exists, only update the provided fields
+            // Si existe, solo actualizar los campos proporcionados
             final updateData = <String, dynamic>{};
             
-            // Make sure owner_id is set and included in the update
             updateData['owner_id'] = roleData['owner_id'];
             
             if (roleData['id_number'] != null) updateData['legal_id'] = roleData['id_number'];
@@ -133,17 +150,30 @@ class RoleService {
           rethrow;
         }
         
+        // También actualizar profile si hay id_number
         if (roleData['id_number'] != null) {
           await _supabase
               .from('profile')
               .update({'id_number': roleData['id_number']})
               .eq('user_id', userId);
         }
+        return;
       }
+
+      if (roleSlug == 'customer') {
+        // SOLO para CUSTOMER: no necesita tablas adicionales, solo el registro en user_role
+        // que ya se insertó arriba
+        return;
+      }
+
+      // Si llegamos aquí, es un rol desconocido
+      //ignore: avoid_print
+      print('Rol desconocido: $roleSlug');
+      
     } on PostgrestException catch (e) {
       throw Exception('Error añadiendo rol: ${e.message}');
     }
-  }  Future<List<String>> getUserRoles() async {
+  }Future<List<String>> getUserRoles() async {
     try {
       final userId = _supabase.auth.currentUser!.id;
       

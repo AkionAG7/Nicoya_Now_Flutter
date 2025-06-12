@@ -134,13 +134,25 @@ class HomeDriverPageState extends State<HomeDriverPage>
       _isAvailable = newStatus;
     });
   }
-
   void _signOut() async {
-    await Supabase.instance.client.auth.signOut();
-    if (mounted) {
-      Navigator.of(
-        context,
-      ).pushNamedAndRemoveUntil(Routes.preLogin, (_) => false);
+    try {
+      // Clear authentication session
+      await Supabase.instance.client.auth.signOut();
+      
+      if (mounted) {
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil(Routes.login_page, (_) => false);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al cerrar sesión: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 

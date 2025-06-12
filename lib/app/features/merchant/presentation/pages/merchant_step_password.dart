@@ -69,9 +69,7 @@ class _MerchantStepPasswordState extends State<MerchantStepPassword> {
                                   authController: authController,
                                 );
 
-                                if (!mounted) return;
-
-                                if (ok) {
+                                if (!mounted) return;                                if (ok) {
                                   // Show success message
                                   //ignore: use_build_context_synchronously
                                   ScaffoldMessenger.of(context).showSnackBar(
@@ -82,13 +80,27 @@ class _MerchantStepPasswordState extends State<MerchantStepPassword> {
                                       backgroundColor: Colors.green,
                                     ),
                                   );
-                                  // Navigate to the merchant pending page as verification is required
-                                  Navigator.pushNamedAndRemoveUntil(
-                                    //ignore: use_build_context_synchronously
-                                    context,
-                                    Routes.merchantPending,
-                                    (_) => false,
-                                  );
+                                  
+                                  // Check if this is the new flow (redirect to role selection)
+                                  // We can check if the user was created and has merchant role
+                                  final user = authController.user;
+                                  if (user != null) {
+                                    // For new merchant registration, always go to role selection page
+                                    Navigator.pushNamedAndRemoveUntil(
+                                      //ignore: use_build_context_synchronously
+                                      context,
+                                      Routes.selectUserRole,
+                                      (_) => false,
+                                    );
+                                  } else {
+                                    // Fallback to pending page
+                                    Navigator.pushNamedAndRemoveUntil(
+                                      //ignore: use_build_context_synchronously
+                                      context,
+                                      Routes.merchantPending,
+                                      (_) => false,
+                                    );
+                                  }
                                 } else {
                                   // Show error message with more details
                                   //ignore: use_build_context_synchronously

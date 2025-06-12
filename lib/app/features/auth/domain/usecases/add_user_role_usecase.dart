@@ -1,11 +1,12 @@
-import 'package:nicoya_now/app/features/auth/domain/repositories/auth_repository.dart';
+import 'package:nicoya_now/app/core/services/role_service.dart';
 
 class AddUserRoleUseCase {
-  final AuthRepository repository;
+  final RoleService _roleService;
 
-  AddUserRoleUseCase(this.repository);
+  AddUserRoleUseCase(this._roleService);
 
-  Future<void> execute(String userId, String roleId, Map<String, dynamic> roleData) async {
-    await repository.assignRoleToUser(userId, roleId, roleData);
+  Future<void> execute(String userId, String roleSlug, Map<String, dynamic> roleData) async {
+    // Use RoleService directly to maintain proper role isolation
+    await _roleService.addRoleWithData(roleSlug, roleData);
   }
 }

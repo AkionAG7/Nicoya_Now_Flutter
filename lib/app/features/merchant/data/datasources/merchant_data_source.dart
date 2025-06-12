@@ -31,31 +31,28 @@ abstract class MerchantDataSource {
 class SupabaseMerchantDataSource implements MerchantDataSource {
   SupabaseMerchantDataSource(this._supa);
   final SupabaseClient _supa;
-
   @override
   Future<List<Merchant>> fetchMerchantSearch(String query) async {
     final response = await _supa
         .from('merchant')
         .select()
+        .eq('is_active', true) // Solo comerciantes activos
         .or('business_name.ilike.%$query%,corporate_name.ilike.%$query%');
 
-    if (response is List) {
-      return response.map((item) {
-        return Merchant(
-          merchantId: item['merchant_id'] as String,
-          ownerId: item['owner_id'] as String,
-          legalId: item['legal_id'] as String,
-          businessName: item['business_name'] as String,
-          corporateName: item['corporate_name'] as String?,
-          logoUrl: item['logo_url'] as String? ?? '',
-          mainAddressId: item['main_address_id'] as String,
-          isActive: item['is_active'] as bool? ?? false,
-          createdAt: DateTime.parse(item['created_at'] as String), mainAddress: Address.empty(),
-        );
-      }).toList();
-    } else {
-      throw Exception('La respuesta no es una lista');
-    }
+    return response.map<Merchant>((item) {
+      return Merchant(
+        merchantId: item['merchant_id'] as String,
+        ownerId: item['owner_id'] as String,
+        legalId: item['legal_id'] as String,
+        businessName: item['business_name'] as String,
+        corporateName: item['corporate_name'] as String?,
+        logoUrl: item['logo_url'] as String? ?? '',
+        mainAddressId: item['main_address_id'] as String,
+        isActive: item['is_active'] as bool? ?? false,
+        createdAt: DateTime.parse(item['created_at'] as String), 
+        mainAddress: Address.empty(),
+      );
+    }).toList();
   }
 
   @override
@@ -83,28 +80,28 @@ class SupabaseMerchantDataSource implements MerchantDataSource {
       createdAt: DateTime.parse(resp['created_at'] as String), mainAddress: Address.empty(),
     );
   }
-
   @override
   Future<List<Merchant>> fetchAllMerchants() async {
     try {
-      final response = await _supa.from('merchant').select();
-      if (response is List) {
-        return response.map((item) {
-          return Merchant(
-            merchantId: item['merchant_id'] as String,
-            ownerId: item['owner_id'] as String,
-            legalId: item['legal_id'] as String,
-            businessName: item['business_name'] as String,
-            corporateName: item['corporate_name'] as String?,
-            logoUrl: item['logo_url'] as String? ?? '',
-            mainAddressId: item['main_address_id'] as String,
-            isActive: item['is_active'] as bool? ?? false,
-            createdAt: DateTime.parse(item['created_at'] as String), mainAddress: Address.empty(),
-          );
-        }).toList();
-      } else {
-        throw Exception('La respuesta no es una lista');
-      }
+      final response = await _supa
+          .from('merchant')
+          .select()
+          .eq('is_active', true); // Solo comerciantes activos
+      
+      return response.map<Merchant>((item) {
+        return Merchant(
+          merchantId: item['merchant_id'] as String,
+          ownerId: item['owner_id'] as String,
+          legalId: item['legal_id'] as String,
+          businessName: item['business_name'] as String,
+          corporateName: item['corporate_name'] as String?,
+          logoUrl: item['logo_url'] as String? ?? '',
+          mainAddressId: item['main_address_id'] as String,
+          isActive: item['is_active'] as bool? ?? false,
+          createdAt: DateTime.parse(item['created_at'] as String),
+          mainAddress: Address.empty(),
+        );
+      }).toList();
     } catch (e) {
       throw Exception('Error al obtener los comerciantes: $e');
     }
@@ -127,10 +124,8 @@ class SupabaseMerchantDataSource implements MerchantDataSource {
     String? cedula,
   }) async {
     //ignore: avoid_print
-    print('MERCHANT REGISTER: Starting merchant registration process');
-
-    // Primero creamos el usuario con su rol de merchant
-    final success = await authController.signUpMerchant(
+    print('MERCHANT REGISTER: Starting merchant registration process');    // Primero creamos el usuario con su rol de merchant
+    final result = await authController.signUpMerchant(
       email: email,
       password: password,
       firstName: firstName,
@@ -143,11 +138,26 @@ class SupabaseMerchantDataSource implements MerchantDataSource {
       corporateName: corporateName, // Y el nombre corporativo
     );
 
+    final success = result['success'] ?? false;
+    
     if (!success) {
       //ignore: avoid_print
       print('MERCHANT REGISTER: Failed to create merchant account');
-      throw AuthException('No se pudo crear la cuenta de comerciante');
+      throw AuthException(result['message'] ?? 'No se pudo crear la cuenta de comerciante');
     }
+    
+    // Check if should redirect to role selection page
+    if (result['redirectToRoleSelection'] == true) {
+      //ignore: avoid_print
+      print('MERCHANT REGISTER: Merchant registration complete, should redirect to role selection');
+      // Return immediately with navigation instructions
+      return {
+        'success': true,
+        'redirectToRoleSelection': true,
+        'message': result['message'] ?? 'Registro exitoso'
+      };
+    }
+    
     //ignore: avoid_print
     print('MERCHANT REGISTER: Successfully created merchant account and role');
 
@@ -234,8 +244,7 @@ class SupabaseMerchantDataSource implements MerchantDataSource {
         print("Updating existing merchant with logo and address");
         final row =
             await _supa
-                .from('merchant')
-                .update({
+                .from('merchant')                .update({
                   'logo_url': publicUrl,
                   'main_address_id': addressId,
                   'owner_id': uid, // Ensure owner_id is always set
@@ -243,7 +252,11 @@ class SupabaseMerchantDataSource implements MerchantDataSource {
                 .eq('merchant_id', uid)
                 .select()
                 .single();
-        return row;
+        return {
+          'success': true,
+          'merchant': row,
+          'message': 'Registro de comerciante exitoso'
+        };
       } else {
         // If it doesn't exist, insert it completely
         //ignore: avoid_print
@@ -267,7 +280,11 @@ class SupabaseMerchantDataSource implements MerchantDataSource {
                 )
                 .select()
                 .single();
-        return row;
+        return {
+          'success': true,
+          'merchant': row,
+          'message': 'Registro de comerciante exitoso'
+        };
       }
     } catch (e) {
       // If merchant setup fails, we should handle cleanup appropriately
