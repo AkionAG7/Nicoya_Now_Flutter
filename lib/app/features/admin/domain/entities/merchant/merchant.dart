@@ -11,9 +11,11 @@ class Merchant {
   
   /// Business phone number
   final String? phoneNumber;
-  
-  /// URL to business documents (optional)
+    /// URL to business documents (optional)
   final String? docsUrl;
+  
+  /// URL to business logo (optional)
+  final String? logoUrl;
   
   /// Business category (e.g., restaurant, retail, etc.)
   final String businessCategory;
@@ -23,7 +25,6 @@ class Merchant {
   
   /// When the merchant was created in the system
   final DateTime createdAt;
-
   /// Creates a new [Merchant] instance
   const Merchant({
     required this.merchantId,
@@ -31,11 +32,11 @@ class Merchant {
     this.address,
     this.phoneNumber,
     this.docsUrl,
+    this.logoUrl,
     required this.businessCategory,
     required this.isVerified,
     required this.createdAt,
   });
-
   /// Creates a copy of this Merchant with the given fields replaced with new values
   Merchant copyWith({
     String? merchantId,
@@ -43,6 +44,7 @@ class Merchant {
     String? address,
     String? phoneNumber,
     String? docsUrl,
+    String? logoUrl,
     String? businessCategory,
     bool? isVerified,
     DateTime? createdAt,
@@ -53,12 +55,12 @@ class Merchant {
       address: address ?? this.address,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       docsUrl: docsUrl ?? this.docsUrl,
+      logoUrl: logoUrl ?? this.logoUrl,
       businessCategory: businessCategory ?? this.businessCategory,
       isVerified: isVerified ?? this.isVerified,
       createdAt: createdAt ?? this.createdAt,
     );
   }
-
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
@@ -69,11 +71,11 @@ class Merchant {
         other.address == address &&
         other.phoneNumber == phoneNumber &&
         other.docsUrl == docsUrl &&
+        other.logoUrl == logoUrl &&
         other.businessCategory == businessCategory &&
         other.isVerified == isVerified &&
         other.createdAt == createdAt;
   }
-
   @override
   int get hashCode {
     return merchantId.hashCode ^
@@ -81,13 +83,13 @@ class Merchant {
         address.hashCode ^
         phoneNumber.hashCode ^
         docsUrl.hashCode ^
+        logoUrl.hashCode ^
         businessCategory.hashCode ^
         isVerified.hashCode ^
         createdAt.hashCode;
   }
-
   @override
   String toString() {
-    return 'Merchant(merchantId: $merchantId, businessName: $businessName, address: $address, phoneNumber: $phoneNumber, docsUrl: $docsUrl, businessCategory: $businessCategory, isVerified: $isVerified, createdAt: $createdAt)';
+    return 'Merchant(merchantId: $merchantId, businessName: $businessName, address: $address, phoneNumber: $phoneNumber, docsUrl: $docsUrl, logoUrl: $logoUrl, businessCategory: $businessCategory, isVerified: $isVerified, createdAt: $createdAt)';
   }
 }

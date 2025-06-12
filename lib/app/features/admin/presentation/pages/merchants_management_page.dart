@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/di/service_locator.dart';
 import '../controllers/admin_merchant_controller.dart';
 import '../widgets/merchant_list_item.dart';
+import 'merchant_detail_page.dart';
 
 /// Página de gestión de comerciantes
 class MerchantsManagementPage extends StatefulWidget {
@@ -152,6 +153,7 @@ class _MerchantsManagementPageState extends State<MerchantsManagementPage>
                                   merchant.merchantId,
                                 )
                               : null,
+                          onViewDetails: () => _navigateToMerchantDetail(merchant),
                           isApproved: merchant.isVerified,
                         );
                       },
@@ -161,6 +163,75 @@ class _MerchantsManagementPageState extends State<MerchantsManagementPage>
               ),
             ),
           ],
+        ),
+      ),
+    );  }
+
+  void _navigateToMerchantDetail(merchant) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MerchantDetailPage(
+          merchant: merchant,
+          onApprove: !merchant.isVerified
+              ? () async {
+                  Navigator.pop(context);
+                  try {
+                    await _controller.approveMerchant(merchant.merchantId);
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('${merchant.businessName} ha sido aprobado'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Error al aprobar ${merchant.businessName}: $e'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }
+                }
+              : null,
+          onSuspend: merchant.isVerified
+              ? () async {
+                  Navigator.pop(context);
+                  try {
+                    final success = await _controller.unapproveMerchant(merchant.merchantId);
+                    if (mounted) {
+                      if (success) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('${merchant.businessName} ha sido suspendido'),
+                            backgroundColor: Colors.orange,
+                          ),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Error al suspender ${merchant.businessName}: ${_controller.error}'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Error al suspender ${merchant.businessName}: $e'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }
+                }
+              : null,
         ),
       ),
     );

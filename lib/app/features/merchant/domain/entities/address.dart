@@ -42,7 +42,6 @@ class Address {
         'note'       : note,
         'created_at' : createdAt.toIso8601String(),
       };
-
   Address copyWith({
     String? street,
     String? district,
@@ -59,6 +58,19 @@ class Address {
       lng:       lng       ?? this.lng,
       note:      note      ?? this.note,
       createdAt: createdAt,
+    );
+  }
+
+  static Address empty() {
+    return Address(
+      addressId: '',
+      userId: '',
+      street: '',
+      district: '',
+      lat: 0.0,
+      lng: 0.0,
+      note: '',
+      createdAt: DateTime.now(),
     );
   }
 }
