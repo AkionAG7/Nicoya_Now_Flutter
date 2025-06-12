@@ -16,64 +16,95 @@ class MerchantListItem extends StatelessWidget {
     this.onViewDetails,
     this.isApproved = false,
   });
-
   @override
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       elevation: 2,
-      child: ListTile(
-        leading: const CircleAvatar(
-          child: Icon(Icons.store),
-        ),
-        title: Text(name),
-        subtitle: Text('Estado: $status'),        trailing: isApproved
-            ? Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.verified, color: Colors.green),
-                  const SizedBox(width: 8),
-                  if (onViewDetails != null) ...[
-                    IconButton(
-                      onPressed: onViewDetails,
-                      icon: const Icon(Icons.info_outline),
-                      color: Colors.blue,
-                      tooltip: 'Ver más',
-                    ),
-                    const SizedBox(width: 4),
-                  ],
-                  if (onUnapprove != null)
-                    ElevatedButton(
-                      onPressed: onUnapprove,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange,
-                        foregroundColor: Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const CircleAvatar(
+                  radius: 20,
+                  child: Icon(Icons.store, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
-                      child: const Text('Suspender'),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Estado: $status',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (isApproved)
+                  const Icon(Icons.verified, color: Colors.green, size: 20),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                if (onViewDetails != null) ...[
+                  OutlinedButton.icon(
+                    onPressed: onViewDetails,
+                    icon: const Icon(Icons.info_outline, size: 16),
+                    label: const Text('Ver más'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.blue,
+                      side: const BorderSide(color: Colors.blue),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      minimumSize: const Size(80, 32),
                     ),
+                  ),
+                  const SizedBox(width: 8),
                 ],
-              )            : Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (onViewDetails != null) ...[
-                    IconButton(
-                      onPressed: onViewDetails,
-                      icon: const Icon(Icons.info_outline),
-                      color: Colors.blue,
-                      tooltip: 'Ver más',
+                if (isApproved && onUnapprove != null)
+                  ElevatedButton(
+                    onPressed: onUnapprove,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      minimumSize: const Size(80, 32),
                     ),
-                    const SizedBox(width: 4),
-                  ],
+                    child: const Text('Suspender'),
+                  )
+                else if (!isApproved)
                   ElevatedButton(
                     onPressed: onApprove,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFE60023),
                       foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      minimumSize: const Size(80, 32),
                     ),
                     child: const Text('Aprobar'),
                   ),
-                ],
-              ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
