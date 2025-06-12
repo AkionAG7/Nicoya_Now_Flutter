@@ -7,9 +7,9 @@ tendran el nombre de variable de la ruta = '/nombreRuta'
 class Routes {
   Routes._();
 
-  static const selecctTypeAccount = '/selectTypeAccount';
-  static const preLogin = '/preLogin';
-  static const login_page = '/login';
+  static const selecctTypeAccount = '/selectTypeAccount';  static const preLogin = '/preLogin';  static const login_page = '/login';
+  static const forgotPassword = '/forgotPassword';
+  static const resetByCode = '/resetByCode';
   static const register_user_page = '/registerUser';
   static const splashFT1 = '/splashFT1';
   static const splashFT2 = '/splashFT2';
