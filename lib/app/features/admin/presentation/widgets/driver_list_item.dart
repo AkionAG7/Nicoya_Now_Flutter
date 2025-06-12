@@ -9,6 +9,7 @@ class DriverListItem extends StatelessWidget {
   final VoidCallback onApprove;
   final VoidCallback? onReject;
   final VoidCallback? onUnapprove;
+  final VoidCallback? onViewDetails;
   final bool isApproved;
   const DriverListItem({
     super.key,
@@ -19,6 +20,7 @@ class DriverListItem extends StatelessWidget {
     required this.onApprove,
     this.onReject,
     this.onUnapprove,
+    this.onViewDetails,
     this.isApproved = false,
   });
 
@@ -46,7 +48,17 @@ class DriverListItem extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(Icons.verified, color: Colors.green),
-                  const SizedBox(width: 8),                  if (onUnapprove != null)
+                  const SizedBox(width: 8),
+                  if (onViewDetails != null) ...[
+                    IconButton(
+                      onPressed: onViewDetails,
+                      icon: const Icon(Icons.info_outline),
+                      color: Colors.blue,
+                      tooltip: 'Ver más',
+                    ),
+                    const SizedBox(width: 4),
+                  ],
+                  if (onUnapprove != null)
                     ElevatedButton(
                       onPressed: onUnapprove,
                       style: ElevatedButton.styleFrom(
@@ -60,6 +72,14 @@ class DriverListItem extends StatelessWidget {
             : Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  if (onViewDetails != null) ...[
+                    IconButton(
+                      onPressed: onViewDetails,
+                      icon: const Icon(Icons.info_outline),
+                      color: Colors.blue,
+                      tooltip: 'Ver más',
+                    ),
+                  ],
                   if (onReject != null)
                     IconButton(
                       onPressed: onReject,

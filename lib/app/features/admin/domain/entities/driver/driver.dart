@@ -17,6 +17,15 @@ class Driver {
   
   /// When the driver was created in the system
   final DateTime createdAt;
+  
+  /// Current latitude location (optional)
+  final double? currentLatitude;
+  
+  /// Current longitude location (optional)
+  final double? currentLongitude;
+  
+  /// Last time location was updated (optional)
+  final DateTime? lastLocationUpdate;
 
   /// Creates a new [Driver] instance
   const Driver({
@@ -26,6 +35,9 @@ class Driver {
     this.docsUrl,
     required this.isVerified,
     required this.createdAt,
+    this.currentLatitude,
+    this.currentLongitude,
+    this.lastLocationUpdate,
   });
 
   /// Creates a copy of this Driver with the given fields replaced with new values

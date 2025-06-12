@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:nicoya_now/app/features/address/domain/entities/address.dart';
+import 'package:nicoya_now/app/features/merchant/domain/entities/address.dart';
 import 'package:nicoya_now/app/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:nicoya_now/app/features/merchant/domain/entities/merchant.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
