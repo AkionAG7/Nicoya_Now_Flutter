@@ -3,7 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../domain/entities/driver/driver.dart';
 
 /// Página de detalle para ver toda la información de un driver
-class DriverDetailPage extends StatelessWidget {
+class DriverDetailPage extends StatefulWidget {
   final Driver driver;
   final VoidCallback? onApprove;
   final VoidCallback? onReject;
@@ -18,6 +18,12 @@ class DriverDetailPage extends StatelessWidget {
   });
 
   @override
+  State<DriverDetailPage> createState() => _DriverDetailPageState();
+}
+
+class _DriverDetailPageState extends State<DriverDetailPage> {
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -29,8 +35,7 @@ class DriverDetailPage extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Estado y acciones
+          children: [            // Estado y acciones
             _buildStatusCard(),
             const SizedBox(height: 16),
             
@@ -66,17 +71,16 @@ class DriverDetailPage extends StatelessWidget {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            Row(
-              children: [
+            Row(              children: [
                 Icon(
-                  driver.isVerified ? Icons.verified : Icons.pending,
-                  color: driver.isVerified ? Colors.green : Colors.orange,
+                  widget.driver.isVerified ? Icons.verified : Icons.pending,
+                  color: widget.driver.isVerified ? Colors.green : Colors.orange,
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  driver.isVerified ? 'Aprobado' : 'Pendiente',
+                  widget.driver.isVerified ? 'Aprobado' : 'Pendiente',
                   style: TextStyle(
-                    color: driver.isVerified ? Colors.green : Colors.orange,
+                    color: widget.driver.isVerified ? Colors.green : Colors.orange,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -84,7 +88,7 @@ class DriverDetailPage extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Registrado: ${_formatDate(driver.createdAt)}',
+              'Registrado: ${_formatDate(widget.driver.createdAt)}',
               style: const TextStyle(color: Colors.grey),
             ),
           ],
@@ -102,18 +106,16 @@ class DriverDetailPage extends StatelessWidget {
           children: [
             const Text(
               'Información del Vehículo',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),            ),
             const SizedBox(height: 16),
-            _buildInfoRow('ID del Repartidor:', driver.driverId),
-            _buildInfoRow('Tipo de Vehículo:', driver.vehicleType.toString()),
-            _buildInfoRow('Número de Licencia:', driver.licenseNumber ?? 'No especificado'),
+            _buildInfoRow('ID del Repartidor:', widget.driver.driverId),
+            _buildInfoRow('Tipo de Vehículo:', widget.driver.vehicleType.toString()),
+            _buildInfoRow('Número de Licencia:', widget.driver.licenseNumber ?? 'No especificado'),
           ],
         ),
       ),
     );
   }
-
   Widget _buildDocumentsCard() {
     return Card(
       child: Padding(
@@ -123,18 +125,29 @@ class DriverDetailPage extends StatelessWidget {
           children: [
             const Text(
               'Documentos',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),            ),
             const SizedBox(height: 16),
-            if (driver.docsUrl != null && driver.docsUrl!.isNotEmpty)
-              ElevatedButton.icon(
-                onPressed: () => _openDocument(driver.docsUrl!),
-                icon: const Icon(Icons.description),
-                label: const Text('Ver Documentos'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                ),
+            if (widget.driver.docsUrl != null && widget.driver.docsUrl!.isNotEmpty)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () => _openDocument(widget.driver.docsUrl!),
+                    icon: const Icon(Icons.description),
+                    label: const Text('Ver Documentos'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'URL: ${widget.driver.docsUrl}',
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               )
             else
               const Text(
@@ -158,15 +171,14 @@ class DriverDetailPage extends StatelessWidget {
               'Ubicación',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 16),
-            if (driver.currentLatitude != null && driver.currentLongitude != null) ...[
-              _buildInfoRow('Latitud:', driver.currentLatitude.toString()),
-              _buildInfoRow('Longitud:', driver.currentLongitude.toString()),
-              if (driver.lastLocationUpdate != null)
-                _buildInfoRow('Última actualización:', _formatDate(driver.lastLocationUpdate!)),
+            const SizedBox(height: 16),            if (widget.driver.currentLatitude != null && widget.driver.currentLongitude != null) ...[
+              _buildInfoRow('Latitud:', widget.driver.currentLatitude.toString()),
+              _buildInfoRow('Longitud:', widget.driver.currentLongitude.toString()),
+              if (widget.driver.lastLocationUpdate != null)
+                _buildInfoRow('Última actualización:', _formatDate(widget.driver.lastLocationUpdate!)),
               const SizedBox(height: 8),
               ElevatedButton.icon(
-                onPressed: () => _openLocation(driver.currentLatitude!, driver.currentLongitude!),
+                onPressed: () => _openLocation(widget.driver.currentLatitude!, widget.driver.currentLongitude!),
                 icon: const Icon(Icons.map),
                 label: const Text('Ver en Mapa'),
                 style: ElevatedButton.styleFrom(
@@ -218,13 +230,12 @@ class DriverDetailPage extends StatelessWidget {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            Row(
-              children: [
-                if (!driver.isVerified && onApprove != null) ...[
+            Row(              children: [
+                if (!widget.driver.isVerified && widget.onApprove != null) ...[
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        onApprove!();
+                        widget.onApprove!();
                         Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
@@ -236,11 +247,11 @@ class DriverDetailPage extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                 ],
-                if (!driver.isVerified && onReject != null) ...[
+                if (!widget.driver.isVerified && widget.onReject != null) ...[
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        onReject!();
+                        widget.onReject!();
                         Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
@@ -252,11 +263,11 @@ class DriverDetailPage extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                 ],
-                if (driver.isVerified && onSuspend != null)
+                if (widget.driver.isVerified && widget.onSuspend != null)
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        onSuspend!();
+                        widget.onSuspend!();
                         Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
@@ -277,11 +288,30 @@ class DriverDetailPage extends StatelessWidget {
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
   }
-
   Future<void> _openDocument(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('No se puede abrir este documento'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al abrir documento: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
