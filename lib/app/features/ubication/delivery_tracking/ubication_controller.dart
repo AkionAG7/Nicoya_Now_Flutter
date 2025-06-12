@@ -4,6 +4,14 @@ import 'package:location/location.dart';
 class UbicacionController {
   final Location _location = Location();
 
+  /// Check if location permissions are already granted
+  Future<bool> tienePermisos() async {
+    bool servicioActivo = await _location.serviceEnabled();
+    PermissionStatus permisos = await _location.hasPermission();
+    
+    return servicioActivo && permisos == PermissionStatus.granted;
+  }
+
   Future<LocationData?> obtenerUbicacion() async {
     bool servicioActivo = await _location.serviceEnabled();
     if (!servicioActivo) {
